@@ -35,7 +35,8 @@ while run:	# main loop
 	# 	data = sock.recv(10240).decode()
 	# 	data_dict = json.loads(data)
 	# 	print (data_dict)
-	if not userInput.startswith('START'):
+	# if not userInput.startswith('START'):
+	if True:
 		BUFF_SIZE = 4096  # 4 KiB
 		data = b''
 		while True:
