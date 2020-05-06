@@ -29,31 +29,40 @@ The Polycraft World AI API consists of 28 total different API commands at Releas
 ## SYSTEM commands: (2 total)
 * **START**  
 	* no args ever used | called once to start tournaments
-* **RESET** -d ../dry-run/hunger-gatherer/tournament_1/trial_1/hg_1.1.json
-* **RESET** -d ../dry-run/hunger-gatherer/tournament_1/trial_1000/hg_1.1000.json
-* **RESET** -d ../dry-run/hunger-gatherer/tournament_100/trial_1/hg_100.1.json
-* **RESET** -d ../dry-run/hunger-gatherer/tournament_100/trial_1000/hg_100.1000.json
-* **RESET** -d ../dry-run/pogo-creation/tournament_1/trial_1000/pogo_1.1.json
-* **RESET** -d ../dry-run/pogo-creation/tournament_1/trial_1000/pogo_1.1000.json
-* **RESET** -d ../dry-run/pogo-creation/tournament_100/trial_1000/pogo_100.1.json
-* **RESET** -d ../dry-run/pogo-creation/tournament_100/trial_1000/pogo_100.1000.json
-	* -d (domain) path to .json novelty transform 
-	* called 1,000 times per tournament to start a new trial
-	* different tournaments will run using cloned TA2 agents on different cloud machines
-	* novelty will be pre-set in the .jsons and not generated at run-time
+* **RESET** domain ../available_tests/pogo_nonov.json
+	* the base pogo experiment
+* **RESET** domain ../available_tests/hg_nonov.json
+	* the base hunter-gatherer experiment
+* The following function on the cloud virtual machines for the test harness:
+	* **RESET** -d ../dry-run/hunger-gatherer/tournament_1/trial_1/hg_1.1.json
+	* **RESET** -d ../dry-run/hunger-gatherer/tournament_1/trial_1000/hg_1.1000.json
+	* **RESET** -d ../dry-run/hunger-gatherer/tournament_100/trial_1/hg_100.1.json
+	* **RESET** -d ../dry-run/hunger-gatherer/tournament_100/trial_1000/hg_100.1000.json
+	* **RESET** -d ../dry-run/pogo-creation/tournament_1/trial_1000/pogo_1.1.json
+	* **RESET** -d ../dry-run/pogo-creation/tournament_1/trial_1000/pogo_1.1000.json
+	* **RESET** -d ../dry-run/pogo-creation/tournament_100/trial_1000/pogo_100.1.json
+	* **RESET** -d ../dry-run/pogo-creation/tournament_100/trial_1000/pogo_100.1000.json
+		* -d (domain) path to .json novelty transform 
+		* called 1,000 times per tournament to start a new trial
+		* different tournaments will run using cloned TA2 agents on different cloud machines
+		* novelty will be pre-set in the .jsons and not generated at run-time
 
 ## DEV commands: (4 total)
+* Dev commands must be enabled by setting a client virtual machine argument: "-Ddev=True" Details on setting this outside of a development environment are still being worked out, as solutions are fickle and system dependent. Please contact us if you need these commands.
 * **CHAT** "Hello world."
+* **CHAT** /give @p minecraft:stick
 	* not used in DRY-RUN Tournaments, but active for debugging/training/development
-* **CREATE_NOVELTY_VARIATIONS** -d ../available_tests/hg_2.X.json -s 42 -i 60
-* **CREATE_NOVELTY_VARIATIONS** -d ../ available_tests/pogo_2.X.json -s -37489 -i 10
-	* Novelty generators for level zero (rearranging objects) are not included currently but will be soon
-	* not used in DRY-RUN Tournaments, but provides agents in training a simple way to try out different seeds and different intensities during training within the same tournament
-	* -d (domain) path to .json novelty transform -s (seed) arbitrary INT -i (intensity) INT 0-100
-	* generates novelty at run time for training purposes
+* The following function on the cloud virtual machine for the test harness.
+	* **CREATE_NOVELTY_VARIATIONS** -d ../available_tests/hg_2.X.json -s 42 -i 60
+	* **CREATE_NOVELTY_VARIATIONS** -d ../ available_tests/pogo_2.X.json -s -37489 -i 10
+		* Novelty generators for level zero (rearranging objects) are not included currently but will be soon
+		* not used in DRY-RUN Tournaments, but provides agents in training a simple way to try out different seeds and different intensities during training within the same tournament
+		* -d (domain) path to .json novelty transform -s (seed) arbitrary INT -i (intensity) INT 0-100
+		* generates novelty at run time for training purposes
 * **SPEED** 30
 	* not used in DRY-RUN Tournaments, but sets the game speed in ticks per sec (default 20)
 * **TELEPORT** 20 4 21 90 0
+	* not to be used in DRY-RUN Tournaments, but allows setting player location and view direction.
 	* Parameters: [x] [y] [z] [yaw] [pitch]
 
 ## GAME commands - MOVE commands: (7 total)
