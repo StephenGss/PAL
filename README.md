@@ -1,5 +1,5 @@
 # Quick start guide:
-
+## Windows
 * Key dependency: Java JDK 8
 	* https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html
 	* Or as appropriate with Oracle
@@ -13,7 +13,30 @@
 * Pull updates (if repo is already cloned):
 * Run LaunchPolycraft.bat
 	* If it fails, try running ./gradelw runclient from PowerShell in the same window, read the error, and fix it your own based on local configuration
+## Ubuntu
+* Send the following commands in the terminal:
+	* `sudo apt-get update && sudo apt-get upgrade -y`
+	* `sudo apt install openjdk-8-jdk openjdk-8-jre`
+	* `git`
+	* `git clone https://github.com/StephenGss/pal.git`
+	* `cd pal/`
+	* `chmod +x gradlew`
+	* `./gradlew runclient`
+* Possible issues
+	* The last command, `./gradlew runclient` may fail with the following as part of the error message:
+	`Could not determine java version from '#.#.#'.`
+		* Solution: Run `sudo update-alternatives --config java`
+		* Choose the option with jdk-8
+	* The last command, `./gradlew runclient` may fail with the following as part of the error message:
+	`Process 'command '/usr/lib/jvm/java-8-openjdk-amd64/bin/java'' finished with non-zero exit value 1`
+		* Check the stack trace for mention of `Can't connect to X11 window server using 'localhost:0.0' as the value of the DISPLAY variable.`
+		* Agents that will use SENSE_SCREEN must have systems with video cards
+		* Other agents may be able to run on these systems, but solutions to this issue are based on your local configuration.
+
+## Interacting with Polycraft AI Lab, platform independent
 * Run PAL -> PolycraftAIGym -> testSocket.py
+	* Python is available at python.org. It is not required to run or connect to PAL, but it is required to run the demo script.
+	* The python console will accept user input.
 	* Send "START" to put PAL in a state where it can receive communications
 		* Wait for the Polycraft window to change to a plain field
 	* Send "RESET domain ../available_levels/pogo_nonov.json
@@ -22,7 +45,7 @@
 		* "SENSE_ALL NONAV" to get information about the player's environment
 		* "MOVE W" to move forward
 		* "BREAK_BLOCK" to break the block immediately in front of the player
-		* Many more commands described in Command API section
+		* Many more commands described in Polycraft Bot API section
 
 # Polycraft Bot API
 The Polycraft World AI API consists of 28 total different API commands at Release 1.5.0 on 5.4.2020. These commands are broken down into SYSTEM commands, DEV commands, and GAME commands. The GAME commands are further divided into MOVE commands, SENSE commands, INTERACT commands.
