@@ -148,18 +148,18 @@ class LaunchTournament:
                 tournament_in_progress = False
             # wait for PAL to finish initializing. Then call to initialize a game
             if current_state == State.INIT_PAL:
-                if "[Client thread/INFO] [polycraft]: Minecraft finished loading" in str(next_line):
+                if "Minecraft finished loading" in str(next_line):
                     # MInecraft has loaded and we can run the start command. First start up our thread
                     tm_thread = TournamentManager.TournamentThread(queue=queue.Queue(), tm_lock=tm_lock)
                     tm_thread.start()
                     tm_thread.queue.put("START")
                     current_state = State.INIT_GAME
             elif current_state == State.INIT_GAME:
-                if "[Server thread/INFO]: Player" in str(next_line) and " joined the game" in str(next_line):
+                if "Player" in str(next_line) and " joined the game" in str(next_line):
                     tm_thread.queue.put("RESET domain " + games[game_index])
                     current_state = State.WAIT_FOR_GAME_READY
             elif current_state == State.WAIT_FOR_GAME_READY:
-                if "[EXP] game initialization completed" in str(next_line):
+                if "game initialization completed" in str(next_line):
                     current_state = State.INIT_AGENT
             elif current_state == State.INIT_AGENT:
                 # TODO: initialize AI Agent?
