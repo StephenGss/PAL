@@ -7,15 +7,15 @@ class TournamentThread(threading.Thread):
     def __init__(self, queue, tm_lock, args=(), kwargs=None):
         threading.Thread.__init__(self, args=(), kwargs=None)
         self.queue = queue
-        self.lock = tm_lock
+        self.tm_lock = tm_lock
         self.receive_messages = True
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.connect((HOST, TM_PORT))
 
     def run(self):
         print(threading.currentThread().getName(), self.receive_messages)
         print("Initializing TM Thread")
 
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect((HOST, TM_PORT))
         while True:
             val = self.queue.get()
             if val is None:  # If you send `None`, the thread will exit.
@@ -39,4 +39,3 @@ class TournamentThread(threading.Thread):
                         break
                 data_dict = json.loads(data)
                 print(data_dict)
-

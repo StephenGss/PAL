@@ -2,14 +2,15 @@
 
 import socket, random, time, json
 
-HOST = "127.0.0.1"
-PORT = 9000
+print("INITIALIZING")
+
+AGENT_HOST = "127.0.0.1"
+AGENT_PORT = 9000
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.connect((HOST, PORT))
+sock.connect((AGENT_HOST, AGENT_PORT))
 
 command_stream = [
-	"reset domain ../available_tests/hg_nonov.json",
     "smooth_move w",
     "smooth_move w",
     "smooth_move w",
@@ -68,23 +69,19 @@ command_stream = [
 reset = False
 
 for command in command_stream:
-	sock.send(str.encode(command + '\n'))
-	print(command )
-	BUFF_SIZE = 4096  # 4 KiB
-	data = b''
-	while True:
-		part = sock.recv(BUFF_SIZE)
-		data += part
-		if len(part) < BUFF_SIZE:
-			# either 0 or end of data
-			break
-	data_dict = json.loads(data)
-	print(data_dict)
-	if reset:
-		time.sleep(0.25)
-	else:
-		time.sleep(2)
-		reset = True
+    sock.send(str.encode(command + '\n'))
+    print(command)
+    BUFF_SIZE = 4096  # 4 KiB
+    data = b''
+    while True:
+        part = sock.recv(BUFF_SIZE)
+        data += part
+        if len(part) < BUFF_SIZE:
+            # either 0 or end of data
+            break
+    data_dict = json.loads(data)
+    print(data_dict)
+    time.sleep(0.1)
 
 sock.close()
 
