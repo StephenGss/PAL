@@ -193,7 +193,7 @@ class LaunchTournament:
                 tm_thread.queue.put("RESET domain " + games[game_index])
                 current_state = State.DETECT_RESET
             elif current_state == State.DETECT_RESET:
-                if "[EXP] game initialization completed" in str(next_line):
+                if "game initialization completed" in str(next_line):
                     current_state = State.GAME_LOOP
         output = pal_client_process.communicate()[0]
         exitCode = pal_client_process.returncode
