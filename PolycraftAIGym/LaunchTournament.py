@@ -9,6 +9,22 @@ from enum import Enum
 import json
 from subprocess import PIPE
 
+MAX_STEP_COST = 50000
+MAX_TIME = 300
+GAMES = ["../available_tests/hg_nonov.json",
+         # "../available_tests/hg_nonov.json",
+         # "../available_tests/hg_nonov.json",
+         # "../available_tests/hg_nonov.json",
+         # "../available_tests/hg_nonov.json",
+         # "../available_tests/hg_nonov.json",
+         # "../available_tests/hg_nonov.json",
+         # "../available_tests/hg_nonov.json",
+         # "../available_tests/pogo_nonov.json",
+         # "../available_tests/pogo_nonov.json",
+         # "../available_tests/pogo_nonov.json",
+         "../available_tests/pogo_nonov.json",
+         "../available_tests/pogo_nonov.json",
+         ]
 
 class LaunchTournament:
 
@@ -37,9 +53,9 @@ class LaunchTournament:
 
             if data_dict["goal"]["goalAchieved"]:
                 return True
-            if self.total_step_cost > 50000:
+            if self.total_step_cost > MAX_STEP_COST:
                 return True
-            if (time.time() - self.start_time) > 300:
+            if (time.time() - self.start_time) > MAX_TIME:
                 return True
             # if self.commands_sent > 10000:
             #     return True
@@ -75,20 +91,7 @@ class LaunchTournament:
         agent_thread = None
         current_state = State.INIT_PAL
         tournament_in_progress = True
-        games = ["../available_tests/hg_nonov.json",
-                 # "../available_tests/hg_nonov.json",
-                 # "../available_tests/hg_nonov.json",
-                 # "../available_tests/hg_nonov.json",
-                 # "../available_tests/hg_nonov.json",
-                 # "../available_tests/hg_nonov.json",
-                 # "../available_tests/hg_nonov.json",
-                 # "../available_tests/hg_nonov.json",
-                 # "../available_tests/pogo_nonov.json",
-                 # "../available_tests/pogo_nonov.json",
-                 # "../available_tests/pogo_nonov.json",
-                 "../available_tests/pogo_nonov.json",
-                 "../available_tests/pogo_nonov.json",
-                 ]
+
         agent_started = False
         tm_thread = None
         tm_lock = threading.Lock()
@@ -171,7 +174,7 @@ class LaunchTournament:
                     current_state = State.LAUNCH_TOURNAMENT
             elif current_state == State.LAUNCH_TOURNAMENT:
                 if "[Server thread/INFO]: Player" in str(next_line) and " joined the game" in str(next_line):
-                    tm_thread.queue.put("LAUNCH domain " + games[game_index])
+                    tm_thread.queue.put("LAUNCH domain " + GAMES[game_index])
                     self.start_time = time.time()
                     current_state = State.WAIT_FOR_GAME_READY
             elif current_state == State.WAIT_FOR_GAME_READY:
@@ -199,7 +202,7 @@ class LaunchTournament:
                     # TODO: do some reporting here
                     game_index += 1
                     # Check if the tournament is over
-                    if game_index >= len(games):
+                    if game_index >= len(GAMES):
                         # os.kill(pal_client_process.pid, signal.SIGTERM)
                         # tm_thread.join()
                         # os.kill(agent.pid, signal.SIGTERM)
@@ -212,7 +215,7 @@ class LaunchTournament:
                 self.commands_sent = 0
                 self.total_step_cost = 9
                 self.start_time = time.time()
-                tm_thread.queue.put("RESET domain " + games[game_index])
+                tm_thread.queue.put("RESET domain " + GAMES[game_index])
                 current_state = State.DETECT_RESET
             elif current_state == State.DETECT_RESET:
                 if "[EXP] game initialization completed" in str(next_line):
