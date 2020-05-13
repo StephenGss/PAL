@@ -1,8 +1,9 @@
 import subprocess, threading, socket
-import sys
+import sys, os, signal
 import TournamentManager
 import testThread
 import queue
+import time
 from queue import Queue
 from enum import Enum
 import json
@@ -13,13 +14,15 @@ class LaunchTournament:
 
     def __init__(self, args=(), kwargs=None):
         self.commands_sent = 0
+        self.total_step_cost = 0
+        self.start_time = time.time()
 
     def analyze_line(self, line):
         return None
 
     def check_ended(self, line):
         # TODO: Track stepcost to call reset
-        # TODO: Track total reward to call reset
+        # TODO: Track total reward to call reset. Not for dry-run
         # TODO: Track total run time to call reset
         # TODO: Track agent giveup to call reset
         # TODO: Track end condition flag to call reset
@@ -29,10 +32,17 @@ class LaunchTournament:
         if line.find('{') != -1:
             json_text = line[line.find('{'):line.find('\\r\\n')]
             data_dict = json.loads(json_text)
+
+            self.total_step_cost += data_dict["command_result"]["stepCost"]
+
             if data_dict["goal"]["goalAchieved"]:
                 return True
-            if self.commands_sent > 50:
+            if self.total_step_cost > 50000:
                 return True
+            if (time.time() - self.start_time) > 300:
+                return True
+            # if self.commands_sent > 10000:
+            #     return True
 
         return None
 
@@ -66,10 +76,18 @@ class LaunchTournament:
         current_state = State.INIT_PAL
         tournament_in_progress = True
         games = ["../available_tests/hg_nonov.json",
-                 "../available_tests/hg_nonov.json",
-                 "../available_tests/hg_nonov.json",
-                 "../available_tests/hg_nonov.json",
-                 "../available_tests/hg_nonov.json",
+                 # "../available_tests/hg_nonov.json",
+                 # "../available_tests/hg_nonov.json",
+                 # "../available_tests/hg_nonov.json",
+                 # "../available_tests/hg_nonov.json",
+                 # "../available_tests/hg_nonov.json",
+                 # "../available_tests/hg_nonov.json",
+                 # "../available_tests/hg_nonov.json",
+                 # "../available_tests/pogo_nonov.json",
+                 # "../available_tests/pogo_nonov.json",
+                 # "../available_tests/pogo_nonov.json",
+                 "../available_tests/pogo_nonov.json",
+                 "../available_tests/pogo_nonov.json",
                  ]
         agent_started = False
         tm_thread = None
@@ -142,24 +160,22 @@ class LaunchTournament:
             #     print(next_line)
             # sys.stdout.flush()
             # next_line = ""
-            # check if the tournament is over
-            if game_index == len(games):
-                # TODO: TOURNAMENT IS OVER. Do something?
-                tournament_in_progress = False
+
             # wait for PAL to finish initializing. Then call to initialize a game
             if current_state == State.INIT_PAL:
-                if "Minecraft finished loading" in str(next_line):
+                if "[Client thread/INFO] [polycraft]: Minecraft finished loading" in str(next_line):
                     # MInecraft has loaded and we can run the start command. First start up our thread
                     tm_thread = TournamentManager.TournamentThread(queue=queue.Queue(), tm_lock=tm_lock)
                     tm_thread.start()
                     tm_thread.queue.put("START")
-                    current_state = State.INIT_GAME
-            elif current_state == State.INIT_GAME:
-                if "Player" in str(next_line) and " joined the game" in str(next_line):
-                    tm_thread.queue.put("RESET domain " + games[game_index])
+                    current_state = State.LAUNCH_TOURNAMENT
+            elif current_state == State.LAUNCH_TOURNAMENT:
+                if "[Server thread/INFO]: Player" in str(next_line) and " joined the game" in str(next_line):
+                    tm_thread.queue.put("LAUNCH domain " + games[game_index])
+                    self.start_time = time.time()
                     current_state = State.WAIT_FOR_GAME_READY
             elif current_state == State.WAIT_FOR_GAME_READY:
-                if "game initialization completed" in str(next_line):
+                if "[EXP] game initialization completed" in str(next_line):
                     current_state = State.INIT_AGENT
             elif current_state == State.INIT_AGENT:
                 # TODO: initialize AI Agent?
@@ -182,7 +198,11 @@ class LaunchTournament:
                 if self.check_ended(str(next_line)):
                     # TODO: do some reporting here
                     game_index += 1
-                    if game_index == len(games):
+                    # Check if the tournament is over
+                    if game_index >= len(games):
+                        # os.kill(pal_client_process.pid, signal.SIGTERM)
+                        # tm_thread.join()
+                        # os.kill(agent.pid, signal.SIGTERM)
                         tournament_in_progress = False
                         break
                     else:
@@ -190,11 +210,14 @@ class LaunchTournament:
                 self.analyze_line(next_line)
             elif current_state == State.TRIGGER_RESET:
                 self.commands_sent = 0
+                self.total_step_cost = 9
+                self.start_time = time.time()
                 tm_thread.queue.put("RESET domain " + games[game_index])
                 current_state = State.DETECT_RESET
             elif current_state == State.DETECT_RESET:
-                if "game initialization completed" in str(next_line):
+                if "[EXP] game initialization completed" in str(next_line):
                     current_state = State.GAME_LOOP
+
         output = pal_client_process.communicate()[0]
         exitCode = pal_client_process.returncode
 
@@ -204,11 +227,9 @@ class LaunchTournament:
             raise subprocess.CalledProcessError(exitCode, "")
 
 
-
-
 class State(Enum):
     INIT_PAL = 0
-    INIT_GAME = 1
+    LAUNCH_TOURNAMENT = 1
     CLEANUP = 2
     INIT_AGENT = 4
     GAME_LOOP = 5

@@ -1,4 +1,4 @@
-import threading, socket, json
+import threading, socket, json, os
 
 HOST = "127.0.0.1"
 TM_PORT = 9005
@@ -10,7 +10,12 @@ class TournamentThread(threading.Thread):
         self.tm_lock = tm_lock
         self.receive_messages = True
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.connect((HOST, TM_PORT))
+        if 'PAL_TM_PORT' in os.environ:
+            self.sock.connect((HOST, int(os.environ['PAL_TM_PORT'])))
+            print('Using Port: ' + os.environ['PAL_TM_PORT'])
+        else:
+            self.sock.connect((HOST, TM_PORT))
+            print('Using Port: ' + TM_PORT)
 
     def run(self):
         print(threading.currentThread().getName(), self.receive_messages)

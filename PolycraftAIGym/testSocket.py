@@ -1,6 +1,6 @@
 #!/usr/bin/env python
  
-import socket, random, time, json
+import socket, random, time, json, os
  
 HOST = "127.0.0.1"
 PORT = 9000
@@ -10,7 +10,13 @@ movement = ['movenorth', 'movesouth', 'moveeast', 'movewest']
 run = True
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.connect((HOST, PORT))
+if 'PAL_PORT' in os.environ:
+	sock.connect((HOST, int(os.environ['PAL_PORT'])))
+	print('Using Port: ' + os.environ['PAL_PORT'])
+else:
+	sock.connect((HOST, PORT))
+	print('Using Port: ' + str(PORT))
+
 while run:	# main loop
 	userInput = input()
 	if userInput == 'exit':	# wait for user input commands
@@ -45,6 +51,7 @@ while run:	# main loop
 			if len(part) < BUFF_SIZE:
 				# either 0 or end of data
 				break
+		#print(data)
 		data_dict = json.loads(data)
 		print(data_dict)
 sock.close()
