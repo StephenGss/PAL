@@ -11,6 +11,8 @@ from subprocess import PIPE
 
 MAX_STEP_COST = 50000
 MAX_TIME = 300
+AGENT_COMMAND = "py hg_agent.py"
+PAL_COMMAND = "gradlew runclient"
 GAMES = ["../available_tests/hg_nonov.json",
          # "../available_tests/hg_nonov.json",
          # "../available_tests/hg_nonov.json",
@@ -77,7 +79,7 @@ class LaunchTournament:
         # pal_client_process = subprocess.Popen(command, shell=True, cwd='../', stdout=subprocess.PIPE)
 
         # log_pal = open('pal_log.txt', 'w+')
-        pal_client_process = subprocess.Popen("gradlew runclient", shell=True, cwd='../', stdout=subprocess.PIPE,
+        pal_client_process = subprocess.Popen(PAL_COMMAND, shell=True, cwd='../', stdout=subprocess.PIPE,
                                               stdin=subprocess.PIPE)
         agent = None
         q = queue.Queue()
@@ -187,7 +189,7 @@ class LaunchTournament:
                 print("Initializing Agent Thread: python hg_agent.py")
                 # subprocess.run("python hg_agent.py", shell=False)
 
-                agent = subprocess.Popen("py hg_agent.py", shell=True, stdout=subprocess.PIPE,
+                agent = subprocess.Popen(AGENT_COMMAND, shell=True, stdout=subprocess.PIPE,
                                          stdin=subprocess.PIPE)
                 pb_t = threading.Thread(target=self.read_output, args=(agent.stdout, q2))
                 agent_started = True
