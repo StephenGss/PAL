@@ -122,6 +122,7 @@ class LaunchTournament:
                 next_line = q.get(False, timeout=0.1)
                 sys.stdout.write("PAL: ")
                 sys.stdout.write(str(next_line) + "\n")
+                sys.stdout.flush()
             except queue.Empty:
                 pass
 
@@ -131,6 +132,7 @@ class LaunchTournament:
                 # if len(l) > 3:
                 sys.stdout.write("AGENT: ")
                 sys.stdout.write(str(l))
+                sys.stdout.flush()
             except queue.Empty:
                 pass
 
@@ -202,9 +204,13 @@ class LaunchTournament:
                 # check if the game has ended somehow (stepcost, max reward, max runtime, agent gave up, game ended)
                 if self.check_ended(str(next_line)):
                     # TODO: do some reporting here
+                    print("Completed game " + str(game_index))
+                    sys.stdout.flush()
                     game_index += 1
                     # Check if the tournament is over
                     if game_index >= len(GAMES):
+                        print("Tournament Completed: " + str(len(GAMES)) + "games run")
+                        sys.stdout.flush()
                         # os.kill(pal_client_process.pid, signal.SIGTERM)
                         # tm_thread.join()
                         # os.kill(agent.pid, signal.SIGTERM)
