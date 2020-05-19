@@ -15,7 +15,8 @@ class TournamentThread(threading.Thread):
             print('Using Port: ' + os.environ['PAL_TM_PORT'])
         else:
             self.sock.connect((HOST, TM_PORT))
-            print('Using Port: ' + TM_PORT)
+            print('Using Port: ' + str(TM_PORT))
+
 
     def run(self):
         print(threading.currentThread().getName(), self.receive_messages)

@@ -1,6 +1,6 @@
 import subprocess, threading, socket
 import sys
-import TournamentManager
+from PolycraftAIGym import TournamentManager
 import queue
 
 HOST = "127.0.0.1"

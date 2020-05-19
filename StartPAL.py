@@ -1,6 +1,6 @@
 import subprocess, threading, socket
 import sys
-import TournamentManager
+from PolycraftAIGym import TournamentManager
 import testThread
 import queue
 from queue import Queue
