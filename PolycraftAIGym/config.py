@@ -1,19 +1,29 @@
-MAX_STEP_COST = 5000
-MAX_TIME = 30
-AGENT_COMMAND = "py hg_agent.py"
-AGENT_COMMAND_UNIX = "python hg_agent.py"
+MAX_STEP_COST = 30000
+MAX_TIME = 45
+_AGENT_SCRIPT = "hg_agent.py"
+# _AGENT_SCRIPT = "../private_tests/DO_Sarsa_Agent/DO_Pogo_Coordinator.py"
+# _AGENT_SCRIPT = "1_python_miner_RL_7_trained_2_DN_EDITS.py"
+# AGENT_DIRECTORY = "../private_tests/Naive_pogo_agent/trained_pogo_agent2/"
+AGENT_DIRECTORY = "./"
+
+AGENT_COMMAND = f"py {_AGENT_SCRIPT}"
+AGENT_COMMAND_UNIX = f"python {_AGENT_SCRIPT}"
 PAL_COMMAND = "gradlew runclient"
 PAL_COMMAND_UNIX = "/bin/sh gradlew runclient"
 GAMES = [
+         # "../available_tests/hg_nonov.json",
+         # "../available_tests/hg_nonov.json",
          "../available_tests/hg_nonov.json",
          "../available_tests/hg_nonov.json",
          "../available_tests/hg_nonov.json",
-         # "../available_tests/hg_nonov.json",
-         # "../available_tests/hg_nonov.json",
-         # "../available_tests/hg_nonov.json",
+         "../available_tests/hg_nonov.json",
          # "../available_tests/hg_nonov.json",
          # "../available_tests/hg_nonov.json",
          # "../available_tests/pogo_nonov.json",
+         # "../available_tests/pogo_nov_lvl-0_type-2.json",
+         # "../available_tests/pogo_nov_lvl-0_type-2.json",
+         # "../available_tests/pogo_nov_lvl-1_type-1.json",
+         # "../available_tests/pogo_nov_lvl-1_type-1.json",
          # "../available_tests/pogo_nonov.json",
          # "../available_tests/pogo_nonov.json",
          # "../available_tests/pogo_nonov.json",
