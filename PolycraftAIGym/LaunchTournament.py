@@ -243,7 +243,8 @@ class LaunchTournament:
         #output = self.pal_client_process.communicate()[0]
         exitCode = self.pal_client_process.returncode
 
-        if exitCode == 0:
+        # TODO: Safe to remove? Not sure how this is helpful.
+        if exitCode == 0 or exitCode is None:
             return
         else:
             raise subprocess.CalledProcessError(exitCode, "")
