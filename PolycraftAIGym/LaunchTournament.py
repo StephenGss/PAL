@@ -262,9 +262,9 @@ class LaunchTournament:
     def _tournament_completed(self):
         self.debug_log.message("Tournament Completed: " + str(len(self.games)) + "games run")
         sys.stdout.flush()
+        os.kill(self.agent.pid, signal.SIGTERM)
         os.kill(self.pal_client_process.pid, signal.SIGTERM)
         self.tm_thread.join()
-        os.kill(self.agent.pid, signal.SIGTERM)
         self.tournament_in_progress = False
 
     def _trigger_reset(self):
