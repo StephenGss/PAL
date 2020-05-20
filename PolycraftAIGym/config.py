@@ -1,5 +1,5 @@
-MAX_STEP_COST = 50000
-MAX_TIME = 300
+MAX_STEP_COST = 5000
+MAX_TIME = 30
 AGENT_COMMAND = "py hg_agent.py"
 AGENT_COMMAND_UNIX = "python hg_agent.py"
 PAL_COMMAND = "gradlew runclient"

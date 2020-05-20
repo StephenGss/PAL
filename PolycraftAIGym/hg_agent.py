@@ -74,6 +74,12 @@ command_stream = [
 reset = False
 
 while True:
+    loop_commands = command_stream
+    if reset:
+        ## Wait for server to reset
+        loop_commands = ["smooth_move w", "smooth_move x"]
+
+
     for command in command_stream:
         sock.send(str.encode(command + '\n'))
         print(command)
@@ -85,8 +91,20 @@ while True:
             if len(part) < BUFF_SIZE:
                 # either 0 or end of data
                 break
-        data_dict = json.loads(data)
-        print(data_dict)
+        if data is not None:
+            try:
+                data_dict = json.loads(data)
+                print(data_dict)
+                if reset: #Check to see
+                    if 'command_result' in data_dict:
+                        if 'result' in data_dict['command_result']:
+                            if data_dict['command_result']['result'] == 'SUCCESS':
+                                reset = False
+                if data_dict['gameOver'] == 'True':
+                    reset = True
+            except ValueError:
+                pass #just keep going otherwise.
+
         time.sleep(0.1)
 
 sock.close()
