@@ -101,16 +101,25 @@ class LaunchTournament:
             data_dict = json.loads(json_text)
             self.commands_sent += 1
             self.total_step_cost += data_dict["command_result"]["stepCost"]
-            self.score_dict.update({'elapsed_time': time.time() - self.start_time})
+            self.score_dict[self.game_index].update({'elapsed_time': time.time() - self.start_time})
 
             if data_dict["goal"]["goalAchieved"]:
-                self.debug_log.message("Game Over: Goal Achieved")
+                msg = 'Goal Achieved'
+                self.debug_log.message(f"Game Over: {msg}")
+                self.score_dict[self.game_index]['success'] = 'True'
+                self.score_dict[self.game_index]['success_detail'] = msg
                 return True
             if self.total_step_cost > CONFIG.MAX_STEP_COST:
-                self.debug_log.message("Game Over: total step cost exceeded limit")
+                msg = "total step cost exceeded limit"
+                self.debug_log.message(f"Game Over: {msg}")
+                self.score_dict[self.game_index]['success'] = 'False'
+                self.score_dict[self.game_index]['success_detail'] = msg
                 return True
-            if self.score_dict['elapsed_time'] > CONFIG.MAX_TIME:
-                self.debug_log.message("Game Over: time exceeded limit")
+            if self.score_dict[self.game_index]['elapsed_time'] > CONFIG.MAX_TIME:
+                msg = 'time exceeded limit'
+                self.debug_log.message(f"Game Over: {msg}")
+                self.score_dict[self.game_index]['success'] = 'False'
+                self.score_dict[self.game_index]['success_detail'] = msg
                 return True
             # if self.commands_sent > 10000:
             #     return True
@@ -190,9 +199,7 @@ class LaunchTournament:
             # Wait for player to join launched tournament
             elif self.current_state == State.LAUNCH_TOURNAMENT:
                 if "[Server thread/INFO]: Player" in str(next_line) and " joined the game" in str(next_line):
-                    self.tm_thread.queue.put("LAUNCH domain " + self.games[self.game_index])
-                    self.debug_log.message("LAUNCH domain command issued")
-                    self.start_time = time.time()
+                    self._start_next_game()
                     self.current_state = State.WAIT_FOR_GAME_READY
 
             # Wait for all entities to load
@@ -275,6 +282,7 @@ class LaunchTournament:
     def _game_over(self):
         """
         Game over cleanup method
+        Update game index here.
         """
         self.debug_log.message("Completed game " + str(self.game_index))
         self.debug_log.message(f"Final Score: {str(self.score_dict)}")
@@ -303,10 +311,7 @@ class LaunchTournament:
         """
         self.commands_sent = 0
         self.total_step_cost = 9
-        self.score_dict = {}
-        self.start_time = time.time()
-        self.tm_thread.queue.put("RESET domain " + self.games[self.game_index])
-        self.debug_log.message("RESET domain command sent to tm_thread.")
+        self._start_next_game()
 
     def _record_score(self, line):
         """
@@ -318,7 +323,23 @@ class LaunchTournament:
             line_end_str = '\\n'
         if line.find('[SCORE]') != -1 and line.find(line_end_str) != -1:
             score_string = line[line.find('[SCORE]')+7:line.find(line_end_str)]
-            self.score_dict.update({v[0]: v[1] for v in [k.split(':') for k in score_string.split(',')]})
+            self.score_dict[self.game_index].update({v[0]: v[1] for v in [k.split(':') for k in score_string.split(',')]})
+
+    def _start_next_game(self):
+        """
+        Launch the next game
+        Initialize the score_dict variable for the next game.
+        :return:
+        """
+        if self.game_index == 0:
+            self.tm_thread.queue.put("LAUNCH domain " + self.games[self.game_index])
+            self.debug_log.message("LAUNCH domain command issued")
+        else:
+            self.tm_thread.queue.put("RESET domain " + self.games[self.game_index])
+            self.debug_log.message("RESET domain command sent to tm_thread.")
+        self.start_time = time.time()
+        self.score_dict[self.game_index] = {}
+        self.score_dict[self.game_index]['game_path'] = self.games[self.game_index]
 
 
 
