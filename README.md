@@ -44,6 +44,7 @@
     * set the current working directory to PAL/PolycraftAIGym/
     * If your Operating System is __Windows__, Modify PAL/PolycraftAIGym/LaunchTournament.py's if __name__ == __main__(): function (found at the very bottom) as follows:
         * pal = LaunchTournament('WIN')
+        * passing in "MACOS" or "UNIX" (both behave the same) will run the _UNIX version of the agent command and PAL command in the CONFIG file as well as tweak the expectations for line endings to not have carriage returns
 * Run PAL -> PolycraftAIGym -> LaunchTournament.py
 
 ## Interacting with Polycraft AI Lab, platform independent
