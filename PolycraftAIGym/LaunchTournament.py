@@ -1,7 +1,6 @@
 import subprocess, threading, socket
 import sys, os, signal
-from PolycraftAIGym import TournamentManager
-from PolycraftAIGym import PalMessenger
+from PolycraftAIGym import TournamentManager, PalMessenger, AzureConnectionService
 import testThread
 from pathlib import Path
 import queue
@@ -11,6 +10,7 @@ import json
 import PolycraftAIGym.config as CONFIG
 from subprocess import PIPE
 import re
+
 
 
 class LaunchTournament:
@@ -41,7 +41,9 @@ class LaunchTournament:
 
         ##Logging
         # self.log_port_activity = True
-        log_port_file = Path(log_dir) / "port_log_{}".format(PalMessenger.PalMessenger.time_now_str())
+        log_dir += f"{PalMessenger.PalMessenger.time_now_str()}/"
+        log_port_file = Path(log_dir) / "PAL_log_{}".format(PalMessenger.PalMessenger.time_now_str())
+        agent_port_file = Path(log_dir) / "Agent_log_{}".format(PalMessenger.PalMessenger.time_now_str())
         log_debug_file = Path(log_dir) / "debug_log_{}".format(PalMessenger.PalMessenger.time_now_str())
         # log_port_file = Path(log_dir) / "port_log.txt"  # This file won't be used; see issue_reset()
         sent_print_bool = False          # PAL commands are short enough to put in the console
@@ -53,7 +55,7 @@ class LaunchTournament:
         # junk_print_bool = False         # For not useful stuff, retain the option to change my mind
         # junk_log_write_bool = False     # No need to keep it though
         # # I recognize that some utility like logging may be better, but whatever:
-        self.agent_log = PalMessenger.PalMessenger(sent_print_bool, sent_log_write_bool, log_port_file, log_note="AGENT: ")
+        self.agent_log = PalMessenger.PalMessenger(sent_print_bool, sent_log_write_bool, agent_port_file, log_note="AGENT: ")
         self.PAL_log = PalMessenger.PalMessenger(recd_print_bool, recd_log_write_bool, log_port_file, log_note="PAL: ")
         # self.junk_log = PalMessenger(junk_print_bool, junk_log_write_bool, log_note="JUNK: ")
         self.debug_log = PalMessenger.PalMessenger(debug_print_bool, debug_log_write_bool, log_debug_file,  log_note="DEBUG: ")
@@ -303,6 +305,10 @@ class LaunchTournament:
         self.tm_thread.kill()
         self.tm_thread.join(5)
         self.tournament_in_progress = False
+        azure = AzureConnectionService.AzureConnectionService(self.debug_log)
+        azure.upload_pal_messenger_logs(self.agent_log)
+        azure.upload_pal_messenger_logs(self.PAL_log)
+        azure.upload_pal_messenger_logs(self.debug_log)
 
     def _trigger_reset(self):
         """
