@@ -33,6 +33,19 @@
 		* Agents that will use SENSE_SCREEN must have systems with video cards
 		* Other agents may be able to run on these systems, but solutions to this issue are based on your local configuration.
 
+## Launching the TournamentManager
+* modify the following params in PAL/PolycraftAIGym/config.py
+    * _AGENT_SCRIPT= {filename of the agent script to be executed}
+    * AGENT_DIRECTORY= {relative or absolute filepath to the folder containing AGENT_SCRIPT. This also acts as the working directory for the Agent Script}
+    * AGENT_COMMAND= {command to be executed to launch the Agent Script after changing the working directory to AGENT_DIRECTORY. Note that this command is executed in Windows environments}
+    * AGENT_COMMAND_UNIX= {Command to be executed in a unix environment}
+    * GAMES= {adjust the list of games to point to the test json games you want to run in your tournament}
+* Configure the runtime environment as follows:
+    * set the current working directory to PAL/PolycraftAIGym/
+    * If your Operating System is __Windows__, Modify PAL/PolycraftAIGym/LaunchTournament.py's if __name__ == __main__(): function (found at the very bottom) as follows:
+        * pal = LaunchTournament('WIN')
+* Run PAL -> PolycraftAIGym -> LaunchTournament.py
+
 ## Interacting with Polycraft AI Lab, platform independent
 * Run PAL -> PolycraftAIGym -> testSocket.py
 	* Python is available at python.org. It is not required to run or connect to PAL, but it is required to run the demo script.
