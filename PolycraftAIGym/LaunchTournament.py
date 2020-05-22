@@ -1,13 +1,13 @@
 import subprocess, threading, socket
 import sys, os, signal
-from PolycraftAIGym import TournamentManager, PalMessenger, AzureConnectionService
+import TournamentManager, PalMessenger, AzureConnectionService
 import testThread
 from pathlib import Path
 import queue
 import time
 from enum import Enum
 import json
-import PolycraftAIGym.config as CONFIG
+import config as CONFIG
 from subprocess import PIPE
 import re
 

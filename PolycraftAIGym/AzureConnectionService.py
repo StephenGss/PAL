@@ -4,10 +4,10 @@ from azure.cosmosdb.table.models import Entity
 from os import path
 import re
 import pyodbc
-import PolycraftAIGym.config as CONFIG
+import config as CONFIG
 from collections import OrderedDict
 import distutils, distutils.util
-from PolycraftAIGym.PalMessenger import PalMessenger
+from PalMessenger import PalMessenger
 from azure.core.exceptions import ServiceRequestError, ServiceRequestTimeoutError, ServiceResponseError
 import configparser
 
