@@ -40,6 +40,32 @@ class LaunchTournament:
             self.agent_process_cmd = CONFIG.AGENT_COMMAND
             self.pal_process_cmd = CONFIG.PAL_COMMAND
 
+        ##Logging
+        # self.log_port_activity = True
+        log_dir += f"{PalMessenger.PalMessenger.time_now_str()}/"
+        log_port_file = Path(log_dir) / "PAL_log_{}".format(PalMessenger.PalMessenger.time_now_str())
+        agent_port_file = Path(log_dir) / "Agent_log_{}".format(PalMessenger.PalMessenger.time_now_str())
+        log_debug_file = Path(log_dir) / "debug_log_{}".format(PalMessenger.PalMessenger.time_now_str())
+        log_speed_file = Path(log_dir) / "speed_log_{}".format(PalMessenger.PalMessenger.time_now_str())
+        # log_port_file = Path(log_dir) / "port_log.txt"  # This file won't be used; see issue_reset()
+        sent_print_bool = False          # PAL commands are short enough to put in the console
+        sent_log_write_bool = True      # Log everything sent to the port to a text file
+        recd_print_bool = False         # PAL responses are often long and ungainly; no need to print them
+        recd_log_write_bool = True      # Log everything that comes from the port to a text file
+        debug_print_bool = True         # For useful stuff, send it to the console
+        debug_log_write_bool = True     # For now, log all debug data to another text file.
+        speed_print_bool = True         # For useful stuff, send it to the console
+        speed_log_write_bool = True     # For now, log all debug data to another text file.
+        # junk_print_bool = False         # For not useful stuff, retain the option to change my mind
+        # junk_log_write_bool = False     # No need to keep it though
+        # # I recognize that some utility like logging may be better, but whatever:
+        self.agent_log = PalMessenger.PalMessenger(sent_print_bool, sent_log_write_bool, agent_port_file, log_note="AGENT: ")
+        self.PAL_log = PalMessenger.PalMessenger(recd_print_bool, recd_log_write_bool, log_port_file, log_note="PAL: ")
+        # self.junk_log = PalMessenger(junk_print_bool, junk_log_write_bool, log_note="JUNK: ")
+        self.debug_log = PalMessenger.PalMessenger(debug_print_bool, debug_log_write_bool, log_debug_file,  log_note="DEBUG: ")
+        self.speed_log = PalMessenger.PalMessenger(speed_print_bool, speed_log_write_bool, log_speed_file,  log_note="FPS: ")
+
+
         ## Tournament Data
         self.agent = None
         self.q = queue.Queue()
@@ -156,14 +182,14 @@ class LaunchTournament:
 
         # write output from procedure A (if there is any)
         try:
-            next_line = self.q.get(False, timeout=0.1)
+            next_line = self.q.get(False, timeout=0.025)
             self.PAL_log.message(str(next_line))
         except queue.Empty:
             pass
 
         # write output from procedure B (if there is any)
         try:
-            l = self.q2.get(False, timeout=0.1)
+            l = self.q2.get(False, timeout=0.025)
             self.agent_log.message(str(l))
         except queue.Empty:
             pass
@@ -235,6 +261,7 @@ class LaunchTournament:
                 if self._check_ended(str(next_line)):
                     # TODO: do some reporting here
                     self.debug_log.message("Game has ended.")
+                    self.speed_log.message(str(self.game_index) + ": " + str(self.commands_sent/(time.time() - self.start_time)))
                     self._game_over()
 
                     # Check if the tournament is over
@@ -325,7 +352,11 @@ class LaunchTournament:
         self.tm_thread.kill()
         self.tm_thread.join(5)
         self.tournament_in_progress = False
-
+        azure = AzureConnectionService.AzureConnectionService(self.debug_log)
+        # azure.upload_pal_messenger_logs(self.agent_log)
+        # azure.upload_pal_messenger_logs(self.PAL_log)
+        # azure.upload_pal_messenger_logs(self.debug_log)
+        azure.upload_pal_messenger_logs(self.speed_log)
 
     def _trigger_reset(self):
         """
@@ -405,5 +436,5 @@ class State(Enum):
     DETECT_RESET = 9
 
 if __name__ == "__main__":
-    pal = LaunchTournament('MACOS')
+    pal = LaunchTournament(os='UNIX')
     pal.execute()
