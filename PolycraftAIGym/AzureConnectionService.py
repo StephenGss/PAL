@@ -112,6 +112,12 @@ class AzureConnectionService:
                 self.debug_log.message(f"Error! Scores not sent: {str(e)}")
 
     def _update_log_entry(self, game_id, logType, path):
+        """
+        Update the SQL Results Table to add the Blob URL for a specific log that was successfully uploaded
+        :param game_id: Game ID of the log being uploaded
+        :param logType: Log Type of the log (to ensure that the right column in the table gets updated)
+        :param path: BLOB URL of the Log
+        """
         if self.configs is None:
             return None
 
@@ -122,8 +128,10 @@ class AzureConnectionService:
         elif "pal" in logType.lower():
             var_to_adjust = 'Pal_Log_Blob_URL'
         else:
-            raise ValueError("Bad Log Type!")
+            self.debug_log.message(f"Unknown Log Type. Schema Update for DB may be required: {logType}")
+            return None
 
+        # Using the ? approach automatically escapes strings to be "SQL" safe. Would recommend! :)
         self.cursor.execute(f"""
             UPDATE RESULTS_TEST
             SET {var_to_adjust} = ?
@@ -135,6 +143,14 @@ class AzureConnectionService:
         self.sql_connection.commit()
 
     def upload_pal_messenger_logs(self, palMessenger, game_id, log_type, container=None):
+        """
+        Uploads the Log to the Azure Blob.
+        :param palMessenger: log to upload
+        :param game_id: game for this log - used to update the SQL results entry with the log's blob URL
+        :param log_type: used the update the SQL result_score entry, ensuring URL is assigned to the right log type
+        :param container: container in Azure to upload the blob (default is log-container)
+
+        """
         uploaded_path = self.upload_game_log(palMessenger.log_file, game_id, container)
         if uploaded_path is not None:
             self._update_log_entry(game_id, log_type, uploaded_path)
@@ -145,6 +161,7 @@ class AzureConnectionService:
         Acquire the SecretKey from AzureStorage, if needed
         TODO: Confirm that this works on Windows
         :param filepath: PosixPath object containing a path to the file. use filepath.name to get the file name
+        :param game_id: ID of game being uploaded. Used as part of the blob file name to uniquely ID the log.
         :param container: name of container to be uploaded to. If None, defaults to using self.container_name
         :return: True if a file was successfully uploaded to the Azure Blob. False otherwise.
         """

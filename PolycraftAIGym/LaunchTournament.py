@@ -40,32 +40,6 @@ class LaunchTournament:
             self.agent_process_cmd = CONFIG.AGENT_COMMAND
             self.pal_process_cmd = CONFIG.PAL_COMMAND
 
-        ##Logging
-        # self.log_port_activity = True
-        log_dir += f"{PalMessenger.PalMessenger.time_now_str()}/"
-        log_port_file = Path(log_dir) / "PAL_log_{}".format(PalMessenger.PalMessenger.time_now_str())
-        agent_port_file = Path(log_dir) / "Agent_log_{}".format(PalMessenger.PalMessenger.time_now_str())
-        log_debug_file = Path(log_dir) / "debug_log_{}".format(PalMessenger.PalMessenger.time_now_str())
-        log_speed_file = Path(log_dir) / "speed_log_{}".format(PalMessenger.PalMessenger.time_now_str())
-        # log_port_file = Path(log_dir) / "port_log.txt"  # This file won't be used; see issue_reset()
-        sent_print_bool = False          # PAL commands are short enough to put in the console
-        sent_log_write_bool = True      # Log everything sent to the port to a text file
-        recd_print_bool = False         # PAL responses are often long and ungainly; no need to print them
-        recd_log_write_bool = True      # Log everything that comes from the port to a text file
-        debug_print_bool = True         # For useful stuff, send it to the console
-        debug_log_write_bool = True     # For now, log all debug data to another text file.
-        speed_print_bool = True         # For useful stuff, send it to the console
-        speed_log_write_bool = True     # For now, log all debug data to another text file.
-        # junk_print_bool = False         # For not useful stuff, retain the option to change my mind
-        # junk_log_write_bool = False     # No need to keep it though
-        # # I recognize that some utility like logging may be better, but whatever:
-        self.agent_log = PalMessenger.PalMessenger(sent_print_bool, sent_log_write_bool, agent_port_file, log_note="AGENT: ")
-        self.PAL_log = PalMessenger.PalMessenger(recd_print_bool, recd_log_write_bool, log_port_file, log_note="PAL: ")
-        # self.junk_log = PalMessenger(junk_print_bool, junk_log_write_bool, log_note="JUNK: ")
-        self.debug_log = PalMessenger.PalMessenger(debug_print_bool, debug_log_write_bool, log_debug_file,  log_note="DEBUG: ")
-        self.speed_log = PalMessenger.PalMessenger(speed_print_bool, speed_log_write_bool, log_speed_file,  log_note="FPS: ")
-
-
         ## Tournament Data
         self.agent = None
         self.q = queue.Queue()
@@ -100,6 +74,7 @@ class LaunchTournament:
         log_port_file = Path(log_dir) / f"PAL_log_game_{self.game_index}_{PalMessenger.PalMessenger.time_now_str()}"
         agent_port_file = Path(log_dir) / f"Agent_log_game_{self.game_index}_{PalMessenger.PalMessenger.time_now_str()}"
         log_debug_file = Path(log_dir) / f"Debug_log_game_{self.game_index}_{PalMessenger.PalMessenger.time_now_str()}"
+        log_speed_file = Path(log_dir) / f"speed_log_game_{self.game_index}_{PalMessenger.PalMessenger.time_now_str()}"
         # log_port_file = Path(log_dir) / "port_log.txt"  # This file won't be used; see issue_reset()
         sent_print_bool = False  # PAL commands are short enough to put in the console
         sent_log_write_bool = True  # Log everything sent to the port to a text file
@@ -107,6 +82,8 @@ class LaunchTournament:
         recd_log_write_bool = True  # Log everything that comes from the port to a text file
         debug_print_bool = True  # For useful stuff, send it to the console
         debug_log_write_bool = True  # For now, log all debug data to another text file.
+        speed_print_bool = True         # For useful stuff, send it to the console
+        speed_log_write_bool = True     # For now, log all debug data to another text file.
 
         # # I recognize that some utility like logging may be better, but whatever:
         self.agent_log = PalMessenger.PalMessenger(sent_print_bool, sent_log_write_bool, agent_port_file,
@@ -115,6 +92,8 @@ class LaunchTournament:
         # self.junk_log = PalMessenger(junk_print_bool, junk_log_write_bool, log_note="JUNK: ")
         self.debug_log = PalMessenger.PalMessenger(debug_print_bool, debug_log_write_bool, log_debug_file,
                                                    log_note="DEBUG: ")
+        self.speed_log = PalMessenger.PalMessenger(speed_print_bool, speed_log_write_bool, log_speed_file,
+                                                   log_note="FPS: ")
 
     def _check_ended(self, line):
         """
@@ -259,7 +238,7 @@ class LaunchTournament:
 
                 # check if the game has ended somehow (stepcost, max reward, max runtime, agent gave up, game ended)
                 if self._check_ended(str(next_line)):
-                    # TODO: do some reporting here
+                    # noTODO: do some reporting here -- completed
                     self.debug_log.message("Game has ended.")
                     self.speed_log.message(str(self.game_index) + ": " + str(self.commands_sent/(time.time() - self.start_time)))
                     self._game_over()
@@ -321,7 +300,8 @@ class LaunchTournament:
     def _game_over(self):
         """
         Game over cleanup method
-        Update game index here.
+        At game end, upload game logs to Blob and record scores in the SQL server
+
         """
         self.debug_log.message("Completed game " + str(self.game_index))
         self.debug_log.message(f"Final Score: {str(self.score_dict)}")
@@ -334,7 +314,7 @@ class LaunchTournament:
             azure.upload_pal_messenger_logs(palMessenger=self.agent_log, log_type="agent", game_id=self.game_index)
             azure.upload_pal_messenger_logs(palMessenger=self.PAL_log, log_type="pal", game_id=self.game_index)
             azure.upload_pal_messenger_logs(palMessenger=self.debug_log, log_type="debug", game_id=self.game_index)
-
+            azure.upload_pal_messenger_logs(palMessenger=self.speed_log, log_type='speed', game_id=self.game_index)
         self.game_index += 1
         self._create_logs()
 
@@ -352,11 +332,6 @@ class LaunchTournament:
         self.tm_thread.kill()
         self.tm_thread.join(5)
         self.tournament_in_progress = False
-        azure = AzureConnectionService.AzureConnectionService(self.debug_log)
-        # azure.upload_pal_messenger_logs(self.agent_log)
-        # azure.upload_pal_messenger_logs(self.PAL_log)
-        # azure.upload_pal_messenger_logs(self.debug_log)
-        azure.upload_pal_messenger_logs(self.speed_log)
 
     def _trigger_reset(self):
         """
