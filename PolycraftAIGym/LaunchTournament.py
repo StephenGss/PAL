@@ -31,6 +31,7 @@ class LaunchTournament:
         self.total_step_cost = 0
         self.start_time = time.time()
         self.games = CONFIG.GAMES
+        self.log_dir = log_dir + f"{PalMessenger.PalMessenger.time_now_str()}/"
         self.SYS_FLAG = os  # Change behavior based on SYS FLAG when executing gradlew
         if 'MACOS' in self.SYS_FLAG.upper() or 'UNIX' in self.SYS_FLAG.upper():
             self.agent_process_cmd = CONFIG.AGENT_COMMAND_UNIX
@@ -38,28 +39,6 @@ class LaunchTournament:
         else:
             self.agent_process_cmd = CONFIG.AGENT_COMMAND
             self.pal_process_cmd = CONFIG.PAL_COMMAND
-
-        ##Logging
-        # self.log_port_activity = True
-        log_dir += f"{PalMessenger.PalMessenger.time_now_str()}/"
-        log_port_file = Path(log_dir) / "PAL_log_{}".format(PalMessenger.PalMessenger.time_now_str())
-        agent_port_file = Path(log_dir) / "Agent_log_{}".format(PalMessenger.PalMessenger.time_now_str())
-        log_debug_file = Path(log_dir) / "debug_log_{}".format(PalMessenger.PalMessenger.time_now_str())
-        # log_port_file = Path(log_dir) / "port_log.txt"  # This file won't be used; see issue_reset()
-        sent_print_bool = False          # PAL commands are short enough to put in the console
-        sent_log_write_bool = True      # Log everything sent to the port to a text file
-        recd_print_bool = False         # PAL responses are often long and ungainly; no need to print them
-        recd_log_write_bool = True      # Log everything that comes from the port to a text file
-        debug_print_bool = True         # For useful stuff, send it to the console
-        debug_log_write_bool = True     # For now, log all debug data to another text file.
-        # junk_print_bool = False         # For not useful stuff, retain the option to change my mind
-        # junk_log_write_bool = False     # No need to keep it though
-        # # I recognize that some utility like logging may be better, but whatever:
-        self.agent_log = PalMessenger.PalMessenger(sent_print_bool, sent_log_write_bool, agent_port_file, log_note="AGENT: ")
-        self.PAL_log = PalMessenger.PalMessenger(recd_print_bool, recd_log_write_bool, log_port_file, log_note="PAL: ")
-        # self.junk_log = PalMessenger(junk_print_bool, junk_log_write_bool, log_note="JUNK: ")
-        self.debug_log = PalMessenger.PalMessenger(debug_print_bool, debug_log_write_bool, log_debug_file,  log_note="DEBUG: ")
-
 
         ## Tournament Data
         self.agent = None
@@ -80,6 +59,36 @@ class LaunchTournament:
 
         ## Results
         self.score_dict = {}
+
+        ##Logging
+        self._create_logs()
+
+    def _create_logs(self):
+        """
+        Creates the log file handlers
+        Re-run after each game to separate the log files appropriately.
+        :return:
+        """
+        # self.log_port_activity = True
+        log_dir = self.log_dir
+        log_port_file = Path(log_dir) / f"PAL_log_game_{self.game_index}_{PalMessenger.PalMessenger.time_now_str()}"
+        agent_port_file = Path(log_dir) / f"Agent_log_game_{self.game_index}_{PalMessenger.PalMessenger.time_now_str()}"
+        log_debug_file = Path(log_dir) / f"Debug_log_game_{self.game_index}_{PalMessenger.PalMessenger.time_now_str()}"
+        # log_port_file = Path(log_dir) / "port_log.txt"  # This file won't be used; see issue_reset()
+        sent_print_bool = False  # PAL commands are short enough to put in the console
+        sent_log_write_bool = True  # Log everything sent to the port to a text file
+        recd_print_bool = False  # PAL responses are often long and ungainly; no need to print them
+        recd_log_write_bool = True  # Log everything that comes from the port to a text file
+        debug_print_bool = True  # For useful stuff, send it to the console
+        debug_log_write_bool = True  # For now, log all debug data to another text file.
+
+        # # I recognize that some utility like logging may be better, but whatever:
+        self.agent_log = PalMessenger.PalMessenger(sent_print_bool, sent_log_write_bool, agent_port_file,
+                                                   log_note="AGENT: ")
+        self.PAL_log = PalMessenger.PalMessenger(recd_print_bool, recd_log_write_bool, log_port_file, log_note="PAL: ")
+        # self.junk_log = PalMessenger(junk_print_bool, junk_log_write_bool, log_note="JUNK: ")
+        self.debug_log = PalMessenger.PalMessenger(debug_print_bool, debug_log_write_bool, log_debug_file,
+                                                   log_note="DEBUG: ")
 
     def _check_ended(self, line):
         """
@@ -220,6 +229,7 @@ class LaunchTournament:
 
                 # Update the score_dict
                 self._record_score(str(next_line))
+                self._check_novelty(str(next_line))
 
                 # check if the game has ended somehow (stepcost, max reward, max runtime, agent gave up, game ended)
                 if self._check_ended(str(next_line)):
@@ -289,7 +299,17 @@ class LaunchTournament:
         self.debug_log.message("Completed game " + str(self.game_index))
         self.debug_log.message(f"Final Score: {str(self.score_dict)}")
         sys.stdout.flush()
+        self.score_dict[self.game_index]['endTime'] = PalMessenger.PalMessenger.time_now_str()
+
+        azure = AzureConnectionService.AzureConnectionService(self.debug_log)
+        if azure.is_connected():
+            azure.send_score_to_azure(score_dict=self.score_dict, game_id=self.game_index)
+            azure.upload_pal_messenger_logs(palMessenger=self.agent_log, log_type="agent", game_id=self.game_index)
+            azure.upload_pal_messenger_logs(palMessenger=self.PAL_log, log_type="pal", game_id=self.game_index)
+            azure.upload_pal_messenger_logs(palMessenger=self.debug_log, log_type="debug", game_id=self.game_index)
+
         self.game_index += 1
+        self._create_logs()
 
 
     def _tournament_completed(self):
@@ -305,10 +325,7 @@ class LaunchTournament:
         self.tm_thread.kill()
         self.tm_thread.join(5)
         self.tournament_in_progress = False
-        azure = AzureConnectionService.AzureConnectionService(self.debug_log)
-        azure.upload_pal_messenger_logs(self.agent_log)
-        azure.upload_pal_messenger_logs(self.PAL_log)
-        azure.upload_pal_messenger_logs(self.debug_log)
+
 
     def _trigger_reset(self):
         """
@@ -318,6 +335,19 @@ class LaunchTournament:
         self.commands_sent = 0
         self.total_step_cost = 9
         self._start_next_game()
+
+    def _check_novelty(self, line):
+        """
+        Checks to see if the agent reported that Novelty was Detected
+        :param line: Current Line in STDOUT
+        """
+        line_end_str = '\\r\\n'
+        if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
+            line_end_str = '\\n'
+        if line.find('[REPORT_NOVELTY]') != -1 and line.find(line_end_str) != -1:
+            self.score_dict[self.game_index]['noveltyDetect'] = 1
+            self.score_dict[self.game_index]['noveltyDetectStep'] = self.score_dict[self.game_index]['step']
+            self.score_dict[self.game_index]['noveltyDetectTime'] = PalMessenger.PalMessenger.time_now_str()
 
     def _record_score(self, line):
         """
@@ -335,6 +365,9 @@ class LaunchTournament:
         """
         Launch the next game
         Initialize the score_dict variable for the next game.
+
+        # TODO: Flag games that have novelty!
+        TODO: Flag games where we communicate to agent that novelty exists!
         :return:
         """
         if self.game_index == 0:
@@ -346,6 +379,17 @@ class LaunchTournament:
         self.start_time = time.time()
         self.score_dict[self.game_index] = {}
         self.score_dict[self.game_index]['game_path'] = self.games[self.game_index]
+        self.score_dict[self.game_index]['startTime'] = PalMessenger.PalMessenger.time_now_str()
+
+        # TODO: Update this.
+        self.score_dict[self.game_index]['novelty'] = 0
+        self.score_dict[self.game_index]['groundTruth'] = 0
+
+        #initialize vars - TODO: make a defaultDict? Not sure if possible.
+        self.score_dict[self.game_index]['noveltyDetectStep'] = 0
+        self.score_dict[self.game_index]['noveltyDetectTime'] = 0
+        self.score_dict[self.game_index]['noveltyDetect'] = 0
+
 
 
 
