@@ -1,4 +1,4 @@
-import json, random, os, errno, sys, getopt
+import json, random, os, errno, sys, getopt, shutil
 
 
 class HGLvl0Generator:
@@ -84,7 +84,8 @@ class HGLvl0Generator:
         # write new experiment config file
         with open(self.output + '/' + self.output_name + '-' + str(self.seed) + '.json', 'w') as json_file:
             json.dump(expDef, json_file, indent=4, sort_keys=True)
-
+        # copy over map data as well
+        shutil.copy(self.template_path + '2', self.output + '/' + self.output_name + '-' + str(self.seed) + '.json2')
 
 if __name__ == "__main__":
     argv = sys.argv[1:]
