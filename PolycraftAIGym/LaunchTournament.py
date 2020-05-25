@@ -9,7 +9,7 @@ from enum import Enum
 import json
 from subprocess import PIPE
 
-MAX_STEP_COST = 50000
+MAX_STEP_COST = 1000000
 MAX_TIME = 300
 AGENT_COMMAND = "py hg_agent.py"
 PAL_COMMAND = "gradlew runclient"
