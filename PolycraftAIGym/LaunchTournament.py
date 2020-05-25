@@ -60,6 +60,8 @@ class LaunchTournament:
                 return True
             if (time.time() - self.start_time) > MAX_TIME:
                 return True
+            if str(data_dict["command_result"]["command"]).upper().startswith("GIVE_UP"):
+                return True
             # if self.commands_sent > 10000:
             #     return True
 
