@@ -48,6 +48,7 @@ class LaunchTournament:
 
         # steps greater than 60, END
         if line.find('{') != -1:
+            line = line.replace('\\\\\"', "")  # nuke \"s
             json_text = line[line.find('{'):line.find('\\r\\n')]
             data_dict = json.loads(json_text)
 
