@@ -13,7 +13,7 @@ if 'PAL_AGENT_PORT' in os.environ:
     print('Using Port: ' + os.environ['PAL_AGENT_PORT'])
 else:
     sock.connect((AGENT_HOST, AGENT_PORT))
-    print('Using Port: ' + AGENT_PORT)
+    print('Using Port: ' + str(AGENT_PORT))
 
 command_stream = [
     "smooth_move w",
