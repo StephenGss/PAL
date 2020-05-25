@@ -34,6 +34,8 @@ class HGLvl0Generator:
                     if x1 >= min(int(jsonFeat['pos'][0]), int(jsonFeat['pos2'][0])) and x1 <= max(int(jsonFeat['pos'][0]), int(jsonFeat['pos2'][0])):
                         if z1 >= min(int(jsonFeat['pos'][2]), int(jsonFeat['pos2'][2])) and z1 <= max(int(jsonFeat['pos'][2]), int(jsonFeat['pos2'][2])):
                             valid = False
+            if x1 == 15 or x1 == 16 or z1 == 15 or z1 == 16:
+                valid = False
             if valid:
                 valid_pos = True
             else:
@@ -62,6 +64,8 @@ class HGLvl0Generator:
                             valid = False
             # dest loc should not match macguffin loc
             if x2 == x1 and z2 == z2:
+                valid = False
+            if x2 == 15 or x2 == 16 or z2 == 15 or z2 == 16:
                 valid = False
             if valid:
                 valid_pos = True
