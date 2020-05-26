@@ -11,9 +11,9 @@ from subprocess import PIPE
 
 MAX_STEP_COST = 1000000
 MAX_TIME = 300
-AGENT_COMMAND = "py hg_agent.py"
+AGENT_COMMAND = "py pogo_agent.py"
 PAL_COMMAND = "gradlew runclient"
-GAMES = ["../available_tests/hg_nonov.json",
+GAMES = ["../available_tests/pogo_nonov.json",
          # "../available_tests/hg_nonov.json",
          # "../available_tests/hg_nonov.json",
          # "../available_tests/hg_nonov.json",
