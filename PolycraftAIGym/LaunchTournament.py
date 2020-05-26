@@ -7,7 +7,8 @@ import queue
 import time
 from enum import Enum
 import json
-import config as CONFIG
+import config_sri as CONFIG
+# import config as CONFIG
 from subprocess import PIPE
 import re
 
@@ -145,11 +146,14 @@ class LaunchTournament:
     def read_output(self, pipe, q, timeout=1):
         """reads output from `pipe`, when line has been read, puts
     line on Queue `q`"""
+        # read both stdout and stderr
 
         flag_continue = True
-        while flag_continue and not pipe.closed:
-            l = pipe.readline()
+        while flag_continue and not pipe.stdout.closed and not pipe.stderr.closed:
+            l = pipe.stdout.readline()
             q.put(l)
+            l2 = pipe.stderr.readline()
+            q.put(l2)
 
     def _check_queues(self):
         """
@@ -184,8 +188,8 @@ class LaunchTournament:
         """
         # Launch Minecraft Client
         self.pal_client_process = subprocess.Popen(self.pal_process_cmd, shell=True, cwd='../', stdout=subprocess.PIPE,
-                                                   stdin=subprocess.PIPE)
-        self.pa_t = threading.Thread(target=self.read_output, args=(self.pal_client_process.stdout, self.q))
+                                                   stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.pa_t = threading.Thread(target=self.read_output, args=(self.pal_client_process, self.q))
         self.pa_t.daemon = True
         self.pa_t.start()  # Kickoff the PAL Minecraft Client
         self.debug_log.message("PAL Client Initiated")
@@ -290,8 +294,8 @@ class LaunchTournament:
         self.debug_log.message("Initializing Agent Thread: python hg_agent.py")
 
         self.agent = subprocess.Popen(self.agent_process_cmd, shell=True, cwd=CONFIG.AGENT_DIRECTORY, stdout=subprocess.PIPE,
-                                      stdin=subprocess.PIPE)
-        self.pb_t = threading.Thread(target=self.read_output, args=(self.agent.stdout, self.q2))
+                                      stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.pb_t = threading.Thread(target=self.read_output, args=(self.agent, self.q2))
         self.agent_started = True
         self.pb_t.daemon = True
         self.pb_t.start()

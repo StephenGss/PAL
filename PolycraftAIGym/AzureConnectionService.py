@@ -18,10 +18,10 @@ class AzureConnectionService:
         self.configs = self._check_for_configs()
         self.debug_log = debug_log
         self.container_name = container_name
-
         self.blob_service_client = self._read_secret_key()
         self.sql_connection = self._get_sql_connection()
-        self.cursor = self.sql_connection.cursor()
+        if self.is_connected():
+            self.cursor = self.sql_connection.cursor()
 
     def _check_for_configs(self):
         if path.exists("../secret.ini"):
@@ -51,7 +51,7 @@ class AzureConnectionService:
         try:
             db = pyodbc.connect(cxn)
             return db
-        except:
+        except Exception as e:
             self.debug_log.message("Error in SQL Connection")
             return None
 
