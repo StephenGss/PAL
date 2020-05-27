@@ -1,16 +1,17 @@
 import subprocess, threading, socket
 import sys, os, signal
 import TournamentManager, PalMessenger, AzureConnectionService
+from ProcessIOReader import ProcessIOReader
 import testThread
 from pathlib import Path
 import queue
 import time
 from enum import Enum
 import json
-import config_sri as CONFIG
-# import config as CONFIG
+import config as CONFIG
 from subprocess import PIPE
 import re
+from collections import defaultdict
 
 
 
@@ -43,6 +44,8 @@ class LaunchTournament:
 
         ## Tournament Data
         self.agent = None
+        self.agent_reader = None
+        self.PAL_reader = None
         self.q = queue.Queue()
         self.q2 = queue.Queue()
         self.pa_t = None
@@ -162,13 +165,28 @@ class LaunchTournament:
                     used to determine game ending conditions and update the score_dict{}
         """
         next_line = ""
-
-        # write output from procedure A (if there is any)
+        # if self.PAL_reader.has_stdout():
+        #     next_line = self.PAL_reader.get_stdout()
+        # elif self.PAL_reader.has_stderr():
+        #     next_line = self.PAL_reader.get_stderr()
+        # else:
+        #     pass
+        # self.PAL_log.message(str(next_line))
+        #
+        # # write output from procedure A (if there is any)
         try:
             next_line = self.q.get(False, timeout=0.025)
             self.PAL_log.message(str(next_line))
         except queue.Empty:
             pass
+
+        # if self.agent_reader.has_stdout():
+        #     next_line = self.agent_reader.get_stdout()
+        # elif self.agent_reader.has_stderr():
+        #     next_line = self.agent_reader.get_stderr()
+        # else:
+        #     pass
+        # self.PAL_log.message(str(next_line))
 
         # write output from procedure B (if there is any)
         try:
@@ -189,9 +207,11 @@ class LaunchTournament:
         # Launch Minecraft Client
         self.pal_client_process = subprocess.Popen(self.pal_process_cmd, shell=True, cwd='../', stdout=subprocess.PIPE,
                                                    stdin=subprocess.PIPE, stderr=subprocess.PIPE)
-        self.pa_t = threading.Thread(target=self.read_output, args=(self.pal_client_process, self.q))
-        self.pa_t.daemon = True
-        self.pa_t.start()  # Kickoff the PAL Minecraft Client
+        self.PAL_reader = ProcessIOReader(self.pal_client_process,  out_queue=self.q, name="pal")
+
+        # self.pa_t = threading.Thread(target=self.read_output, args=(self.pal_client_process, self.q))
+        # self.pa_t.daemon = True
+        # self.pa_t.start()  # Kickoff the PAL Minecraft Client
         self.debug_log.message("PAL Client Initiated")
 
         while self.tournament_in_progress:
@@ -295,10 +315,11 @@ class LaunchTournament:
 
         self.agent = subprocess.Popen(self.agent_process_cmd, shell=True, cwd=CONFIG.AGENT_DIRECTORY, stdout=subprocess.PIPE,
                                       stdin=subprocess.PIPE, stderr=subprocess.PIPE)
-        self.pb_t = threading.Thread(target=self.read_output, args=(self.agent, self.q2))
+        self.agent_reader = ProcessIOReader(self.agent, out_queue=self.q2, name='agent')
+        # self.pb_t = threading.Thread(target=self.read_output, args=(self.agent, self.q2))
         self.agent_started = True
-        self.pb_t.daemon = True
-        self.pb_t.start()
+        # self.pb_t.daemon = True
+        # self.pb_t.start()
         self.debug_log.message("Launched AI Agent")
 
     def _game_over(self):
@@ -345,6 +366,12 @@ class LaunchTournament:
         self.commands_sent = 0
         self.total_step_cost = 9
         self._start_next_game()
+        with self.q.mutex:
+            self.q.queue.clear()
+        with self.q2.mutex:
+            self.q2.queue.clear()
+        # self.q.clear()
+        # self.q2.clear()
 
     def _check_novelty(self, line):
         """
@@ -387,7 +414,7 @@ class LaunchTournament:
             self.tm_thread.queue.put("RESET domain " + self.games[self.game_index])
             self.debug_log.message("RESET domain command sent to tm_thread.")
         self.start_time = time.time()
-        self.score_dict[self.game_index] = {}
+        self.score_dict[self.game_index] = defaultdict(lambda: 0)
         self.score_dict[self.game_index]['game_path'] = self.games[self.game_index]
         self.score_dict[self.game_index]['startTime'] = PalMessenger.PalMessenger.time_now_str()
 

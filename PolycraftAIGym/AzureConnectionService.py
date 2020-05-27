@@ -24,9 +24,9 @@ class AzureConnectionService:
             self.cursor = self.sql_connection.cursor()
 
     def _check_for_configs(self):
-        if path.exists("../secret.ini"):
+        if path.exists("../secret_real.ini"):
             configs = configparser.ConfigParser()
-            configs.read("../secret.ini")
+            configs.read("../secret_real.ini")
             return configs
         else:
             return None
@@ -52,7 +52,7 @@ class AzureConnectionService:
             db = pyodbc.connect(cxn)
             return db
         except Exception as e:
-            self.debug_log.message("Error in SQL Connection")
+            self.debug_log.message("Error in SQL Connection: " + str(e))
             return None
 
     def _read_secret_key(self):
@@ -82,15 +82,15 @@ class AzureConnectionService:
             vals['GroundTruth'] = int(score_dict[game_id]['groundTruth'])
             vals['NoveltyDetected'] = int(score_dict[game_id]['noveltyDetect'])
             vals['NoveltyDetectStep'] = int(score_dict[game_id]['noveltyDetectStep'])
-            vals['NoveltyDetectTime'] = score_dict[game_id]['noveltyDetectTime']
+            vals['NoveltyDetectTime'] = str(score_dict[game_id]['noveltyDetectTime'])
             vals['Reward'] = float(score_dict[game_id]['adjustedReward'])
             vals['Total_Step_Cost'] = float(score_dict[game_id]['totalCost'])
             vals['Total_Steps'] = float(score_dict[game_id]['step'])
             vals['Total_Time'] = float(score_dict[game_id]['elapsed_time'])
-            vals['StartTime'] = score_dict[game_id]['startTime']
-            vals['EndTime'] = score_dict[game_id]['endTime']
+            vals['StartTime'] = str(score_dict[game_id]['startTime'])
+            vals['EndTime'] = str(score_dict[game_id]['endTime'])
             vals['Complete'] = distutils.util.strtobool(score_dict[game_id]['success'])
-            vals['Reason'] = score_dict[game_id]['success_detail']
+            vals['Reason'] = str(score_dict[game_id]['success_detail'])
             vals['LogBlob'] = ""
             vals['AgentBlob'] = ""
             vals['DebugBlob'] = ""
