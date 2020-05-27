@@ -288,6 +288,9 @@ class LaunchTournament:
                 if "[EXP] game initialization completed" in str(next_line):
                     self.debug_log.message("Reset Complete. Switching to Game Loop... ")
                     self.current_state = State.GAME_LOOP
+                    self.start_time = time.time() # Start Time at this point.
+                    self.score_dict[self.game_index]['startTime'] = PalMessenger.PalMessenger.time_now_str()
+
 
         #output = self.pal_client_process.communicate()[0]
         exitCode = self.pal_client_process.returncode
@@ -413,19 +416,20 @@ class LaunchTournament:
         else:
             self.tm_thread.queue.put("RESET domain " + self.games[self.game_index])
             self.debug_log.message("RESET domain command sent to tm_thread.")
-        self.start_time = time.time()
+        # Moving Start Time closer to the next game loop - loosing ~3 seconds rn.
+        # self.start_time = time.time()
         self.score_dict[self.game_index] = defaultdict(lambda: 0)
         self.score_dict[self.game_index]['game_path'] = self.games[self.game_index]
-        self.score_dict[self.game_index]['startTime'] = PalMessenger.PalMessenger.time_now_str()
+        # self.score_dict[self.game_index]['startTime'] = PalMessenger.PalMessenger.time_now_str()
 
-        # TODO: Update this.
+        # TODO: Update this based on Tournament Setup & input.
         self.score_dict[self.game_index]['novelty'] = 0
         self.score_dict[self.game_index]['groundTruth'] = 0
 
-        #initialize vars - TODO: make a defaultDict? Not sure if possible.
-        self.score_dict[self.game_index]['noveltyDetectStep'] = 0
-        self.score_dict[self.game_index]['noveltyDetectTime'] = 0
-        self.score_dict[self.game_index]['noveltyDetect'] = 0
+        #initialize vars - noTODO: make a defaultDict? Not sure if possible -- COMPLETED
+        # self.score_dict[self.game_index]['noveltyDetectStep'] = 0
+        # self.score_dict[self.game_index]['noveltyDetectTime'] = 0
+        # self.score_dict[self.game_index]['noveltyDetect'] = 0
 
 
 
