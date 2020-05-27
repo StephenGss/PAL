@@ -1,6 +1,6 @@
-MAX_STEP_COST = 30000
-MAX_TIME = 30
-TOURNAMENT_ID = "DN_DEMO_TOURNEY_4"
+MAX_STEP_COST = 1000000
+MAX_TIME = 300
+TOURNAMENT_ID = "Azure_Demo_Tourney_2"
 # _AGENT_SCRIPT = "hg_agent.py"
 _AGENT_SCRIPT = "docker run --rm -e PAL_AGENT_PORT=9000 --network=host sri/polycraftai:nopal 'python -m polycraftai.tournament_test --polycraft_verbose_protocol'"
 # _AGENT_SCRIPT = "play.sh"
@@ -10,18 +10,27 @@ _AGENT_SCRIPT = "docker run --rm -e PAL_AGENT_PORT=9000 --network=host sri/polyc
 # AGENT_DIRECTORY = "./"
 # AGENT_DIRECTORY = "../private_tests/TUFTS/"
 AGENT_DIRECTORY = "../private_tests/sri_dryrun_mock/"
-# AGENT_COMMAND_UNIX = f"/bin/sh build.sh && {_AGENT_SCRIPT}"
 AGENT_COMMAND_UNIX = f"{_AGENT_SCRIPT}"
+#AGENT_COMMAND_UNIX = f"/bin/sh build.sh && {_AGENT_SCRIPT}"
+# AGENT_COMMAND_UNIX = f"{_AGENT_SCRIPT}"
 AGENT_ID = f"SRI_AGENT_HUNTER_GATHERER_002"
 # AGENT_ID = f"{_AGENT_SCRIPT.split('.')[0]}_006"
 # AGENT_COMMAND = f"py {_AGENT_SCRIPT}"
 # AGENT_COMMAND_UNIX = f"python {_AGENT_SCRIPT}"
 # AGENT_COMMAND_UNIX = f"sudo ./{_AGENT_SCRIPT}"
 PAL_COMMAND = "gradlew runclient"
-PAL_COMMAND_UNIX = "/bin/sh gradlew runclient"
+#PAL_COMMAND_MAC = "/bin/sh gradlew runclient"
+#PAL_COMMAND_UNIX = "./gradlew runclient"
+PAL_COMMAND_UNIX = "xvfb-run -s '-screen 0 1280x1024x24' ./gradlew runclient"
 GAMES = [
          # "../available_tests/hg_nonov.json",
          # "../available_tests/hg_nonov.json",
+         "../available_tests/hg_nonov.json",
+         "../available_tests/hg_nonov.json",
+         "../available_tests/hg_nonov.json",
+         "../available_tests/hg_nonov.json",
+         "../available_tests/hg_nonov.json",
+         "../available_tests/hg_nonov.json",
          "../available_tests/hg_nonov.json",
          "../available_tests/hg_nonov.json",
          "../available_tests/hg_nonov.json",

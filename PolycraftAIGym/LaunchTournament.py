@@ -205,6 +205,7 @@ class LaunchTournament:
         :return:
         """
         # Launch Minecraft Client
+        self.debug_log.message("PAL command: " + self.pal_process_cmd)
         self.pal_client_process = subprocess.Popen(self.pal_process_cmd, shell=True, cwd='../', stdout=subprocess.PIPE,
                                                    stdin=subprocess.PIPE, stderr=subprocess.PIPE)
         self.PAL_reader = ProcessIOReader(self.pal_client_process,  out_queue=self.q, name="pal")
