@@ -118,6 +118,7 @@ class LaunchTournament:
             json_text = line[line.find('{'):line.find(line_end_str)]  # Make this system agnostic - previously \\r\\n
             # TODO: Potentially remove this?
             json_text = re.sub(r'\\\\\"', '\'', json_text)
+            json_text = re.sub(r'\\+\'', '\'', json_text)
             data_dict = json.loads(json_text)
             self.commands_sent += 1
             self.total_step_cost += data_dict["command_result"]["stepCost"]
