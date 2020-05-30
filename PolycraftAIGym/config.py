@@ -1,6 +1,6 @@
 MAX_STEP_COST = 1000000
 MAX_TIME = 300
-TOURNAMENT_ID = "Azure_Demo_Tourney_5"
+TOURNAMENT_ID = "Nonov_Pogo_Test_1_100g"
 # _AGENT_SCRIPT = "hg_agent.py"
 #_AGENT_SCRIPT = "DEBUG=1 Polycraft_Port=9000 ./start-openmind"
 #_AGENT_SCRIPT = "./prt polycraft-easy-pogo1.prt"
@@ -34,6 +34,11 @@ PAL_COMMAND = "gradlew runclient"
 #PAL_COMMAND_MAC = "/bin/sh gradlew runclient"
 #PAL_COMMAND_UNIX = "./gradlew runclient"
 PAL_COMMAND_UNIX = "xvfb-run -s '-screen 0 1280x1024x24' ./gradlew runclient"
+
+#Games now exist outside of this environment.
+GAME_COUNT = 100
+GAMES_FOLDER = "../pogo_json"
+
 GAMES = [
          # "../available_tests/hg_nonov.json",
          # "../available_tests/hg_nonov.json",

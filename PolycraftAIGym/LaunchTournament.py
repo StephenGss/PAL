@@ -32,7 +32,8 @@ class LaunchTournament:
         self.commands_sent = 0
         self.total_step_cost = 0
         self.start_time = time.time()
-        self.games = CONFIG.GAMES
+        #self.games = CONFIG.GAMES
+        #self.games = self._build_game_list(CONFIG.GAME_COUNT)
         self.log_dir = log_dir + f"{PalMessenger.PalMessenger.time_now_str()}/"
         self.SYS_FLAG = os  # Change behavior based on SYS FLAG when executing gradlew
         if 'MACOS' in self.SYS_FLAG.upper() or 'UNIX' in self.SYS_FLAG.upper():
@@ -66,6 +67,22 @@ class LaunchTournament:
 
         ##Logging
         self._create_logs()
+
+        #Load Games
+        self.games = self._build_game_list(CONFIG.GAME_COUNT)
+
+    def _build_game_list(self, ct, rootdir=CONFIG.GAMES_FOLDER):
+        file_type = '.json'
+        file_list = []
+        for subdir, dirs, files in os.walk(rootdir):
+            for file in files:
+                filepath = subdir + os.sep + file
+                if filepath.endswith(file_type):
+                    file_list.append(filepath)
+
+                    
+        self.debug_log.message(f"Game List created. {len(file_list)} games read. {len(file_list[:ct])} games will be played")
+        return file_list[:ct]
 
     def _create_logs(self):
         """
