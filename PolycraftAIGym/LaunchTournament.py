@@ -125,12 +125,20 @@ class LaunchTournament:
         # NoTODO: Track stepcost to call reset -- completed
         # TODO: Track total reward to call reset. Not for dry-run
         # NoTODO: Track total run time to call reset -- completed
-        # TODO: Track agent giveup to call reset
+        # TODO: Track agent giveup to call reset -- completed?
         # NoTODO: Track end condition flag to call reset -- completed
 
         line_end_str = '\\r\\n'
         if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
             line_end_str = '\\n'
+        ## Agent Giveup check:
+        if line.find('[AGENT]GIVE_UP') != -1:
+            msg = 'Agent Gives Up'
+            self.debug_log.message(f"Game Over: {msg}")
+            self.score_dict[self.game_index]['success'] = 'False'
+            self.score_dict[self.game_index]['success_detail'] = msg
+            return True
+
         if line.find('{') != -1 and line.find(line_end_str) != -1:
             json_text = line[line.find('{'):line.find(line_end_str)]  # Make this system agnostic - previously \\r\\n
             # TODO: Potentially remove this?
@@ -403,7 +411,7 @@ class LaunchTournament:
         line_end_str = '\\r\\n'
         if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
             line_end_str = '\\n'
-        if line.find('[REPORT_NOVELTY]') != -1 and line.find(line_end_str) != -1:
+        if line.find('REPORT_NOVELTY') != -1 and line.find(line_end_str) != -1:
             self.score_dict[self.game_index]['noveltyDetect'] = 1
             self.score_dict[self.game_index]['noveltyDetectStep'] = self.score_dict[self.game_index]['step']
             self.score_dict[self.game_index]['noveltyDetectTime'] = PalMessenger.PalMessenger.time_now_str()
