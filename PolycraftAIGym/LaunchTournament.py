@@ -32,7 +32,8 @@ class LaunchTournament:
         self.commands_sent = 0
         self.total_step_cost = 0
         self.start_time = time.time()
-        self.games = CONFIG.GAMES
+        #self.games = CONFIG.GAMES
+        #self.games = self._build_game_list(CONFIG.GAME_COUNT)
         self.log_dir = log_dir + f"{PalMessenger.PalMessenger.time_now_str()}/"
         self.SYS_FLAG = os  # Change behavior based on SYS FLAG when executing gradlew
         if 'MACOS' in self.SYS_FLAG.upper() or 'UNIX' in self.SYS_FLAG.upper():
@@ -66,6 +67,22 @@ class LaunchTournament:
 
         ##Logging
         self._create_logs()
+
+        #Load Games
+        self.games = self._build_game_list(CONFIG.GAME_COUNT)
+
+    def _build_game_list(self, ct, rootdir=CONFIG.GAMES_FOLDER):
+        file_type = '.json'
+        file_list = []
+        for subdir, dirs, files in os.walk(rootdir):
+            for file in files:
+                filepath = subdir + os.sep + file
+                if filepath.endswith(file_type):
+                    file_list.append(filepath)
+
+                    
+        self.debug_log.message(f"Game List created. {len(file_list)} games read. {len(file_list[:ct])} games will be played")
+        return file_list[:ct]
 
     def _create_logs(self):
         """
@@ -108,12 +125,20 @@ class LaunchTournament:
         # NoTODO: Track stepcost to call reset -- completed
         # TODO: Track total reward to call reset. Not for dry-run
         # NoTODO: Track total run time to call reset -- completed
-        # TODO: Track agent giveup to call reset
+        # TODO: Track agent giveup to call reset -- completed?
         # NoTODO: Track end condition flag to call reset -- completed
 
         line_end_str = '\\r\\n'
         if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
             line_end_str = '\\n'
+        ## Agent Giveup check:
+        if line.find('[AGENT]GIVE_UP') != -1:
+            msg = 'Agent Gives Up'
+            self.debug_log.message(f"Game Over: {msg}")
+            self.score_dict[self.game_index]['success'] = 'False'
+            self.score_dict[self.game_index]['success_detail'] = msg
+            return True
+
         if line.find('{') != -1 and line.find(line_end_str) != -1:
             json_text = line[line.find('{'):line.find(line_end_str)]  # Make this system agnostic - previously \\r\\n
             # TODO: Potentially remove this?
