@@ -14,7 +14,6 @@ import re
 from collections import defaultdict
 
 
-
 class LaunchTournament:
     """
     Manages the running of a single AI Agent + Single MC Client through various "Games"
@@ -80,7 +79,6 @@ class LaunchTournament:
                 if filepath.endswith(file_type):
                     file_list.append(filepath)
 
-                    
         self.debug_log.message(f"Game List created. {len(file_list)} games read. {len(file_list[:ct])} games will be played")
         return file_list[:ct]
 
@@ -266,7 +264,7 @@ class LaunchTournament:
             # Wait for player to join launched tournament
             elif self.current_state == State.LAUNCH_TOURNAMENT:
                 if "[Server thread/INFO]: Player" in str(next_line) and " joined the game" in str(next_line):
-                    self._start_next_game()
+                    self._setup_next_game()
                     self.current_state = State.WAIT_FOR_GAME_READY
 
             # Wait for all entities to load
@@ -278,7 +276,15 @@ class LaunchTournament:
             # Launch the AI agent and start the experiment
             elif self.current_state == State.INIT_AGENT:
                 self._launch_ai_agent()
-                self.current_state = State.GAME_LOOP
+                self.current_state = State.WAIT_FOR_AGENT_START
+
+            elif self.current_state == State.WAIT_FOR_AGENT_START:
+                if self._check_agent_cmd(str(next_line)):
+                    self.debug_log.message("Agent Ready - Game Starting")
+                    # Start the game time now:
+                    self.start_time = time.time()  # Start Time at this point.
+                    self.score_dict[self.game_index]['startTime'] = PalMessenger.PalMessenger.time_now_str()
+                    self.current_state = State.GAME_LOOP
 
             # Begin the Game Loop
             elif self.current_state == State.GAME_LOOP:
@@ -289,19 +295,42 @@ class LaunchTournament:
 
                 # check if the game has ended somehow (stepcost, max reward, max runtime, agent gave up, game ended)
                 if self._check_ended(str(next_line)):
-                    # noTODO: do some reporting here -- completed
-                    self.debug_log.message("Game has ended.")
-                    self.speed_log.message(str(self.game_index) + ": " + str(self.commands_sent/(time.time() - self.start_time)))
-                    self._game_over()
 
+                    next_game_idx = self.game_index + 1
                     # Check if the tournament is over
-                    if self.game_index >= len(self.games):
+                    if next_game_idx >= len(self.games):
+                        # If so, end the game now (don't wait for gameover True)
+                        self.debug_log.message("Game has ended.")
+                        self.speed_log.message(
+                            str(self.game_index) + ": " + str(self.commands_sent / (time.time() - self.start_time)))
+                        self._game_over()
                         self._tournament_completed()
                         break
                     else:
-                        # If the game is over, trigger a reset and load the next game.
-                        self.current_state = State.TRIGGER_RESET
+                        # Send next game to agent
+                        self.current_state = State.WAIT_FOR_GAMEOVER_TRUE
+                        self._reset_and_flush()
+                        # Wait for GameOver == True to be sent to the Client before switching the log files.
+                        self.debug_log.message("Waiting for Gameover True")
 
+            # Game completed. Wait for Agent to also get the message that game is over before sending logs.
+            elif self.current_state == State.WAIT_FOR_GAMEOVER_TRUE:
+
+                # Don't record any more scores! Game already completed.
+                # self._record_score(str(next_line))
+                if self._gameover_passed_to_agent(str(next_line)):
+                    self.debug_log.message("Game has ended.")
+                    self.speed_log.message(
+                        str(self.game_index) + ": " + str(self.commands_sent / (time.time() - self.start_time)))
+                    self._game_over()
+
+                    # # Check if the tournament is over
+                    # if self.game_index >= len(self.games):
+                    #     self._tournament_completed()
+                    #     break
+                    # else:
+                        # If the game is over, trigger a reset and load the next game.
+                    self.current_state = State.TRIGGER_RESET
 
             # Reset the Tournament for the next game
             elif self.current_state == State.TRIGGER_RESET:
@@ -388,6 +417,14 @@ class LaunchTournament:
         self.tm_thread.join(5)
         self.tournament_in_progress = False
 
+    def _reset_and_flush(self):
+        self.tm_thread.queue.put("RESET domain " + self.games[self.game_index + 1])
+        self.debug_log.message("RESET domain command sent to tm_thread.")
+        with self.q.mutex:
+            self.q.queue.clear()
+        with self.q2.mutex:
+            self.q2.queue.clear()
+
     def _trigger_reset(self):
         """
         Trigger a reset in PAL - setting the stage for the next game
@@ -395,11 +432,14 @@ class LaunchTournament:
         """
         self.commands_sent = 0
         self.total_step_cost = 9
-        self._start_next_game()
-        with self.q.mutex:
-            self.q.queue.clear()
-        with self.q2.mutex:
-            self.q2.queue.clear()
+        self._setup_next_game()
+        #Flush queues for now - noTODO: this is necessary to catch the Game Initialization Complete string
+        # with self.q.mutex:
+        #     self.q.queue.clear()
+        # with self.q2.mutex:
+        #     self.q2.queue.clear()
+
+
         # self.q.clear()
         # self.q2.clear()
 
@@ -428,7 +468,7 @@ class LaunchTournament:
             score_string = line[line.find('[SCORE]')+7:line.find(line_end_str)]
             self.score_dict[self.game_index].update({v[0]: v[1] for v in [k.split(':') for k in score_string.split(',')]})
 
-    def _start_next_game(self):
+    def _setup_next_game(self):
         """
         Launch the next game
         Initialize the score_dict variable for the next game.
@@ -440,9 +480,7 @@ class LaunchTournament:
         if self.game_index == 0:
             self.tm_thread.queue.put("LAUNCH domain " + self.games[self.game_index])
             self.debug_log.message("LAUNCH domain command issued")
-        else:
-            self.tm_thread.queue.put("RESET domain " + self.games[self.game_index])
-            self.debug_log.message("RESET domain command sent to tm_thread.")
+
         # Moving Start Time closer to the next game loop - loosing ~3 seconds rn.
         # self.start_time = time.time()
         self.score_dict[self.game_index] = defaultdict(lambda: 0)
@@ -458,7 +496,40 @@ class LaunchTournament:
         # self.score_dict[self.game_index]['noveltyDetectTime'] = 0
         # self.score_dict[self.game_index]['noveltyDetect'] = 0
 
+    def _gameover_passed_to_agent(self, line):
+        """
+        Check to see if Agent has received the gameOver == True parameter before resetting the game
+        :param line: input string (msg in PAL)
+        :return: True if gameOver: true passed to client
+        """
 
+        line_end_str = '\\r\\n'
+        if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
+            line_end_str = '\\n'
+
+        if line.find('{') != -1 and line.find(line_end_str) != -1:
+            json_text = line[line.find('{'):line.find(line_end_str)]  # Make this system agnostic - previously \\r\\n
+            # TODO: Potentially remove this?
+            json_text = re.sub(r'\\\\\"', '\'', json_text)
+            json_text = re.sub(r'\\+\'', '\'', json_text)
+            # Load response into dictionary
+            data_dict = json.loads(json_text)
+            # Check to see if gameover in msg
+            if 'gameOver' in data_dict:
+                if data_dict['gameOver']:
+                    self.debug_log.message("GameOver = True!")
+                    return True
+
+        return False
+
+    def _check_agent_cmd(self, line):
+        line_end_str = '\\r\\n'
+        if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
+            line_end_str = '\\n'
+        if line.find('[AGENT]') != -1 and line.find(line_end_str) != -1:
+            return True
+
+        return False
 
 
 class State(Enum):
@@ -466,11 +537,13 @@ class State(Enum):
     LAUNCH_TOURNAMENT = 1
     CLEANUP = 2
     INIT_AGENT = 4
-    GAME_LOOP = 5
-    WAIT_FOR_GAME_READY = 6
-    TEST = 7
-    TRIGGER_RESET = 8
-    DETECT_RESET = 9
+    WAIT_FOR_AGENT_START = 5
+    GAME_LOOP = 6
+    WAIT_FOR_GAME_READY = 7
+    WAIT_FOR_GAMEOVER_TRUE = 8
+    TEST = 9
+    TRIGGER_RESET = 10
+    DETECT_RESET = 11
 
 if __name__ == "__main__":
     pal = LaunchTournament(os='UNIX')
