@@ -87,7 +87,7 @@ class AzureConnectionService:
             vals['NoveltyDetectStep'] = int(score_dict[game_id]['noveltyDetectStep'])
             vals['NoveltyDetectTime'] = str(score_dict[game_id]['noveltyDetectTime'])
             #vals['Reward'] = float(score_dict[game_id]['adjustedReward'])
-            if distutils.util.strtobool(score_dict[game_id]['success']):
+            if distutils.util.strtobool(str(score_dict[game_id]['success'])):
                 vals['Reward'] = 256000.0 - float(score_dict[game_id]['totalCost'])
             else:
                 vals['Reward'] = float(score_dict[game_id]['totalCost'])*-1
@@ -97,7 +97,7 @@ class AzureConnectionService:
             vals['Total_Time'] = float(score_dict[game_id]['elapsed_time'])
             vals['StartTime'] = str(score_dict[game_id]['startTime'])
             vals['EndTime'] = str(score_dict[game_id]['endTime'])
-            vals['Complete'] = distutils.util.strtobool(score_dict[game_id]['success'])
+            vals['Complete'] = distutils.util.strtobool(str(score_dict[game_id]['success']))
             vals['Reason'] = str(score_dict[game_id]['success_detail'])
             vals['LogBlob'] = ""
             vals['AgentBlob'] = ""
