@@ -73,7 +73,8 @@ class AzureConnectionService:
                 return None
 
             vals = OrderedDict()
-            vals['Task_Name'] = CONFIG.GAMES[game_id]
+            #vals['Task_Name'] = CONFIG.GAMES[game_id]
+            vals['Task_Name'] = str(score_dict[game_id]['game_path'])
             vals['Agent_Name'] = str(CONFIG.AGENT_ID)
             vals['TournamentNm'] = str(CONFIG.TOURNAMENT_ID)
             vals['Game'] = int(game_id)
