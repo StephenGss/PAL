@@ -33,6 +33,8 @@ class AzureConnectionService:
 
     def is_connected(self):
         if self.blob_service_client is not None and self.sql_connection is not None:
+            # Perform dummy query to "wake up" the SQL server in case it went to sleep
+
             return True
         return False
 

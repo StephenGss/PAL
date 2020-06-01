@@ -386,7 +386,7 @@ class LaunchTournament:
         line_end_str = '\\r\\n'
         if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
             line_end_str = '\\n'
-        if line.find('[REPORT_NOVELTY]') != -1 and line.find(line_end_str) != -1:
+        if line.find('REPORT_NOVELTY') != -1 and line.find(line_end_str) != -1:
             self.score_dict[self.game_index]['noveltyDetect'] = 1
             self.score_dict[self.game_index]['noveltyDetectStep'] = self.score_dict[self.game_index]['step']
             self.score_dict[self.game_index]['noveltyDetectTime'] = PalMessenger.PalMessenger.time_now_str()
