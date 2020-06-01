@@ -1,5 +1,5 @@
 MAX_STEP_COST = 30000
-MAX_TIME = 30
+MAX_TIME = 20
 TOURNAMENT_ID = "DN_DEMO_TOURNEY_3"
 _AGENT_SCRIPT = "hg_agent.py"
 # _AGENT_SCRIPT = "play.sh"
@@ -13,7 +13,8 @@ AGENT_COMMAND = f"py {_AGENT_SCRIPT}"
 AGENT_COMMAND_UNIX = f"python {_AGENT_SCRIPT}"
 # AGENT_COMMAND_UNIX = f"sudo ./{_AGENT_SCRIPT}"
 PAL_COMMAND = "gradlew runclient"
-PAL_COMMAND_UNIX = "/bin/sh gradlew runclient"
+# PAL_COMMAND_UNIX = "/bin/sh gradlew runclient"
+PAL_COMMAND_UNIX = "xvfb-run -s \"-screen 0 1280x1024x24\" ./gradlew runclient"
 GAMES = [
          # "../available_tests/hg_nonov.json",
          # "../available_tests/hg_nonov.json",

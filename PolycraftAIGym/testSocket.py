@@ -3,7 +3,7 @@
 import socket, random, time, json, os
  
 HOST = "127.0.0.1"
-PORT = 9000
+PORT = 9005
 
 movement = ['movenorth', 'movesouth', 'moveeast', 'movewest']
 
@@ -51,9 +51,9 @@ while run:	# main loop
 			if len(part) < BUFF_SIZE:
 				# either 0 or end of data
 				break
-		#print(data)
-		data_dict = json.loads(data)
-		print(data_dict)
+		print(data)
+		# data_dict = json.loads(data)
+		# print(data_dict)
 sock.close()
 
 

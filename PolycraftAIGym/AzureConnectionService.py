@@ -51,7 +51,8 @@ class AzureConnectionService:
         try:
             db = pyodbc.connect(cxn)
             return db
-        except:
+        except Exception as e:
+            print(e)
             self.debug_log.message("Error in SQL Connection")
             return None
 
