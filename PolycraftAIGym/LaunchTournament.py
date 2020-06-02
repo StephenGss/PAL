@@ -647,8 +647,8 @@ if __name__ == "__main__":
     # output = '../output'
     # output_name = 'hg_lvl-0'
     try:
-        opts, args = getopt.getopt(argv, "htg",
-                                   ["tournament=","game_folder=",])
+        opts, args = getopt.getopt(argv, "ht:g:",
+                                       ["tournament=","game_folder=",])
     except getopt.GetoptError:
         print('HGLvl0Generator.py -s <seed> -i <intensity> -t <template_path> -o <output_path> -n <output_name>')
         sys.exit(2)
@@ -659,8 +659,10 @@ if __name__ == "__main__":
         # elif opt in ("-s", "--seed"):
         #     seed = arg
         elif opt in ("-g", "--game-folder"):
+            print(f"Game Folder: {arg}")
             CONFIG.GAMES_FOLDER = arg
         elif opt in ("-t", "--tournament"):
+            print(f"Tournament: {arg}")
             CONFIG.TOURNAMENT_ID = arg
         # elif opt in ("-o", "--output-path"):
         #     output = arg
