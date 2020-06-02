@@ -161,7 +161,7 @@ class AzureConnectionService:
             vals['Command_Result'] = str(game_dict[step]['result'])
             vals['Command_Message'] = str(game_dict[step]['message'])
             vals['Game_Over'] = distutils.util.strtobool(str(game_dict[step]['Game_Over']))
-            vals['Novelty_Flag'] = str(game_dict[step]['Novelty_Flag'])
+            vals['Novelty_Flag'] = str(game_dict[step]['Distribution'])
             # vals['Novelty_Flag'] = distutils.util.strtobool(str(game_dict[step]['Novelty_Flag']))
             all_vals.update({step: vals})
 

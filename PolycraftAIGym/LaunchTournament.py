@@ -32,6 +32,7 @@ class LaunchTournament:
         self.commands_sent = 0
         self.total_step_cost = 0
         self.start_time = time.time()
+        self.wait_for_gameover_timer = None
         #self.games = CONFIG.GAMES
         #self.games = self._build_game_list(CONFIG.GAME_COUNT)
         self.log_dir = log_dir + f"{PalMessenger.PalMessenger.time_now_str()}/"
@@ -312,15 +313,20 @@ class LaunchTournament:
                         # Send next game to agent
                         self.current_state = State.WAIT_FOR_GAMEOVER_TRUE
                         self._reset_and_flush()
+                        self.wait_for_gameover_timer = time.time()
                         # Wait for GameOver == True to be sent to the Client before switching the log files.
                         self.debug_log.message("Waiting for Gameover True")
 
             # Game completed. Wait for Agent to also get the message that game is over before sending logs.
             elif self.current_state == State.WAIT_FOR_GAMEOVER_TRUE:
-
+                #TODO: adjust this hang time if necessary?
+                MAX_HANG_TIME = 4  # seconds - based on avg ~ 0.25 actions/second + 1 second buffer
                 # Don't record any more scores! Game already completed.
                 # self._record_score(str(next_line))
-                if self._gameover_passed_to_agent(str(next_line)):
+                move_on = self._gameover_passed_to_agent(str(next_line))
+                if move_on or (time.time() - self.wait_for_gameover_timer) > MAX_HANG_TIME:
+                    if not move_on:
+                        self.debug_log.message("WARN: gameover message likely missed? Moving to Next Game...")
                     self.debug_log.message("Game has ended.")
                     self.speed_log.message(
                         str(self.game_index) + ": " + str(self.commands_sent / (time.time() - self.start_time)))
@@ -522,14 +528,16 @@ class LaunchTournament:
             if 'step' in data_dict:
                 cur_step = data_dict['step']
                 if 'command_result' in data_dict:
-                    self.game_score_dict[cur_step].update({k: v for k, v in data_dict['command_result'].items()})
+                    self.game_score_dict[cur_step].update(data_dict['command_result'])
                     # self.game_score_dict[cur_step]['Command'] = data_dict['command_result']['command']
                     # self.game_score_dict[cur_step]['Command_Arguments'] = data_dict['command_result']['argument']
                     # self.game_score_dict[cur_step]['Command_Result'] = data_dict['command_result']['result']
                     # self.game_score_dict[cur_step]['Command_Message'] = data_dict['command_result']['message']
                     # self.game_score_dict[cur_step]['Step_Cost'] = data_dict['command_result']['stepCost']
                 if 'goal' in data_dict:
-                    self.game_score_dict[cur_step].update({k: v for k, v in data_dict['goal'].items()})
+                    self.game_score_dict[cur_step].update(data_dict['goal'])
+                    if data_dict['goal']['Distribution'] != 'Uninformed':  # TODO: move this elsewhere?
+                        self.score_dict[self.game_index]['groundTruth'] = 1
                     # self.game_score_dict[cur_step]['Goal_Type'] = data_dict['goal']['goalType']
                     # self.game_score_dict[cur_step]['Goal_Achieved'] = data_dict['goal']['goalAchieved']
                     # self.game_score_dict[cur_step]['Novelty_Flag'] = "0"  # TODO: include Novelty Flag from PAL
@@ -558,8 +566,7 @@ class LaunchTournament:
             self.debug_log.message("LAUNCH domain command issued")
 
         self.game_score_dict = defaultdict(lambda: defaultdict(lambda: 0))
-        self.score_dict = {}  # Reset Score_Dict as well - it doesn't need to be super long!
-        self.score_dict[self.game_index] = defaultdict(lambda: 0)
+        self.score_dict = {self.game_index: defaultdict(lambda: 0)}  # Reset Score_Dict as well
         self.score_dict[self.game_index]['game_path'] = self.games[self.game_index]
         # self.score_dict[self.game_index]['startTime'] = PalMessenger.PalMessenger.time_now_str()
 
