@@ -74,9 +74,10 @@ class LaunchTournament:
         #Load Games
         self.games = self._build_game_list(CONFIG.GAME_COUNT)
 
-    def _build_game_list(self, ct, rootdir=CONFIG.GAMES_FOLDER):
+    def _build_game_list(self, ct):
         file_type = '.json'
         file_list = []
+        rootdir = CONFIG.GAMES_FOLDER
         for subdir, dirs, files in os.walk(rootdir):
             for file in files:
                 filepath = subdir + os.sep + file
