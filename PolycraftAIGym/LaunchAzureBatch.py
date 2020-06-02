@@ -39,10 +39,10 @@ import azure.batch.models as batchmodels
 
 import PolycraftAIGym.common.helpers as helpers
 
-_CONTAINER_NAME = 'batch-workflow-test'
+_CONTAINER_NAME = 'batch-workflow-fog-of-war'
 # APPLICATION_ID = 'image-test'
 APPLICATION_ID = 'agent_sift'
-APPLICATION_VERSION = '1'
+APPLICATION_VERSION = '2'
 # APPLICATION_ID_FIXED = 'image_test'
 APPLICATION_ID_FIXED = 'agent_sift'
 APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + APPLICATION_ID_FIXED + '_' + APPLICATION_VERSION
@@ -52,7 +52,7 @@ POOL_ID = "FogWar25_01"
 # _SIMPLE_TASK_PATH = os.path.join('resources', 'simple_task.py')
 
 
-def create_pool(batch_client, block_blob_client, pool_id, vm_size, vm_count):
+def create_pool(batch_client, block_blob_client, pool_id, vm_size, vm_count, global_config):
     """Creates an Azure Batch pool with the specified id.
 
     :param batch_client: The batch client to use.
@@ -111,14 +111,22 @@ def create_pool(batch_client, block_blob_client, pool_id, vm_size, vm_count):
                 'apt-get install software-properties-common',
                 'apt-add-repository universe',
                 'apt-get update',
-                'sudo apt-get install -y python3-pip'
+                # 'sudo apt-get install -y python3-pip'
                 ]),
             wait_for_success=True,
             user_identity=batchmodels.UserIdentity(
                 auto_user=batchmodels.AutoUserSpecification(
                     scope=batchmodels.AutoUserScope.pool,
                     elevation_level=batchmodels.ElevationLevel.admin)),
-        ))
+
+            ),
+        # mount_configuration=[batch.models.MountConfiguration(
+        #     azure_file_share_configuration=batch.models.AzureFileShareConfiguration(
+        #         account_name=global_config.get('Storage', 'storageaccountname'),
+        #         azure_file_url="https://polycrafttournamentdata.file.core.windows.net/pal-sift",
+        #         account_key=global_config.get('Storage', 'storageaccountkey'),
+        #         relative_mount_path='mnt1'))]
+        )
 
     helpers.create_pool_if_not_exist(batch_client, pool)
 
@@ -146,7 +154,7 @@ def submit_job_and_add_task(batch_client, block_blob_client, job_id, pool_id):
 
     #os.chdir('../output/')
     count = 0
-    for file in os.listdir(os.getcwd() + '../fog_of_war'):
+    for file in os.listdir(os.getcwd() + '/../fog_of_war'):
         if not file.endswith(".zip"):
             continue
         filename = file.split('.')[0]
@@ -163,7 +171,7 @@ def submit_job_and_add_task(batch_client, block_blob_client, job_id, pool_id):
             block_blob_client,
             _CONTAINER_NAME,
             'inputs-test/' + file,
-            '../fog_of_war' + file,
+            '../fog_of_war/' + file,
             datetime.datetime.utcnow() + datetime.timedelta(hours=1))
 
         setup_url = helpers.upload_blob_and_create_sas(
@@ -173,6 +181,13 @@ def submit_job_and_add_task(batch_client, block_blob_client, job_id, pool_id):
             'setup_azure_vm.sh',
             datetime.datetime.utcnow() + datetime.timedelta(hours=1))
 
+        # temp_setup_url = helpers.upload_blob_and_create_sas(
+        #     block_blob_client,
+        #     _CONTAINER_NAME,
+        #     "temp_setup.sh",
+        #     'temp_setup.sh',
+        #     datetime.datetime.utcnow() + datetime.timedelta(hours=1))
+
         ## setup
         ## polycraft
             ## pal
@@ -181,15 +196,27 @@ def submit_job_and_add_task(batch_client, block_blob_client, job_id, pool_id):
                 ##
 
         task = batchmodels.TaskAddParameter(
-            id="MyPythonTask-" + str(count),
+            id=f"Tournament-{str(count)}-{filename}",
             command_line=helpers.wrap_commands_in_shell('linux', [
+                'printenv',
+                'apt-get install zip unzip build-essential -y',
+                'echo "[DN_MSG]additional pkgs installed\n"',
+                # 'mkdir polycraft && mkdir polycraft/pal',  ## Temporary
+                # 'apt install docker.io -y && systemctl start docker && systemctl enable docker && groupadd docker && usermod -aG docker $USER',
                 './setup/setup_azure_vm.sh',
-                f'unzip {file} && mv {file}/ polycraft/pal/'
+                'echo "[DN_MSG]azure vm setup complete\n"',
+                f'unzip {file} && mv {filename}/ polycraft/pal/',
                 'cd polycraft/pal',
                 'mkdir agents/',
                 'mv ' + APPLICATION_DIR + '/* ./agents/',
-                './agents/SIFT_SVN/code/docker/build.sh',
-                f'python polycraft/pal/PolycraftAIGym/LaunchTournament.py -t "{filename}" -g "../{file}"'
+                'echo "[DN_MSG]agent moved into place\n"',
+                'cd ./agents/SIFT_SVN/code/docker',
+                './build.sh',
+                'echo "[DN_MSG]docker build completed\n"',
+                'cd $HOME/polycraft/pal/PolycraftAIGym',
+                'mkdir Logs',
+                'echo "[DN_MSG]hopefully moved into the right folder?\n"" && echo pwd',
+                f'python LaunchTournament.py -t "{filename}" -g "../{filename}/"',
                 # 'printenv',
                 # 'sudo -S apt-get install -y python3-opencv',
                 # 'sudo pip3 install -r ' + APPLICATION_DIR + '/requirements.txt',
@@ -197,7 +224,7 @@ def submit_job_and_add_task(batch_client, block_blob_client, job_id, pool_id):
                 ]),
             resource_files=[
                             batchmodels.ResourceFile(
-                                file_path= file,
+                                file_path=file,
                                 http_url=sas_url),
                             batchmodels.ResourceFile(
                                 file_path='setup/' + 'setup_azure_vm.sh',
@@ -271,7 +298,7 @@ def execute_sample(global_config, sample_config):
     #     storage_account_connection_string)
 
     job_id = helpers.generate_unique_resource_name(
-        "ImageTestJob")
+        "PolycraftTournamentJob")
     pool_id = POOL_ID
     try:
         create_pool(
@@ -279,7 +306,8 @@ def execute_sample(global_config, sample_config):
             block_blob_client,
             pool_id,
             pool_vm_size,
-            pool_vm_count)
+            pool_vm_count,
+            global_config)
 
         submit_job_and_add_task(
             batch_client,
