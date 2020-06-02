@@ -39,9 +39,17 @@ import azure.batch.models as batchmodels
 
 import PolycraftAIGym.common.helpers as helpers
 
-_CONTAINER_NAME = 'polycrafttournamentdata'
-_SIMPLE_TASK_NAME = 'simple_task.py'
-_SIMPLE_TASK_PATH = os.path.join('resources', 'simple_task.py')
+_CONTAINER_NAME = 'batch-workflow-test'
+# APPLICATION_ID = 'image-test'
+APPLICATION_ID = 'agent_sift'
+APPLICATION_VERSION = '1'
+# APPLICATION_ID_FIXED = 'image_test'
+APPLICATION_ID_FIXED = 'agent_sift'
+APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + APPLICATION_ID_FIXED + '_' + APPLICATION_VERSION
+# POOL_ID = "ImageTestPool"
+POOL_ID = "FogWar25_01"
+# _SIMPLE_TASK_NAME = 'simple_task.py'
+# _SIMPLE_TASK_PATH = os.path.join('resources', 'simple_task.py')
 
 
 def create_pool(batch_client, block_blob_client, pool_id, vm_size, vm_count):
@@ -58,34 +66,59 @@ def create_pool(batch_client, block_blob_client, pool_id, vm_size, vm_count):
     # pick the latest supported 16.04 sku for UbuntuServer
     sku_to_use, image_ref_to_use = \
         helpers.select_latest_verified_vm_image_with_node_agent_sku(
-            batch_client, 'Canonical', 'UbuntuServer', '16.04')
+            batch_client, 'Canonical', 'UbuntuServer', '18.04')
 
     block_blob_client.create_container(
         _CONTAINER_NAME,
         fail_on_exist=False)
 
-    sas_url = helpers.upload_blob_and_create_sas(
-        block_blob_client,
-        _CONTAINER_NAME,
-        _SIMPLE_TASK_NAME,
-        _SIMPLE_TASK_PATH,
-        datetime.datetime.utcnow() + datetime.timedelta(hours=1))
+    # sas_url = helpers.upload_blob_and_create_sas(
+    #     block_blob_client,
+    #     _CONTAINER_NAME,
+    #     _SIMPLE_TASK_NAME,
+    #     _SIMPLE_TASK_PATH,
+    #     datetime.datetime.utcnow() + datetime.timedelta(hours=1))
 
     application_package_references = [
-        batchmodels.ApplicationPackageReference(application_id='pal-test', version='1.5.1'),
+        batchmodels.ApplicationPackageReference(application_id=APPLICATION_ID, version=APPLICATION_VERSION),
     ]
-    pool = batchmodels.PoolAddParameter(
+    # pool = batchmodels.PoolAddParameter(
+    #     id=pool_id,
+    #     virtual_machine_configuration=batchmodels.VirtualMachineConfiguration(
+    #         image_reference=image_ref_to_use,
+    #         node_agent_sku_id=sku_to_use),
+    #     vm_size=vm_size,
+    #     target_dedicated_nodes=vm_count,
+    #     application_package_references=application_package_references,
+    #     start_task=batchmodels.StartTask(
+    #         command_line="python --version"))
+
+    pool = batch.models.PoolAddParameter(
         id=pool_id,
         virtual_machine_configuration=batchmodels.VirtualMachineConfiguration(
-            image_reference=image_ref_to_use,
-            node_agent_sku_id=sku_to_use),
+            image_reference=batchmodels.ImageReference(
+                publisher="Canonical",
+                offer="UbuntuServer",
+                sku="18.04-LTS",
+                version="latest"
+            ),
+            node_agent_sku_id="batch.node.ubuntu 18.04"),
         vm_size=vm_size,
         target_dedicated_nodes=vm_count,
+        application_package_references=application_package_references,
         start_task=batchmodels.StartTask(
-            command_line="python " + _SIMPLE_TASK_NAME,
-            resource_files=[batchmodels.ResourceFile(
-                            file_path=_SIMPLE_TASK_NAME,
-                            http_url=sas_url)]))
+            command_line=helpers.wrap_commands_in_shell('linux', [
+                'apt-get install software-properties-common',
+                'apt-add-repository universe',
+                'apt-get update',
+                'sudo apt-get install -y python3-pip'
+                ]),
+            wait_for_success=True,
+            user_identity=batchmodels.UserIdentity(
+                auto_user=batchmodels.AutoUserSpecification(
+                    scope=batchmodels.AutoUserScope.pool,
+                    elevation_level=batchmodels.ElevationLevel.admin)),
+        ))
 
     helpers.create_pool_if_not_exist(batch_client, pool)
 
@@ -111,21 +144,71 @@ def submit_job_and_add_task(batch_client, block_blob_client, job_id, pool_id):
         _CONTAINER_NAME,
         fail_on_exist=False)
 
-    sas_url = helpers.upload_blob_and_create_sas(
-        block_blob_client,
-        _CONTAINER_NAME,
-        _SIMPLE_TASK_NAME,
-        _SIMPLE_TASK_PATH,
-        datetime.datetime.utcnow() + datetime.timedelta(hours=1))
+    #os.chdir('../output/')
+    count = 0
+    for file in os.listdir(os.getcwd() + '../fog_of_war'):
+        if not file.endswith(".zip"):
+            continue
+        filename = file.split('.')[0]
 
-    task = batchmodels.TaskAddParameter(
-        id="MyPythonTask",
-        command_line="python " + _SIMPLE_TASK_NAME,
-        resource_files=[batchmodels.ResourceFile(
-                        file_path=_SIMPLE_TASK_NAME,
-                        http_url=sas_url)])
+        application_package_references = [
+            batchmodels.ApplicationPackageReference(application_id=APPLICATION_ID, version=APPLICATION_VERSION),
+        ]
 
-    batch_client.task.add(job_id=job.id, task=task)
+        user_identity = batch.models.UserIdentity(auto_user=batch.models.AutoUserSpecification(
+                scope=batch.models.AutoUserScope.pool,
+                elevation_level=batch.models.ElevationLevel.admin))
+
+        sas_url = helpers.upload_blob_and_create_sas(
+            block_blob_client,
+            _CONTAINER_NAME,
+            'inputs-test/' + file,
+            '../fog_of_war' + file,
+            datetime.datetime.utcnow() + datetime.timedelta(hours=1))
+
+        setup_url = helpers.upload_blob_and_create_sas(
+            block_blob_client,
+            _CONTAINER_NAME,
+            "setup_azure_vm.sh",
+            'setup_azure_vm.sh',
+            datetime.datetime.utcnow() + datetime.timedelta(hours=1))
+
+        ## setup
+        ## polycraft
+            ## pal
+                ## agents
+                ## {file}
+                ##
+
+        task = batchmodels.TaskAddParameter(
+            id="MyPythonTask-" + str(count),
+            command_line=helpers.wrap_commands_in_shell('linux', [
+                './setup/setup_azure_vm.sh',
+                f'unzip {file} && mv {file}/ polycraft/pal/'
+                'cd polycraft/pal',
+                'mkdir agents/',
+                'mv ' + APPLICATION_DIR + '/* ./agents/',
+                './agents/SIFT_SVN/code/docker/build.sh',
+                f'python polycraft/pal/PolycraftAIGym/LaunchTournament.py -t "{filename}" -g "../{file}"'
+                # 'printenv',
+                # 'sudo -S apt-get install -y python3-opencv',
+                # 'sudo pip3 install -r ' + APPLICATION_DIR + '/requirements.txt',
+                # 'python3 ' + APPLICATION_DIR + '/sense_screen_image.py'
+                ]),
+            resource_files=[
+                            batchmodels.ResourceFile(
+                                file_path= file,
+                                http_url=sas_url),
+                            batchmodels.ResourceFile(
+                                file_path='setup/' + 'setup_azure_vm.sh',
+                                http_url=setup_url),
+                           ],
+            application_package_references=application_package_references,
+            user_identity=user_identity)
+
+        batch_client.task.add(job_id=job.id, task=task)
+
+        count += 1
 
 
 def execute_sample(global_config, sample_config):
@@ -188,8 +271,8 @@ def execute_sample(global_config, sample_config):
     #     storage_account_connection_string)
 
     job_id = helpers.generate_unique_resource_name(
-        "PoolsAndResourceFilesJob")
-    pool_id = "PoolsAndResourceFilesPool"
+        "ImageTestJob")
+    pool_id = POOL_ID
     try:
         create_pool(
             batch_client,
@@ -211,7 +294,7 @@ def execute_sample(global_config, sample_config):
         tasks = batch_client.task.list(job_id)
         task_ids = [task.id for task in tasks]
 
-        helpers.print_task_output(batch_client, job_id, task_ids)
+        # helpers.print_task_output(batch_client, job_id, task_ids)
     finally:
         # clean up
         if should_delete_container:

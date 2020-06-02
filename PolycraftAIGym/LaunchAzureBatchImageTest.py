@@ -40,11 +40,14 @@ import azure.batch.models as batchmodels
 import PolycraftAIGym.common.helpers as helpers
 
 _CONTAINER_NAME = 'batch-workflow-test'
-APPLICATION_ID = 'image-test'
-APPLICATION_VERSION = '8'
-APPLICATION_ID_FIXED = 'image_test'
+# APPLICATION_ID = 'image-test'
+APPLICATION_ID = 'agent_sift'
+APPLICATION_VERSION = '1'
+# APPLICATION_ID_FIXED = 'image_test'
+APPLICATION_ID_FIXED = 'agent_sift'
 APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + APPLICATION_ID_FIXED + '_' + APPLICATION_VERSION
-POOL_ID = "ImageTestPool"
+# POOL_ID = "ImageTestPool"
+POOL_ID = "FogWar25_01"
 # _SIMPLE_TASK_NAME = 'simple_task.py'
 # _SIMPLE_TASK_PATH = os.path.join('resources', 'simple_task.py')
 

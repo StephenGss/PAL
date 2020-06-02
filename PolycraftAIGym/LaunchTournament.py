@@ -13,6 +13,7 @@ from subprocess import PIPE
 import re
 from collections import defaultdict
 from copy import copy, deepcopy
+import getopt
 
 
 class LaunchTournament:
@@ -638,5 +639,35 @@ class State(Enum):
     DETECT_RESET = 11
 
 if __name__ == "__main__":
+    argv = sys.argv[1:]
+
+    # seed = 0
+    # intensity = 50
+    # template_path = '../available_tests/hg_nonov.json'
+    # output = '../output'
+    # output_name = 'hg_lvl-0'
+    try:
+        opts, args = getopt.getopt(argv, "htg",
+                                   ["tournament=","game_folder=",])
+    except getopt.GetoptError:
+        print('HGLvl0Generator.py -s <seed> -i <intensity> -t <template_path> -o <output_path> -n <output_name>')
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt == '-h':
+            print('HGLvl0Generator.py -s <seed> -i <intensity> -t <template_path> -o <output_path> -n <output_name>')
+            sys.exit()
+        # elif opt in ("-s", "--seed"):
+        #     seed = arg
+        elif opt in ("-g", "--game-folder"):
+            CONFIG.GAMES_FOLDER = arg
+        elif opt in ("-t", "--tournament"):
+            CONFIG.TOURNAMENT_ID = arg
+        # elif opt in ("-o", "--output-path"):
+        #     output = arg
+        # elif opt in ("-n", "--output-name"):
+        #     output_name = arg
+
+
+
     pal = LaunchTournament(os='UNIX')
     pal.execute()
