@@ -1,6 +1,6 @@
 MAX_STEP_COST = 1000000
 MAX_TIME = 30
-TOURNAMENT_ID = "Nonov_HG_Test_13_threads_5g"
+TOURNAMENT_ID = "Nonov_HG_Test_16_threads_5g"
 _AGENT_SCRIPT = "hg_agent.py"
 #_AGENT_SCRIPT = "DEBUG=1 Polycraft_Port=9000 ./start-openmind"
 #_AGENT_SCRIPT = "./prt polycraft-easy-pogo1.prt"

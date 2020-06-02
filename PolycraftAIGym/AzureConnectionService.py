@@ -43,12 +43,10 @@ class AzureConnectionService:
                                 """)
             result = dbcur.fetchone()
             if result:
-                #dbcur.close()
+                # dbcur.close()
                 return True
-            #dbcur.close()
+            # dbcur.close()
         return False
-
-
 
     def is_connected(self):
         if self.blob_service_client is not None and self.sql_connection is not None and self.valid_connection:
@@ -59,7 +57,7 @@ class AzureConnectionService:
         if self.configs is None:
             return None
         Driver = "{ODBC Driver 17 for SQL Server}"
-        Server="tcp:polycraft.database.windows.net,1433"
+        Server = "tcp:polycraft.database.windows.net,1433"
         Database = "tournament_database"
         Uid = self.configs['azure']['SQL_USERNAME']
         Pwd = self.configs['azure']['SQL_PASSWORD']
@@ -97,10 +95,10 @@ class AzureConnectionService:
             WHERE table_name = '{0}'
             """.format(tablename.replace('\'', '\'\'')))
         if dbcur.fetchone()[0] == 1:
-            #dbcur.close()
+            # dbcur.close()
             return True
 
-        #dbcur.close()
+        # dbcur.close()
         return False
 
     def _create_agent_table_named(self, name):
@@ -134,7 +132,6 @@ class AzureConnectionService:
         except Exception as e:
             self.debug_log.message(f"Error! Table could not be created: {str(e)}")
 
-
     def send_game_details_to_azure(self, game_dict, game_id):
         if self.configs is None:
             self.debug_log.message("No Config File available for SQL Connection")
@@ -151,8 +148,8 @@ class AzureConnectionService:
             vals['Game_ID'] = int(game_id)
             vals['Step_Number'] = int(step)
             vals['Time_Stamp'] = str(game_dict[step]['Time_Stamp'])
-            vals['Step_Cost'] = float(game_dict[step]['stepCost'])*-1  # Make these values negative
-            vals['Running_Step_Cost'] = float(game_dict[step]['running_total_cost'])*-1 # make these values negative
+            vals['Step_Cost'] = float(game_dict[step]['stepCost']) * -1  # Make these values negative
+            vals['Running_Step_Cost'] = float(game_dict[step]['running_total_cost']) * -1  # make these values negative
             vals['Running_Total_Reward'] = float(game_dict[step]['running_total_score'])
             vals['Goal_Type'] = str(game_dict[step]['goalType'])
             vals['Goal_Achieved'] = str(game_dict[step]['goalAchieved'])
@@ -162,7 +159,7 @@ class AzureConnectionService:
             vals['Command_Message'] = str(game_dict[step]['message'])
             vals['Game_Over'] = distutils.util.strtobool(str(game_dict[step]['Game_Over']))
             vals['Novelty_Flag'] = str(game_dict[step]['Distribution'])
-            # vals['Novelty_Flag'] = distutils.util.strtobool(str(game_dict[step]['Novelty_Flag']))
+
             all_vals.update({step: vals})
 
         rows_to_add = []
@@ -185,49 +182,97 @@ class AzureConnectionService:
         except Exception as e:
             self.debug_log.message(f"Error! Scores not sent: {str(e)}")
 
+    def send_summary_to_azure(self, score_dict, game_id):
+        """
+        CREATE TABLE TOURNAMENT_AGGREGATE (
+Task_Name VARCHAR(50) not null,
+Agent_Name VARCHAR(50) not null,
+Tournament_Name VARCHAR(50) not null,
+Game_ID INT not null,
+Has_Novelty BIT DEFAULT 0,
+Ground_Truth BIT DEFAULT 0,
+Novelty_Detected BIT DEFAULT 0,
+Novelty_Detected_Step INT,
+Novelty_Detected_Time VARCHAR(50),
+Game_End_Condition TEXT,
+Pal_Log_Blob_URL Text,
+Agent_Log_Blob_URL TEXT,
+Debug_Log_Blob_URL Text,
+        :param score_dict:
+        :param game_id:
+        :return:
+        """
+        if self.configs is None:
+            self.debug_log.message("No Config File available for SQL Connection")
+            return None
 
-            # self.game_score_dict[cur_step]['Goal_Type'] = data_dict['goal']['goalType']
-            # self.game_score_dict[cur_step]['Goal_Achieved'] = data_dict['goal']['goalAchieved']
-            # self.game_score_dict[cur_step]['Novelty_Flag'] = "0"  # TODO: include Novelty Flag from PAL
+        vals = OrderedDict()
+        vals['Task_Name'] = str(score_dict[game_id]['game_path'])
+        vals['Agent_Name'] = str(CONFIG.AGENT_ID)
+        vals['Tournament_Name'] = str(CONFIG.TOURNAMENT_ID)
+        vals['Game_ID'] = int(game_id)
+        # vals['TournamentDate'] = PalMessenger.time_now_str()
+        vals['Has_Novelty'] = int(score_dict[game_id]['novelty'])
+        vals['Ground_Truth'] = int(score_dict[game_id]['groundTruth'])
+        vals['Novelty_Detected'] = int(score_dict[game_id]['noveltyDetect'])
+        vals['Novelty_Detected_Step'] = int(score_dict[game_id]['noveltyDetectStep'])
+        vals['Novelty_Detected_Time'] = str(score_dict[game_id]['noveltyDetectTime'])
+        vals['Game_End_Condition'] = str(score_dict[game_id]['success_detail'])
+        vals['Pal_Log_Blob_URL'] = ""
+        vals['Agent_Log_Blob_URL'] = ""
+        vals['Debug_Log_Blob_URL'] = ""
+
+        dictionary_as_tuple_list = [tuple(vals.values())]
+        self.debug_log.message(f"Sending Score to SQL: {dictionary_as_tuple_list}")
+        try:
+            self.cursor.executemany(f"""
+                            INSERT INTO TOURNAMENT_AGGREGATE ({', '.join([k for k in vals.keys()])}) 
+                              VALUES ({', '.join(['?' for i in dictionary_as_tuple_list[0]])}) ; 
+                                            """, dictionary_as_tuple_list)
+
+            self.sql_connection.commit()
+            self.debug_log.message(f"Game summary sent! Game: {game_id}")
+        except Exception as e:
+            self.debug_log.message(f"Error! Scores not sent: {str(e)}")
 
     def send_score_to_azure(self, score_dict, game_id):
-            if self.configs is None:
-                self.debug_log.message("No Config File available for SQL Connection")
-                return None
+        if self.configs is None:
+            self.debug_log.message("No Config File available for SQL Connection")
+            return None
 
-            vals = OrderedDict()
-            #vals['Task_Name'] = CONFIG.GAMES[game_id]
-            vals['Task_Name'] = str(score_dict[game_id]['game_path'])
-            vals['Agent_Name'] = str(CONFIG.AGENT_ID)
-            vals['TournamentNm'] = str(CONFIG.TOURNAMENT_ID)
-            vals['Game'] = int(game_id)
-            vals['TournamentDate'] = PalMessenger.time_now_str()
-            vals['NoveltyFlag'] = int(score_dict[game_id]['novelty'])
-            vals['GroundTruth'] = int(score_dict[game_id]['groundTruth'])
-            vals['NoveltyDetected'] = int(score_dict[game_id]['noveltyDetect'])
-            vals['NoveltyDetectStep'] = int(score_dict[game_id]['noveltyDetectStep'])
-            vals['NoveltyDetectTime'] = str(score_dict[game_id]['noveltyDetectTime'])
-            #vals['Reward'] = float(score_dict[game_id]['adjustedReward'])
-            if distutils.util.strtobool(str(score_dict[game_id]['success'])):
-                vals['Reward'] = 256000.0 - float(score_dict[game_id]['totalCost'])
-            else:
-                vals['Reward'] = float(score_dict[game_id]['totalCost'])*-1
-            #vals['Reward'] = float(score_dict[game_id]['adjustedReward'])
-            vals['Total_Step_Cost'] = float(score_dict[game_id]['totalCost'])
-            vals['Total_Steps'] = float(score_dict[game_id]['step'])
-            vals['Total_Time'] = float(score_dict[game_id]['elapsed_time'])
-            vals['StartTime'] = str(score_dict[game_id]['startTime'])
-            vals['EndTime'] = str(score_dict[game_id]['endTime'])
-            vals['Complete'] = distutils.util.strtobool(str(score_dict[game_id]['success']))
-            vals['Reason'] = str(score_dict[game_id]['success_detail'])
-            vals['LogBlob'] = ""
-            vals['AgentBlob'] = ""
-            vals['DebugBlob'] = ""
+        vals = OrderedDict()
+        # vals['Task_Name'] = CONFIG.GAMES[game_id]
+        vals['Task_Name'] = str(score_dict[game_id]['game_path'])
+        vals['Agent_Name'] = str(CONFIG.AGENT_ID)
+        vals['TournamentNm'] = str(CONFIG.TOURNAMENT_ID)
+        vals['Game'] = int(game_id)
+        vals['TournamentDate'] = PalMessenger.time_now_str()
+        vals['NoveltyFlag'] = int(score_dict[game_id]['novelty'])
+        vals['GroundTruth'] = int(score_dict[game_id]['groundTruth'])
+        vals['NoveltyDetected'] = int(score_dict[game_id]['noveltyDetect'])
+        vals['NoveltyDetectStep'] = int(score_dict[game_id]['noveltyDetectStep'])
+        vals['NoveltyDetectTime'] = str(score_dict[game_id]['noveltyDetectTime'])
+        # vals['Reward'] = float(score_dict[game_id]['adjustedReward'])
+        if distutils.util.strtobool(str(score_dict[game_id]['success'])):
+            vals['Reward'] = 256000.0 - float(score_dict[game_id]['totalCost'])
+        else:
+            vals['Reward'] = float(score_dict[game_id]['totalCost']) * -1
+        # vals['Reward'] = float(score_dict[game_id]['adjustedReward'])
+        vals['Total_Step_Cost'] = float(score_dict[game_id]['totalCost'])
+        vals['Total_Steps'] = float(score_dict[game_id]['step'])
+        vals['Total_Time'] = float(score_dict[game_id]['elapsed_time'])
+        vals['StartTime'] = str(score_dict[game_id]['startTime'])
+        vals['EndTime'] = str(score_dict[game_id]['endTime'])
+        vals['Complete'] = distutils.util.strtobool(str(score_dict[game_id]['success']))
+        vals['Reason'] = str(score_dict[game_id]['success_detail'])
+        vals['LogBlob'] = ""
+        vals['AgentBlob'] = ""
+        vals['DebugBlob'] = ""
 
-            dictionary_as_tuple_list = [tuple(vals.values())]
-            self.debug_log.message(f"Sending Score to SQL: {dictionary_as_tuple_list}")
-            try:
-                self.cursor.executemany(f"""
+        dictionary_as_tuple_list = [tuple(vals.values())]
+        self.debug_log.message(f"Sending Score to SQL: {dictionary_as_tuple_list}")
+        try:
+            self.cursor.executemany(f"""
                     INSERT INTO RESULTS_TEST (Task_Name,Agent_Name,Tournament_Name,Game_ID,Tournament_Date,Has_Novelty,
                       Ground_Truth,Novelty_Detected,Novelty_Detected_Step, Novelty_Detected_Time, Reward_Score,Total_Step_Cost,
                       Total_Steps,Total_Time,Time_Start,
@@ -235,10 +280,10 @@ class AzureConnectionService:
                       VALUES ({', '.join(['?' for i in dictionary_as_tuple_list[0]])}) ; 
                                     """, dictionary_as_tuple_list)
 
-                self.sql_connection.commit()
-                self.debug_log.message(f"Scores sent! Game: {game_id}")
-            except Exception as e:
-                self.debug_log.message(f"Error! Scores not sent: {str(e)}")
+            self.sql_connection.commit()
+            self.debug_log.message(f"Scores sent! Game: {game_id}")
+        except Exception as e:
+            self.debug_log.message(f"Error! Scores not sent: {str(e)}")
 
     def _update_log_entry(self, game_id, logType, path):
         """

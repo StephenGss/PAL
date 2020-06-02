@@ -431,7 +431,7 @@ class LaunchTournament:
             # parallel process all uploads!
             # threads.append(threading.Thread(name="send_scores", target=azure.send_score_to_azure, args=(self.score_dict, self.game_index)))
             # threads.append(threading.Thread(name="send_game_score", target=azure.send_game_details_to_azure, args=(self.game_score_dict, self.game_index)))
-            azure.send_score_to_azure(score_dict=score_dict, game_id=game_index)
+            azure.send_summary_to_azure(score_dict=score_dict, game_id=game_index)
             azure.send_game_details_to_azure(game_dict=game_dict, game_id=game_index)
             # threads.append(threading.Thread(name="upld_agent", target=azure.upload_pal_messenger_logs, args=(self.agent_log, self.game_index, "agent")))
             # threads.append(threading.Thread(name="upld_pal", target=azure.upload_pal_messenger_logs, args=(self.PAL_log, self.game_index, "pal")))
@@ -527,6 +527,15 @@ class LaunchTournament:
             data_dict = json.loads(json_text)
             if 'step' in data_dict:
                 cur_step = data_dict['step']
+                rematch = re.match(r'b\'\[(\d\d:\d\d:\d\d)\]', str(line))
+                # rematch = re.match(r'\[\d\d.\d\d.\d\d\]', line)
+                # rematch = re.match(r'(\d\d\d\d.\d\d.\d\d.\d\d.\d\d.\d\d):', line)
+                if rematch:
+                    # Get date, as the logs only provide the time
+                    format = "%Y-%m-%d"
+                    self.game_score_dict[cur_step]['Time_Stamp'] = \
+                        time.strftime(format, time.localtime()) + " " + rematch.group(1)
+
                 if 'command_result' in data_dict:
                     self.game_score_dict[cur_step].update(data_dict['command_result'])
                     # self.game_score_dict[cur_step]['Command'] = data_dict['command_result']['command']
