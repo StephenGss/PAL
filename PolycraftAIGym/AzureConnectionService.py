@@ -19,7 +19,9 @@ class AzureConnectionService:
         self.debug_log = debug_log
         self.container_name = container_name
         self.blob_service_client = self._read_secret_key()
+        self.valid_connection = False
         self.sql_connection = self._get_sql_connection()
+        self.cursor = None
         if self.is_connected():
             self.cursor = self.sql_connection.cursor()
 
@@ -31,10 +33,25 @@ class AzureConnectionService:
         else:
             return None
 
-    def is_connected(self):
-        if self.blob_service_client is not None and self.sql_connection is not None:
-            # Perform dummy query to "wake up" the SQL server in case it went to sleep
+    @staticmethod
+    def _validate_db_connection(dbcon):
+        if dbcon is not None:
+            dbcur = dbcon.cursor()
+            dbcur.execute("""
+                                SELECT COUNT(*)
+                                FROM information_schema.tables
+                                """)
+            result = dbcur.fetchone()
+            if result:
+                #dbcur.close()
+                return True
+            #dbcur.close()
+        return False
 
+
+
+    def is_connected(self):
+        if self.blob_service_client is not None and self.sql_connection is not None and self.valid_connection:
             return True
         return False
 
@@ -52,6 +69,7 @@ class AzureConnectionService:
         cxn = f'Driver={Driver};Server={Server};Database={Database};Uid={Uid};Pwd={Pwd};Encrypt={Encrypt};TrustServerCertificate={TrustServerCertificate};Connection Timeout={ConnectionTimeout};'
         try:
             db = pyodbc.connect(cxn)
+            self.valid_connection = AzureConnectionService._validate_db_connection(db)
             return db
         except Exception as e:
             self.debug_log.message("Error in SQL Connection: " + str(e))
@@ -68,6 +86,109 @@ class AzureConnectionService:
 
         return BlobServiceClient.from_connection_string(self.configs['azure']['AZURE_STORAGE_KEY'])
         # table_service = TableService(connection_string=connect_str)
+
+    def checkTableExists(self, tablename):
+        if not self.is_connected():
+            return False
+        dbcur = self.sql_connection.cursor()
+        dbcur.execute("""
+            SELECT COUNT(*)
+            FROM information_schema.tables
+            WHERE table_name = '{0}'
+            """.format(tablename.replace('\'', '\'\'')))
+        if dbcur.fetchone()[0] == 1:
+            #dbcur.close()
+            return True
+
+        #dbcur.close()
+        return False
+
+    def _create_agent_table_named(self, name):
+        if not self.is_connected():
+            return False
+        try:
+            dbcur = self.sql_connection.cursor()
+            dbcur.execute(f"""
+            CREATE TABLE {name} (
+                Tournament_Name VARCHAR(50) not null,
+                Game_ID INT not null,
+                Step_Number INT not null,
+                Time_Stamp VARCHAR (32) not null,
+                Step_Cost FLOAT(24),
+                Running_Step_Cost FLOAT(24),
+                Running_Total_Reward FLOAT(24),
+                Goal_Type VARCHAR(32),
+                Goal_Achieved BIT,
+                Command VARCHAR(50),
+                Command_Argument TEXT,
+                Command_Result TEXT,
+                Command_Message TEXT,
+                Game_Over BIT,
+                Novelty_Flag TEXT,
+                PRIMARY KEY (Tournament_Name, Game_ID, Step_Number)
+                );
+             """)
+            self.sql_connection.commit()
+            dbcur.close()
+            self.debug_log.message(f"New Table created! Named: {name}")
+        except Exception as e:
+            self.debug_log.message(f"Error! Table could not be created: {str(e)}")
+
+
+    def send_game_details_to_azure(self, game_dict, game_id):
+        if self.configs is None:
+            self.debug_log.message("No Config File available for SQL Connection")
+            return None
+
+        if not self.checkTableExists(CONFIG.AGENT_ID):
+            # TODO: Replace spaces in agent name with underscores and trim to 32 char for SQL table names
+            self._create_agent_table_named(CONFIG.AGENT_ID)
+
+        all_vals = OrderedDict()
+        for step in game_dict.keys():
+            vals = OrderedDict()
+            vals['Tournament_Name'] = str(CONFIG.TOURNAMENT_ID)
+            vals['Game_ID'] = int(game_id)
+            vals['Step_Number'] = int(step)
+            vals['Time_Stamp'] = str(game_dict[step]['Time_Stamp'])
+            vals['Step_Cost'] = float(game_dict[step]['stepCost'])*-1  # Make these values negative
+            vals['Running_Step_Cost'] = float(game_dict[step]['running_total_cost'])*-1 # make these values negative
+            vals['Running_Total_Reward'] = float(game_dict[step]['running_total_score'])
+            vals['Goal_Type'] = str(game_dict[step]['goalType'])
+            vals['Goal_Achieved'] = str(game_dict[step]['goalAchieved'])
+            vals['Command'] = str(game_dict[step]['command'])
+            vals['Command_Argument'] = str(game_dict[step]['argument'])
+            vals['Command_Result'] = str(game_dict[step]['result'])
+            vals['Command_Message'] = str(game_dict[step]['message'])
+            vals['Game_Over'] = distutils.util.strtobool(str(game_dict[step]['Game_Over']))
+            vals['Novelty_Flag'] = str(game_dict[step]['Novelty_Flag'])
+            # vals['Novelty_Flag'] = distutils.util.strtobool(str(game_dict[step]['Novelty_Flag']))
+            all_vals.update({step: vals})
+
+        rows_to_add = []
+        for dict in all_vals.values():
+            rows_to_add.extend([tuple(dict.values())])
+
+        self.debug_log.message(f"Sending Game Details to SQL: {rows_to_add}")
+
+        try:
+            self.cursor = self.sql_connection.cursor()
+            self.cursor.executemany(f"""
+                INSERT INTO {CONFIG.AGENT_ID} (
+                    {', '.join([i for i in all_vals[1].keys()])}
+                    ) 
+                  VALUES ({', '.join(['?' for i in rows_to_add[0]])}) ; 
+                                """, rows_to_add)
+
+            self.sql_connection.commit()
+            self.debug_log.message(f"Game sent! Game: {game_id}")
+        except Exception as e:
+            self.debug_log.message(f"Error! Scores not sent: {str(e)}")
+
+
+            # self.game_score_dict[cur_step]['Goal_Type'] = data_dict['goal']['goalType']
+            # self.game_score_dict[cur_step]['Goal_Achieved'] = data_dict['goal']['goalAchieved']
+            # self.game_score_dict[cur_step]['Novelty_Flag'] = "0"  # TODO: include Novelty Flag from PAL
 
     def send_score_to_azure(self, score_dict, game_id):
             if self.configs is None:
@@ -161,6 +282,7 @@ class AzureConnectionService:
         """
         uploaded_path = self.upload_game_log(palMessenger.log_file, game_id, container)
         if uploaded_path is not None:
+            self.debug_log.message(f"Log file uploaded: {log_type}")
             self._update_log_entry(game_id, log_type, uploaded_path)
 
     def upload_game_log(self, filepath, game_id, container=None):

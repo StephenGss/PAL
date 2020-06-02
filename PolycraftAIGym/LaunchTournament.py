@@ -12,6 +12,7 @@ import config as CONFIG
 from subprocess import PIPE
 import re
 from collections import defaultdict
+from copy import copy, deepcopy
 
 
 class LaunchTournament:
@@ -63,6 +64,7 @@ class LaunchTournament:
 
         ## Results
         self.score_dict = {}
+        self.game_score_dict = defaultdict(lambda: defaultdict(lambda: 0))
 
         ##Logging
         self._create_logs()
@@ -392,16 +394,50 @@ class LaunchTournament:
         sys.stdout.flush()
         self.score_dict[self.game_index]['endTime'] = PalMessenger.PalMessenger.time_now_str()
 
-        azure = AzureConnectionService.AzureConnectionService(self.debug_log)
-        if azure.is_connected():
-            azure.send_score_to_azure(score_dict=self.score_dict, game_id=self.game_index)
-            azure.upload_pal_messenger_logs(palMessenger=self.agent_log, log_type="agent", game_id=self.game_index)
-            azure.upload_pal_messenger_logs(palMessenger=self.PAL_log, log_type="pal", game_id=self.game_index)
-            azure.upload_pal_messenger_logs(palMessenger=self.debug_log, log_type="debug", game_id=self.game_index)
-            azure.upload_pal_messenger_logs(palMessenger=self.speed_log, log_type='speed', game_id=self.game_index)
+        # self.threads = self._update_azure(self.game_index)
+        # azure = AzureConnectionService.AzureConnectionService(self.debug_log)
+        # Pass a copy of all necessary variables to the separate thread to prevent SIGBUS faults.
+        self.threads = threading.Thread(name="azure_cxn", target=self._update_azure,
+                                        args=(int(self.game_index),
+                                              deepcopy(self.score_dict),
+                                              deepcopy(self.game_score_dict),
+                                              copy(self.debug_log),
+                                              copy(self.agent_log),
+                                              copy(self.PAL_log),
+                                              copy(self.speed_log),
+                                              ))
+        self.threads.start()
+        # if azure.is_connected():
+        #     azure.send_score_to_azure(score_dict=self.score_dict, game_id=self.game_index)
+        #     azure.send_game_details_to_azure(game_dict=self.game_score_dict, game_id=self.game_index)
+        #     azure.upload_pal_messenger_logs(palMessenger=self.agent_log, log_type="agent", game_id=self.game_index)
+        #     azure.upload_pal_messenger_logs(palMessenger=self.PAL_log, log_type="pal", game_id=self.game_index)
+        #     azure.upload_pal_messenger_logs(palMessenger=self.debug_log, log_type="debug", game_id=self.game_index)
+        #     azure.upload_pal_messenger_logs(palMessenger=self.speed_log, log_type='speed', game_id=self.game_index)
         self.game_index += 1
         self._create_logs()
 
+    def _update_azure(self, game_index, score_dict, game_dict, debug_log, agent_log, PAL_log, speed_log):
+        # self.pb_t = threading.Thread(target=self.read_output, args=(self.agent, self.q2))
+        azure = AzureConnectionService.AzureConnectionService(debug_log)
+        # threads = None
+        if azure.is_connected():
+            # parallel process all uploads!
+            # threads.append(threading.Thread(name="send_scores", target=azure.send_score_to_azure, args=(self.score_dict, self.game_index)))
+            # threads.append(threading.Thread(name="send_game_score", target=azure.send_game_details_to_azure, args=(self.game_score_dict, self.game_index)))
+            azure.send_score_to_azure(score_dict=score_dict, game_id=game_index)
+            azure.send_game_details_to_azure(game_dict=game_dict, game_id=game_index)
+            # threads.append(threading.Thread(name="upld_agent", target=azure.upload_pal_messenger_logs, args=(self.agent_log, self.game_index, "agent")))
+            # threads.append(threading.Thread(name="upld_pal", target=azure.upload_pal_messenger_logs, args=(self.PAL_log, self.game_index, "pal")))
+            # threads.append(threading.Thread(name="upld_debug", target=azure.upload_pal_messenger_logs, args=(self.debug_log, self.game_index, "debug")))
+            # speedlog = threading.Thread(target=azure.upload_pal_messenger_logs, args=(self.agent_log, self.game_index, "agent"))
+            azure.upload_pal_messenger_logs(palMessenger=agent_log, log_type="agent", game_id=game_index)
+            azure.upload_pal_messenger_logs(palMessenger=PAL_log, log_type="pal", game_id=game_index)
+            azure.upload_pal_messenger_logs(palMessenger=debug_log, log_type="debug", game_id=game_index)
+            azure.upload_pal_messenger_logs(palMessenger=speed_log, log_type='speed', game_id=game_index)
+        #     for i in threads:
+        #         i.start()
+        # return threads
 
     def _tournament_completed(self):
         """
@@ -414,6 +450,9 @@ class LaunchTournament:
         os.kill(self.agent.pid, signal.SIGTERM)
         os.kill(self.pal_client_process.pid, signal.SIGTERM)
         self.tm_thread.kill()
+        if self.threads is not None:
+            self.threads.join()
+
         self.tm_thread.join(5)
         self.tournament_in_progress = False
 
@@ -433,6 +472,9 @@ class LaunchTournament:
         self.commands_sent = 0
         self.total_step_cost = 9
         self._setup_next_game()
+        # if self.threads is not None: #TODO: is this necessary?
+        #     self.threads.join()
+                # i.join()
         #Flush queues for now - noTODO: this is necessary to catch the Game Initialization Complete string
         # with self.q.mutex:
         #     self.q.queue.clear()
@@ -460,13 +502,47 @@ class LaunchTournament:
         """
         Checks to see if the current line contains a score update provided by PAL and keeps track of it if so
         :param line: Current Line in STDOUT
+
+        Example Result String from [CLIENT]
+        {"goal":{"goalType":"BLOCK_TO_LOCATION","goalAchieved":false},
+        "command_result":{"command":"smooth_move","argument":"w","result":"SUCCESS","message":"","stepCost":27.906975},
+        "step":1,
+        "gameOver":false}\n'
         """
         line_end_str = '\\r\\n'
         if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
             line_end_str = '\\n'
+        if line.find('[CLIENT]{') != -1 and line.find(line_end_str) != -1:
+            # Get timestamp:
+            json_text = line[line.find('{'):line.find(line_end_str)]  # Make this system agnostic - previously \\r\\n
+            # TODO: Potentially remove this?
+            json_text = re.sub(r'\\\\\"', '\'', json_text)
+            json_text = re.sub(r'\\+\'', '\'', json_text)
+            data_dict = json.loads(json_text)
+            if 'step' in data_dict:
+                cur_step = data_dict['step']
+                if 'command_result' in data_dict:
+                    self.game_score_dict[cur_step].update({k: v for k, v in data_dict['command_result'].items()})
+                    # self.game_score_dict[cur_step]['Command'] = data_dict['command_result']['command']
+                    # self.game_score_dict[cur_step]['Command_Arguments'] = data_dict['command_result']['argument']
+                    # self.game_score_dict[cur_step]['Command_Result'] = data_dict['command_result']['result']
+                    # self.game_score_dict[cur_step]['Command_Message'] = data_dict['command_result']['message']
+                    # self.game_score_dict[cur_step]['Step_Cost'] = data_dict['command_result']['stepCost']
+                if 'goal' in data_dict:
+                    self.game_score_dict[cur_step].update({k: v for k, v in data_dict['goal'].items()})
+                    # self.game_score_dict[cur_step]['Goal_Type'] = data_dict['goal']['goalType']
+                    # self.game_score_dict[cur_step]['Goal_Achieved'] = data_dict['goal']['goalAchieved']
+                    # self.game_score_dict[cur_step]['Novelty_Flag'] = "0"  # TODO: include Novelty Flag from PAL
+                if 'gameOver' in data_dict:
+                    self.game_score_dict[cur_step]['Game_Over'] = data_dict['gameOver']
+
         if line.find('[SCORE]') != -1 and line.find(line_end_str) != -1:
             score_string = line[line.find('[SCORE]')+7:line.find(line_end_str)]
-            self.score_dict[self.game_index].update({v[0]: v[1] for v in [k.split(':') for k in score_string.split(',')]})
+            scores_dict = {v[0]: v[1] for v in [k.split(':') for k in score_string.split(',')]}
+            self.score_dict[self.game_index].update(scores_dict)
+            cur_step = int(scores_dict['step'])
+            self.game_score_dict[cur_step].update({'running_total_cost': scores_dict['totalCost']})
+            self.game_score_dict[cur_step].update({'running_total_score': scores_dict['adjustedReward']})
 
     def _setup_next_game(self):
         """
@@ -481,8 +557,8 @@ class LaunchTournament:
             self.tm_thread.queue.put("LAUNCH domain " + self.games[self.game_index])
             self.debug_log.message("LAUNCH domain command issued")
 
-        # Moving Start Time closer to the next game loop - loosing ~3 seconds rn.
-        # self.start_time = time.time()
+        self.game_score_dict = defaultdict(lambda: defaultdict(lambda: 0))
+        self.score_dict = {}  # Reset Score_Dict as well - it doesn't need to be super long!
         self.score_dict[self.game_index] = defaultdict(lambda: 0)
         self.score_dict[self.game_index]['game_path'] = self.games[self.game_index]
         # self.score_dict[self.game_index]['startTime'] = PalMessenger.PalMessenger.time_now_str()

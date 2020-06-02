@@ -19,6 +19,9 @@ class PalMessenger:
         if write_log_info is True:
             Path(log_file).parent.mkdir(parents=True, exist_ok=True)
 
+    def __copy__(self):
+        return PalMessenger(self.print_log_info, self.write_log_info, self.log_file, self.log_note, self.give_time)
+
     def message(self, message_to_handle):
         message = ""
         if self.give_time:
@@ -30,6 +33,8 @@ class PalMessenger:
         if self.write_log_info:
             with open(self.log_file, "a") as write_file:
                 write_file.write(message)
+
+
 
     @staticmethod
     def time_now_str(sep="-"):
