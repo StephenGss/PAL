@@ -115,9 +115,11 @@ def create_pool(batch_client, block_blob_client, pool_id, vm_size, vm_count, glo
                 ]),
             wait_for_success=True,
             user_identity=batchmodels.UserIdentity(
-                auto_user=batchmodels.AutoUserSpecification(
-                    scope=batchmodels.AutoUserScope.pool,
-                    elevation_level=batchmodels.ElevationLevel.admin)),
+                user_name='azureuser',
+                 # auto_user=batchmodels.AutoUserSpecification(
+            #         scope=batchmodels.AutoUserScope.pool,
+            #         elevation_level=batchmodels.ElevationLevel.admin)
+            # ),
 
             ),
         # mount_configuration=[batch.models.MountConfiguration(
@@ -163,9 +165,12 @@ def submit_job_and_add_task(batch_client, block_blob_client, job_id, pool_id):
             batchmodels.ApplicationPackageReference(application_id=APPLICATION_ID, version=APPLICATION_VERSION),
         ]
 
-        user_identity = batch.models.UserIdentity(auto_user=batch.models.AutoUserSpecification(
-                scope=batch.models.AutoUserScope.pool,
-                elevation_level=batch.models.ElevationLevel.admin))
+        user_identity = batch.models.UserIdentity(
+                user_name='azureuser',
+                # auto_user=batch.models.AutoUserSpecification(
+                # scope=batch.models.AutoUserScope.pool,
+                # elevation_level=batch.models.ElevationLevel.admin)
+        )
 
         sas_url = helpers.upload_blob_and_create_sas(
             block_blob_client,
@@ -215,7 +220,7 @@ def submit_job_and_add_task(batch_client, block_blob_client, job_id, pool_id):
                 'echo "[DN_MSG]docker build completed\n"',
                 'cd $HOME/polycraft/pal/PolycraftAIGym',
                 'mkdir Logs',
-                'echo "[DN_MSG]hopefully moved into the right folder?\n"" && echo pwd',
+                'echo "[DN_MSG]hopefully moved into the right folder?\n" && echo pwd',
                 f'python LaunchTournament.py -t "{filename}" -g "../{filename}/"',
                 # 'printenv',
                 # 'sudo -S apt-get install -y python3-opencv',
