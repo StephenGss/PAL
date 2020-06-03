@@ -74,9 +74,10 @@ class LaunchTournament:
         #Load Games
         self.games = self._build_game_list(CONFIG.GAME_COUNT)
 
-    def _build_game_list(self, ct, rootdir=CONFIG.GAMES_FOLDER):
+    def _build_game_list(self, ct):
         file_type = '.json'
         file_list = []
+        rootdir = CONFIG.GAMES_FOLDER
         for subdir, dirs, files in os.walk(rootdir):
             for file in files:
                 filepath = subdir + os.sep + file
@@ -149,7 +150,7 @@ class LaunchTournament:
             data_dict = json.loads(json_text)
             self.commands_sent += 1
             self.total_step_cost += data_dict["command_result"]["stepCost"]
-            self.score_dict[self.game_index].update({'elapsed_time': time.time() - self.start_time})
+            #self.score_dict[self.game_index].update({'elapsed_time': time.time() - self.start_time})
 
             if data_dict["goal"]["goalAchieved"]:
                 msg = 'Goal Achieved'
@@ -163,15 +164,24 @@ class LaunchTournament:
                 self.score_dict[self.game_index]['success'] = 'False'
                 self.score_dict[self.game_index]['success_detail'] = msg
                 return True
-            if self.score_dict[self.game_index]['elapsed_time'] > CONFIG.MAX_TIME:
-                msg = 'time exceeded limit'
-                self.debug_log.message(f"Game Over: {msg}")
-                self.score_dict[self.game_index]['success'] = 'False'
-                self.score_dict[self.game_index]['success_detail'] = msg
-                return True
+            #if self.score_dict[self.game_index]['elapsed_time'] > CONFIG.MAX_TIME:
+             #   msg = 'time exceeded limit'
+              #  self.debug_log.message(f"Game Over: {msg}")
+               # self.score_dict[self.game_index]['success'] = 'False'
+                #self.score_dict[self.game_index]['success_detail'] = msg
+                #return True
             # if self.commands_sent > 10000:
             #     return True
 
+        ## Check If Game Timed out.
+        self.score_dict[self.game_index].update({'elapsed_time': time.time() - self.start_time})
+        if self.score_dict[self.game_index]['elapsed_time'] > CONFIG.MAX_TIME:
+            msg = 'time exceeded limit'
+            self.debug_log.message(f"Game Over: {msg}")
+            self.score_dict[self.game_index]['success'] = 'False'
+            self.score_dict[self.game_index]['success_detail'] = msg
+            return True
+        
         return None
 
     def read_output(self, pipe, q, timeout=1):
@@ -647,25 +657,33 @@ if __name__ == "__main__":
     # output = '../output'
     # output_name = 'hg_lvl-0'
     try:
-        opts, args = getopt.getopt(argv, "htg",
-                                   ["tournament=","game_folder=",])
+        opts, args = getopt.getopt(argv, "hc:t:g:a:d:x:",
+                                       ["game_count=","tournament=","game_folder=","agent name=", "agent directory=", "agent command="])
     except getopt.GetoptError:
-        print('HGLvl0Generator.py -s <seed> -i <intensity> -t <template_path> -o <output_path> -n <output_name>')
+        print('LaunchTournament.py -c <game_count> -t <tournament_name> -g <game_folder> -a <agent_name> -d <agent_directory> -x <agent_command>')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print('HGLvl0Generator.py -s <seed> -i <intensity> -t <template_path> -o <output_path> -n <output_name>')
+            print('LaunchTournament.py -c <game_count> -t <tournament_name> -g <game_folder> -a <agent_name> -d <agent_directory> -x <agent_command>')
             sys.exit()
-        # elif opt in ("-s", "--seed"):
-        #     seed = arg
+        elif opt in ("-c", "--count"):
+            print(f"Number of Games: {arg}")
+            CONFIG.GAME_COUNT = int(arg)
+        elif opt in ("-a", "--agent-name"):
+            print(f"Agent Name: {arg}")
+            CONFIG.AGENT_ID = arg
         elif opt in ("-g", "--game-folder"):
+            print(f"Game Folder: {arg}")
             CONFIG.GAMES_FOLDER = arg
         elif opt in ("-t", "--tournament"):
+            print(f"Tournament: {arg}")
             CONFIG.TOURNAMENT_ID = arg
-        # elif opt in ("-o", "--output-path"):
-        #     output = arg
-        # elif opt in ("-n", "--output-name"):
-        #     output_name = arg
+        elif opt in ("-d", "--agent-dir"):
+            print(f"Agent Directory: {arg}")
+            CONFIG.AGENT_DIRECTORY = arg
+        elif opt in ("-x", "--agent-exec"):
+            print(f"Agent Command: {arg}")
+            CONFIG.AGENT_COMMAND_UNIX = arg
 
 
 

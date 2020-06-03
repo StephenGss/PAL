@@ -307,7 +307,7 @@ Debug_Log_Blob_URL Text,
 
         # Using the ? approach automatically escapes strings to be "SQL" safe. Would recommend! :)
         self.cursor.execute(f"""
-            UPDATE RESULTS_TEST
+            UPDATE TOURNAMENT_AGGREGATE
             SET {var_to_adjust} = ?
             WHERE   Tournament_Name = ? AND
                     Agent_Name = ? AND
