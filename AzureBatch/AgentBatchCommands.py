@@ -61,7 +61,7 @@ class AgentBatchCommands:
         copy_files = [
             'cd $HOME',
             'cp secret_real.ini polycraft/pal/',
-            f'unzip {tzip} && cp -r {tname}/ polycraft/pal/',
+            f'unzip {tzip} -d {tname} && cp -r {tname}/ polycraft/pal/',
             # 'cp setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
             # 'mv setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
         ]
@@ -148,7 +148,7 @@ class AgentBatchCommands:
         copy_files = [
             'cd $HOME',
             'cp secret_real.ini polycraft/pal/',
-            f'unzip {tzip} && cp -r {tname}/ polycraft/pal/',
+            f'unzip {tzip} -d {tname} && cp -r {tname}/ polycraft/pal/',
             'cp setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
             # 'mv setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
         ]
