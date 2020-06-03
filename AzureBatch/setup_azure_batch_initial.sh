@@ -1,10 +1,12 @@
 #!/bin/bash
-## Run using SUDO
+## Run on Batch using AutoUser (root) - will not be able to get the dpkg lock files to install packages otherwise.
+
 apt-get update &&  apt-get upgrade -y
 #  apt-get install lubuntu-desktop -y
 #  apt-get install xrdp -y
 #  systemctl start xrdp
 apt-get -y install xvfb mesa-utils x11-xserver-utils xdotool gosu
+apt-get install zip unzip build-essential -y
 # INstall a specific version of Java8:
 # apt install openjdk-8-jdk openjdk-8-jre
 sudo wget -qO - https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public |  apt-key add -
@@ -38,24 +40,24 @@ echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
 source ~/.bashrc
 # optional: for unixODBC development headers
 apt-get install unixodbc-dev -y
-apt-get install python3-dev -y 
+apt-get install python3-dev -y
 apt-get install python3-pip -y
 
 
-mkdir polycraft && cd polycraft 
-# # TODO: update to the correct branch:
-git clone -b dev_unix_sri --single-branch https://github.com/StephenGss/pal.git
-cd pal/
-
-# TODO: Move private_tests/ from the zip file to the right place inside the pal folder.
-# mv where/is/private_tests/ ~/polycraft/pal/
-# chmod +x private_tests/sri_dryrun_mock/build.sh
-#  apt-get install python3.8 
-# Ignore Python 3.8 for now.
+#mkdir polycraft && cd polycraft
+## # TODO: update to the correct branch:
+#git clone -b dev_unix_sri --single-branch https://github.com/StephenGss/pal.git
+#cd pal/
+#
+## TODO: Move private_tests/ from the zip file to the right place inside the pal folder.
+## mv where/is/private_tests/ ~/polycraft/pal/
+## chmod +x private_tests/sri_dryrun_mock/build.sh
+##  apt-get install python3.8
+## Ignore Python 3.8 for now.
 rm /usr/bin/python
 ln -s /usr/bin/python3.6 /usr/bin/python
-python -m pip install -U pip 
-python -m pip install -r requirements.txt
+#python -m pip install -U pip
+#python -m pip install -r requirements.txt
 
 # chown -R $HOME/polycraft/ azureuser:azureuser
 
