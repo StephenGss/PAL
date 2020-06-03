@@ -85,7 +85,24 @@ class LaunchTournament:
                     file_list.append(filepath)
 
         self.debug_log.message(f"Game List created. {len(file_list)} games read. {len(file_list[:ct])} games will be played")
-        return file_list[:ct]
+        sorted_files = self._sort_files(file_list)[:ct]
+
+        self.debug_log.message(f"sorted games to be played: {sorted_files}")
+        return sorted_files
+
+    def _sort_files(self, files):
+        sorted_dict = {}
+        for file in files:
+            values = re.search("_G(\d+)_", file)
+            if not values:
+                raise ValueError("Error - files are not named correctly! "+ file)
+            sorted_dict[int(values.groups()[0])] = file
+
+        sorted_file_list = []
+        for i in sorted(sorted_dict.keys()):
+            sorted_file_list.append(sorted_dict[i])
+
+        return sorted_file_list
 
     def _create_logs(self):
         """
