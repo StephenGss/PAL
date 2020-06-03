@@ -150,7 +150,7 @@ class LaunchTournament:
             data_dict = json.loads(json_text)
             self.commands_sent += 1
             self.total_step_cost += data_dict["command_result"]["stepCost"]
-            self.score_dict[self.game_index].update({'elapsed_time': time.time() - self.start_time})
+            #self.score_dict[self.game_index].update({'elapsed_time': time.time() - self.start_time})
 
             if data_dict["goal"]["goalAchieved"]:
                 msg = 'Goal Achieved'
@@ -164,15 +164,24 @@ class LaunchTournament:
                 self.score_dict[self.game_index]['success'] = 'False'
                 self.score_dict[self.game_index]['success_detail'] = msg
                 return True
-            if self.score_dict[self.game_index]['elapsed_time'] > CONFIG.MAX_TIME:
-                msg = 'time exceeded limit'
-                self.debug_log.message(f"Game Over: {msg}")
-                self.score_dict[self.game_index]['success'] = 'False'
-                self.score_dict[self.game_index]['success_detail'] = msg
-                return True
+            #if self.score_dict[self.game_index]['elapsed_time'] > CONFIG.MAX_TIME:
+             #   msg = 'time exceeded limit'
+              #  self.debug_log.message(f"Game Over: {msg}")
+               # self.score_dict[self.game_index]['success'] = 'False'
+                #self.score_dict[self.game_index]['success_detail'] = msg
+                #return True
             # if self.commands_sent > 10000:
             #     return True
 
+        ## Check If Game Timed out.
+        self.score_dict[self.game_index].update({'elapsed_time': time.time() - self.start_time})
+        if self.score_dict[self.game_index]['elapsed_time'] > CONFIG.MAX_TIME:
+            msg = 'time exceeded limit'
+            self.debug_log.message(f"Game Over: {msg}")
+            self.score_dict[self.game_index]['success'] = 'False'
+            self.score_dict[self.game_index]['success_detail'] = msg
+            return True
+        
         return None
 
     def read_output(self, pipe, q, timeout=1):
