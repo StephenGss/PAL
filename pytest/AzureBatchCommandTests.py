@@ -3,6 +3,45 @@ from AzureBatch.AgentBatchCommands import AgentBatchCommands, AgentType
 # from AzureBatch.AzureBatchLaunchTournaments import AgentType
 
 class MyTestCase(unittest.TestCase):
+
+    def test_tufts_agent(self):
+        tzip = 'test.zip'
+        tname = 'test'
+        self.git_branch = 'dev_unix_sri'
+        self.application_dict = {
+            'agent_sift': 'TEST_SIFT',
+            'agent_tufts': "TEST_TUFTS"
+        }
+        self.agent_name = "tufts_test"
+        var = AgentBatchCommands(self.application_dict, self.agent_name, AgentType.TUFTS)
+        a = var.get_task_commands(tzip, tname)
+        # APPLICATION_DIR = temp_dict['agent_sift']
+
+        running = [
+            'printenv',
+            './setup/setup_azure_batch_initial.sh',
+            'mkdir polycraft && cd polycraft',
+            f'git clone -b {self.git_branch} --single-branch https://github.com/StephenGss/pal.git',
+            'cd pal/',
+            'python -m pip install -U pip',
+            'python -m pip install -r requirements.txt',
+            'cd $HOME',
+            'mv secret_real.ini polycraft/pal/',
+            f'unzip {tzip} && mv {tname}/ polycraft/pal/',
+            'cd $HOME/polycraft/pal',
+            'mkdir agents/',
+            'mv ' + self.application_dict['agent_tufts'] + '/* ./agents/',
+            'echo "[DN_MSG]agent moved into place\n"',
+            'cd $HOME/polycraft/pal/PolycraftAIGym',
+            'mkdir Logs',
+            'echo "[DN_MSG]hopefully moved into the right folder?\n"',
+            f'python LaunchTournament.py -t "BATCH_{tname}" -g "../{tname}" -a "{self.agent_name}" -d "../agents/TUFTS/" -x "./play.sh" ',
+        ]
+
+        differences = list(set(running) - set(a))
+        print(differences)
+        self.assertEqual(len(differences), 0)
+
     def test_sift_agent(self):
         file = 'test.zip'
         filename = 'test'

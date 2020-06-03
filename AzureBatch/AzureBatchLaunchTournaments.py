@@ -48,11 +48,11 @@ APPLICATION_VERSION = '4'
 # APPLICATION_ID_FIXED = 'image_test'
 APPLICATION_ID_FIXED = 'agent_sift'
 TUFT_APPLICATION_ID = 'agent_tufts'
-TUFT_VERSION = '1'
+TUFT_VERSION = '2'
 APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + APPLICATION_ID_FIXED + '_' + APPLICATION_VERSION
 TUFT_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + TUFT_APPLICATION_ID + '_' + TUFT_VERSION
 # POOL_ID = "ImageTestPool"
-POOL_ID = "FogWar25_01"
+POOL_ID = "PogoNoNov_01"
 
 APP_DICT = {'agent_sift': APPLICATION_DIR,
             'agent_tufts': TUFT_APPLICATION_DIR, #noTODO: not yet implemented
@@ -178,10 +178,10 @@ class AzureBatchLaunchTournaments:
 
         # os.chdir('../output/')
         count = 0
-        maxCount = 5  # TODO: move this.
+        # maxCount = 5  # TODO: move this.
         for file in os.listdir(f'{os.getcwd()}/{self.library_of_tournaments}'):
-            if count >= maxCount:
-                break
+            # if count >= maxCount:
+            #     break
             if not file.endswith(".zip"):
                 continue
             filename = file.split('.')[0]
@@ -206,7 +206,7 @@ class AzureBatchLaunchTournaments:
                 block_blob_client,
                 _CONTAINER_NAME,
                 'inputs-test/' + file,
-                '../fog_of_war/' + file,
+                self.library_of_tournaments + file,
                 datetime.datetime.utcnow() + datetime.timedelta(hours=1))
 
             setup_url = helpers.upload_blob_and_create_sas(
@@ -333,7 +333,7 @@ class AzureBatchLaunchTournaments:
             helpers.wait_for_tasks_to_complete(
                 batch_client,
                 job_id,
-                datetime.timedelta(minutes=25))
+                datetime.timedelta(minutes=180))
 
             tasks = batch_client.task.list(job_id)
             task_ids = [task.id for task in tasks]
@@ -361,8 +361,9 @@ if __name__ == '__main__':
     # # sample_config.read(
     # #     os.path.splitext(os.path.basename(__file__))[0] + '.cfg')
     # sample_config.read(helpers._SAMPLES_CONFIG_FILE_NAME)
-    sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V2", AgentType.SIFT, "../fog_of_war/", global_config)
-    sift_v2.execute_sample()
-    # tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_01", AgentType.TUFTS, "../fog_of_war/", global_config)
-    # tufts_test.execute_sample()
+    # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V2", AgentType.SIFT, "../fog_of_war/", global_config)
+    # sift_v2.execute_sample()
+    # tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, "../fog_of_war/", global_config)
+    tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_v02", AgentType.TUFTS, "../pogo_lvl_0_tournaments/", global_config)
+    tufts_test.execute_sample()
     # execute_sample(global_config, sample_config)
