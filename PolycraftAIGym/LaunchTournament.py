@@ -674,8 +674,8 @@ if __name__ == "__main__":
     # output = '../output'
     # output_name = 'hg_lvl-0'
     try:
-        opts, args = getopt.getopt(argv, "hc:t:g:a:d:x:",
-                                       ["game_count=","tournament=","game_folder=","agent name=", "agent directory=", "agent command="])
+        opts, args = getopt.getopt(argv, "hc:t:g:a:d:x:i:",
+                                       ["game_count=","tournament=","game_folder=","agent name=", "agent directory=", "agent command=", "max time="])
     except getopt.GetoptError:
         print('LaunchTournament.py -c <game_count> -t <tournament_name> -g <game_folder> -a <agent_name> -d <agent_directory> -x <agent_command>')
         sys.exit(2)
@@ -701,6 +701,9 @@ if __name__ == "__main__":
         elif opt in ("-x", "--agent-exec"):
             print(f"Agent Command: {arg}")
             CONFIG.AGENT_COMMAND_UNIX = arg
+        elif opt in ("-i", "--max-time"):
+            print(f"Max Time (sec): {arg}")
+            CONFIG.MAX_TIME = int(arg)
 
 
 
