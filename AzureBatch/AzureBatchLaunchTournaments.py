@@ -44,7 +44,7 @@ from AzureBatch.AgentBatchCommands import AgentType, AgentBatchCommands
 _CONTAINER_NAME = 'batch-workflow-fog-of-war'
 # APPLICATION_ID = 'image-test'
 APPLICATION_ID = 'agent_sift'
-APPLICATION_VERSION = '4'
+APPLICATION_VERSION = '5'
 # APPLICATION_ID_FIXED = 'image_test'
 APPLICATION_ID_FIXED = 'agent_sift'
 TUFT_APPLICATION_ID = 'agent_tufts'
@@ -52,7 +52,11 @@ TUFT_VERSION = '2'
 APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + APPLICATION_ID_FIXED + '_' + APPLICATION_VERSION
 TUFT_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + TUFT_APPLICATION_ID + '_' + TUFT_VERSION
 # POOL_ID = "ImageTestPool"
-POOL_ID = "PogoNoNov_02"
+# POOL_ID = "Pogo_Nonov_Tufts_03_10m"
+# POOL_ID = "Pogo_All_Fog"
+POOL_ID = "Pogo_Sift_Fog_T52"
+# POOL_ID = "Pogo_Sift_VIRGIN"
+# POOL_ID = "FogWar25_Air_03"
 
 APP_DICT = {'agent_sift': APPLICATION_DIR,
             'agent_tufts': TUFT_APPLICATION_DIR, #noTODO: not yet implemented
@@ -64,9 +68,10 @@ APP_DICT = {'agent_sift': APPLICATION_DIR,
 
 class AzureBatchLaunchTournaments:
 
-    def __init__(self, agent_name, agent_type, library_of_tournaments, global_config):
+    def __init__(self, agent_name, agent_type, library_of_tournaments, global_config, prefix=None):
         self.agent_name = agent_name
         self.agent_type = agent_type
+        self.prefix = prefix
         self.library_of_tournaments = library_of_tournaments
         self.global_config = global_config
         self.agent_commands = AgentBatchCommands(APP_DICT, self.agent_name, self.agent_type)
@@ -155,23 +160,6 @@ class AzureBatchLaunchTournaments:
 
         helpers.create_pool_if_not_exist(batch_client, pool)
 
-    def sort_files(self):
-        list_of_files = []
-        dict_of_files = {}
-        library_of_tournaments='/pogo_lvl_0_tournaments/'
-        for file in os.listdir(f'{os.getcwd()}/{library_of_tournaments}'):
-            if not file.endswith(".zip"):
-                continue
-            list_of_files.append(file)
-            filename = file.split('.')[0]
-            game_value = re.match(r"_G(\d+)_", filename)
-            if not game_value:
-                print("Error - is file naming convention accurate? " + filename)
-                continue
-            dict_of_files[int(game_value.group(1))] = file
-
-
-
     def submit_job_and_add_task(self, batch_client, block_blob_client, job_id, pool_id):
         """Submits a job to the Azure Batch service and adds
         a task that runs a python script.
@@ -204,7 +192,7 @@ class AzureBatchLaunchTournaments:
             filename = file.split('.')[0]
 
             # Get commands
-            cmds = self.agent_commands.get_task_commands(file, filename)
+            cmds = self.agent_commands.get_task_commands(file, filename, self.prefix)
 
 
             application_package_references = [
@@ -224,28 +212,28 @@ class AzureBatchLaunchTournaments:
                 _CONTAINER_NAME,
                 'inputs-test/' + file,
                 self.library_of_tournaments + file,
-                datetime.datetime.utcnow() + datetime.timedelta(hours=1))
+                datetime.datetime.utcnow() + datetime.timedelta(weeks=2))
 
             setup_url = helpers.upload_blob_and_create_sas(
                 block_blob_client,
                 _CONTAINER_NAME,
                 "setup_azure_batch_initial.sh",
                 'setup_azure_batch_initial.sh',
-                datetime.datetime.utcnow() + datetime.timedelta(hours=1))
+                datetime.datetime.utcnow() + datetime.timedelta(weeks=2))
 
             secret_url = helpers.upload_blob_and_create_sas(
                 block_blob_client,
                 _CONTAINER_NAME,
                 "secret_real.ini",
                 '../secret_real.ini',
-                datetime.datetime.utcnow() + datetime.timedelta(hours=1))
+                datetime.datetime.utcnow() + datetime.timedelta(weeks=2))
 
             sift_wrap = helpers.upload_blob_and_create_sas(
                 block_blob_client,
                 _CONTAINER_NAME,
                 "agents/sift_tournament_agent_launcher.sh",
                 '../sift_tournament_agent_launcher.sh',
-                datetime.datetime.utcnow() + datetime.timedelta(hours=1))
+                datetime.datetime.utcnow() + datetime.timedelta(weeks=2))
 
             task = batchmodels.TaskAddParameter(
                 id=f"Tournament-{str(count)}-{filename}",
@@ -331,56 +319,87 @@ class AzureBatchLaunchTournaments:
         #     storage_account_connection_string)
 
         job_id = helpers.generate_unique_resource_name(
-            "SIFT_Tournaments")
+            f"{self.agent_name}_Tournaments")
         pool_id = POOL_ID
-        try:
-            self.create_pool(
-                batch_client,
-                block_blob_client,
-                pool_id,
-                pool_vm_size,
-                pool_vm_count,
-                )
+        # try:
+        self.create_pool(
+            batch_client,
+            block_blob_client,
+            pool_id,
+            pool_vm_size,
+            pool_vm_count,
+            )
 
-            self.submit_job_and_add_task(
-                batch_client,
-                block_blob_client,
-                job_id, pool_id)
+        self.submit_job_and_add_task(
+            batch_client,
+            block_blob_client,
+            job_id, pool_id)
 
-            helpers.wait_for_tasks_to_complete(
-                batch_client,
-                job_id,
-                datetime.timedelta(minutes=180))
+        # helpers.wait_for_tasks_to_complete(
+        #     batch_client,
+        #     job_id,
+        #     datetime.timedelta(minutes=180))
 
-            tasks = batch_client.task.list(job_id)
-            task_ids = [task.id for task in tasks]
+        tasks = batch_client.task.list(job_id)
+        task_ids = [task.id for task in tasks]
 
             # helpers.print_task_output(batch_client, job_id, task_ids)
-        finally:
-            # clean up
-            if should_delete_container:
-                block_blob_client.delete_container(
-                    _CONTAINER_NAME,
-                    fail_not_exist=False)
-            if should_delete_job:
-                print("Deleting job: ", job_id)
-                batch_client.job.delete(job_id)
-            if should_delete_pool:
-                print("Deleting pool: ", pool_id)
-                batch_client.pool.delete(pool_id)
+        # finally:
+        #     # clean up
+        #     if should_delete_container:
+        #         block_blob_client.delete_container(
+        #             _CONTAINER_NAME,
+        #             fail_not_exist=False)
+        #     if should_delete_job:
+        #         print("Deleting job: ", job_id)
+        #         batch_client.job.delete(job_id)
+        #     if should_delete_pool:
+        #         print("Deleting pool: ", pool_id)
+        #         batch_client.pool.delete(pool_id)
 
 
 if __name__ == '__main__':
     global_config = configparser.ConfigParser()
     global_config.read(helpers._SAMPLES_CONFIG_FILE_NAME)
 
+    # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, "../tournaments/POGO_LVL0_T1_1_0000_VIRGIN_15_tournaments/", global_config)
+    # sift_v2.execute_sample()
+    # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, "../tournaments/POGO_LVL3_T5_1_0050_FOG_25_tournaments/", global_config)
+    # sift_v2.execute_sample()
+    # sift_v2_thick = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, "../tournaments/POGO_LVL3_T6_1_0050_THICKAIR_25_tournaments/", global_config)
+    # sift_v2_thick.execute_sample()
+    #
+    # # tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, "../tournaments/POGO_LVL0_T1_1_0000_VIRGIN_15_tournaments/", global_config)
+    # # tufts_test.execute_sample()
+    #
+    # tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, "../tournaments/POGO_LVL3_T5_1_0050_FOG_25_tournaments/", global_config)
+    # tufts_test.execute_sample()
+    # tufts_test_thick = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, "../tournaments/POGO_LVL3_T6_1_0050_THICKAIR_25_tournaments/", global_config)
+    # tufts_test_thick.execute_sample()
+
+    sift_v22 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, "../tournaments/POGO_LVL3_T5_2_0050_FOGCLEARS_25_tournaments/", global_config)
+    sift_v22.execute_sample()
+    # sift_v22_thick = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, "../tournaments/POGO_LVL3_T6_2_0050_THICKAIRCLEARS_25_tournaments/", global_config)
+    # sift_v22_thick.execute_sample()
+    #
+    # # tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, "../tournaments/POGO_LVL0_T1_1_0000_VIRGIN_15_tournaments/", global_config)
+    # # tufts_test.execute_sample()
+    #
+    # tufts_test2 = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, "../tournaments/POGO_LVL3_T5_2_0050_FOGCLEARS_25_tournaments/", global_config)
+    # tufts_test2.execute_sample()
+    # tufts_test2_thick = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, "../tournaments/POGO_LVL3_T6_2_0050_THICKAIRCLEARS_25_tournaments/", global_config)
+    # tufts_test2_thick.execute_sample()
     # sample_config = configparser.ConfigParser()
     # # sample_config.read(
     # #     os.path.splitext(os.path.basename(__file__))[0] + '.cfg')
     # sample_config.read(helpers._SAMPLES_CONFIG_FILE_NAME)
-    sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V2", AgentType.SIFT, "../pogo_lvl_0_tournaments/", global_config)
-    sift_v2.execute_sample()
-    # tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, "../fog_of_war/", global_config)
-    # tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_v02", AgentType.TUFTS, "../pogo_lvl_0_tournaments/", global_config)
+
+    # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, "../fog_of_war_air/", global_config, "FOG_AIR_")
+    # sift_v2.execute_sample()
+    # tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, "../pogo_lvl0_25_2/", global_config, "POGO_NoNov_2_")
     # tufts_test.execute_sample()
-    # execute_sample(global_config, sample_config)
+    # tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, "../pogo_lvl0_25_2/",global_config, "POGO_NoNov_2_10m_")
+
+    # tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_v02", AgentType.TUFTS, "../pogo_lvl_0_tournaments/", global_config)
+
+

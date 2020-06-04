@@ -17,19 +17,23 @@ class AgentBatchCommands:
         self.application_dict = APP_DICT
         self.git_branch = "dev_unix_sri"  # FIXME: update this as needed
 
-    def get_task_commands(self, tournament_zip, tournament_name):
+    def get_task_commands(self, tournament_zip, tournament_name, prefix=None):
 
         if self.agent_type == AgentType.SIFT:
-            return self._get_sift_agent_commands(tournament_zip, tournament_name)
+            return self._get_sift_agent_commands(tournament_zip, tournament_name, prefix)
         elif self.agent_type == AgentType.TUFTS:
-            return self._get_tufts_agent_commands(tournament_zip, tournament_name)
+            return self._get_tufts_agent_commands(tournament_zip, tournament_name, prefix)
         elif self.agent_type == AgentType.SRI:
-            return self._get_sri_agent_commands(tournament_zip, tournament_name)
+            return self._get_sri_agent_commands(tournament_zip, tournament_name, prefix)
         # TODO: implement additional agent-specific commands here
         else:
-            return self._get_default_agent_commands(tournament_zip, tournament_name)
+            return self._get_default_agent_commands(tournament_zip, tournament_name, prefix)
 
-    def _get_sri_agent_commands(self, tzip, tname):
+    def _get_sri_agent_commands(self, tzip, tname, prefix=None):
+
+        if prefix is None:
+            prefix="BATCH_"
+
         return [
             'printenv',
             './setup/setup_azure_batch_initial.sh',
@@ -48,11 +52,14 @@ class AgentBatchCommands:
             'cd $HOME/polycraft/pal/PolycraftAIGym',
             'mkdir Logs',
             'echo "[DN_MSG]hopefully moved into the right folder?\n"',
-            f'python LaunchTournament.py -t "BATCH_{tname}" -g "../{tname}" -a "{self.agent_name}" -d "../agents/TUFTS/" -x "./play.sh" ',
+            f'python LaunchTournament.py -c 1000 -t "{prefix}{tname}" -g "../{tname}" -a "{self.agent_name}" -d "../agents/TUFTS/" -x "./play.sh" ',
         ]
 
 
-    def _get_tufts_agent_commands(self, tzip, tname):
+    def _get_tufts_agent_commands(self, tzip, tname, prefix=None):
+
+        if prefix is None:
+            prefix=""
 
         setup = self._setup_vm()
 
@@ -61,7 +68,9 @@ class AgentBatchCommands:
         copy_files = [
             'cd $HOME',
             'cp secret_real.ini polycraft/pal/',
-            f'unzip {tzip} -d {tname} && cp -r {tname}/ polycraft/pal/',
+            f'unzip {tzip}',
+            f'mv {tname}/ polycraft/pal/',
+            'echo "[DN_MSG]files copied into pal\n"',
             # 'cp setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
             # 'mv setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
         ]
@@ -78,30 +87,10 @@ class AgentBatchCommands:
             'mkdir Logs',
             'echo "[DN_MSG]hopefully moved into the right folder?\n"',
             'export _JAVA_OPTIONS="-Xmx3G"',
-            f'python LaunchTournament.py -t "BATCH_{tname}" -g "../{tname}" -a "{self.agent_name}" -d "../agents/TUFTS/" -x "./play.sh" ',
+            # f'python LaunchTournament.py -t "{prefix}{tname}" -g "../{tname}" -a "{self.agent_name}" -d "../agents/" -x "./play.sh" ',
+            f'python LaunchTournament.py -c 1000 -t "{prefix}{tname}" -g "../{tname}" -a "{self.agent_name}" -d "../agents/" -x "./play.sh" -i 600 ',
         ]
         return setup + github + copy_files + copy_agent + launch_polycraft
-
-        # return [
-        #     'printenv',
-        #     './setup/setup_azure_batch_initial.sh',
-        #     'mkdir polycraft && cd polycraft',
-        #     f'git clone -b {self.git_branch} --single-branch https://github.com/StephenGss/pal.git',
-        #     'cd pal/',
-        #     'python -m pip install -U pip',
-        #     'python -m pip install -r requirements.txt',
-        #     'cd $HOME',
-        #     'mv secret_real.ini polycraft/pal/',
-        #     f'unzip {tzip} && mv {tname}/ polycraft/pal/',
-        #     'cd $HOME/polycraft/pal',
-        #     'mkdir agents/',
-        #     'mv ' + self.application_dict['agent_tufts'] + '/* ./agents/',
-        #     'echo "[DN_MSG]agent moved into place\n"',
-        #     'cd $HOME/polycraft/pal/PolycraftAIGym',
-        #     'mkdir Logs',
-        #     'echo "[DN_MSG]hopefully moved into the right folder?\n"',
-        #     f'python LaunchTournament.py -t "BATCH_{tname}" -g "../{tname}" -a "{self.agent_name}" -d "../agents/TUFTS/" -x "./play.sh" ',
-        # ]
 
     def _get_github_commands(self):
         return [
@@ -120,7 +109,10 @@ class AgentBatchCommands:
             'echo "[DN_MSG]azure vm setup complete\n"',
         ]
 
-    def _get_sift_agent_commands(self, tzip, tname):
+    def _get_sift_agent_commands(self, tzip, tname, prefix=None):
+
+        if prefix is None:
+            prefix=""
 
         start = [
             'printenv',
@@ -148,7 +140,7 @@ class AgentBatchCommands:
         copy_files = [
             'cd $HOME',
             'cp secret_real.ini polycraft/pal/',
-            f'unzip {tzip} -d {tname} && cp -r {tname}/ polycraft/pal/',
+            f'unzip {tzip} && cp -r {tname}/ polycraft/pal/',
             'cp setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
             # 'mv setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
         ]
@@ -158,7 +150,7 @@ class AgentBatchCommands:
             'DOCKER_TAG="latest"; export DOCKER_TAG',
             './build.sh',
             'echo "[DN_MSG]docker build completed\n"',
-            '../tools/kill-my-dockers',
+             '../tools/kill-my-dockers',
             'echo "[DN_MSG]dockers killed\n"',
         ]
 
@@ -171,47 +163,13 @@ class AgentBatchCommands:
             'mkdir Logs',
             'echo "[DN_MSG]hopefully moved into the right folder?\n"',
             'export _JAVA_OPTIONS="-Xmx3G"',
-            f'python LaunchTournament.py -t "BATCH_{tname}" -g "../{tname}" -a "{self.agent_name}" -d "../agents/SIFT_SVN/code/test/" -x "{polycraft_launch_cmd}"',
+            f'python LaunchTournament.py -c 1000 -t "{prefix}{tname}" -g "../{tname}" -a "{self.agent_name}" -d "../agents/SIFT_SVN/code/test/" -x "{polycraft_launch_cmd}"',
         ]
 
         return start + setup_vm + pull_github + move_agent + copy_files + build_agent + launch_polycraft
 
-        # return [
-        #     'printenv',
-        #     # './setup/setup_azure_batch_initial.sh',
-        #     'USER="root"; export USER',
-        #     'printenv',
-        #     'sudo apt-get install zip unzip build-essential -y',
-        #     'echo "[DN_MSG]additional pkgs installed\n"',
-        #     './setup/setup_azure_batch_initial.sh',
-        #     'echo "[DN_MSG]azure vm setup complete\n"',
-        #     'mkdir polycraft && cd polycraft',
-        #     f'git clone -b {self.git_branch} --single-branch https://github.com/StephenGss/pal.git',
-        #     'cd pal/',
-        #     'python -m pip install -U pip',
-        #     'python -m pip install -r requirements.txt',
-        #     'cd $HOME',
-        #     'mv secret_real.ini polycraft/pal/',
-        #     f'unzip {tzip} && mv {tname}/ polycraft/pal/',
-        #     'cd polycraft/pal',
-        #     'mkdir agents/',
-        #     'mv ' + self.application_dict['agent_sift'] + '/* ./agents/',
-        #     'echo "[DN_MSG]agent moved into place\n"',
-        #     'cd ./agents/SIFT_SVN/code/docker',
-        #     './build.sh',
-        #     'echo "[DN_MSG]docker build completed\n"',
-        #     '../tools/kill-my-dockers',
-        #     'echo "[DN_MSG]dockers killed\n"',
-        #     'cd $HOME/polycraft/pal/PolycraftAIGym',
-        #     'mkdir Logs',
-        #     'echo "[DN_MSG]hopefully moved into the right folder?\n"',
-        #     f'python LaunchTournament.py -t "BATCH_{tname}" -g "../{tname}"',
-        # ]
 
-
-
-
-    def _get_default_agent_commands(self, tzip, tname):
+    def _get_default_agent_commands(self, tzip, tname, prefix=None):
         return []
 
 
