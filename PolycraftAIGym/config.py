@@ -13,7 +13,7 @@ AGENT_ID = f"SIFT_AGENT_POGO_003"
 
 # PAL_COMMAND = "gradlew runclient"
 
-PAL_COMMAND_UNIX = "xvfb-run -s '-screen 0 1280x1024x24' ./gradlew runclient"
+PAL_COMMAND_UNIX = "xvfb-run -s '-screen 0 1280x1024x24' ./gradlew --no-daemon runclient"
 
 #Games now exist outside of this environment.
 GAME_COUNT = 25
