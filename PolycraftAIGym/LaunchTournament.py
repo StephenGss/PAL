@@ -34,6 +34,8 @@ class LaunchTournament:
         self.total_step_cost = 0
         self.start_time = time.time()
         self.wait_for_gameover_timer = None
+        self.wait_for_nextgame_init_timer = None
+        self.next_game_initialized_flag = False
         #self.games = CONFIG.GAMES
         #self.games = self._build_game_list(CONFIG.GAME_COUNT)
         self.log_dir = log_dir + f"{PalMessenger.PalMessenger.time_now_str()}/"
@@ -201,6 +203,7 @@ class LaunchTournament:
         
         return None
 
+    @DeprecationWarning
     def read_output(self, pipe, q, timeout=1):
         """reads output from `pipe`, when line has been read, puts
     line on Queue `q`"""
@@ -220,28 +223,14 @@ class LaunchTournament:
                     used to determine game ending conditions and update the score_dict{}
         """
         next_line = ""
-        # if self.PAL_reader.has_stdout():
-        #     next_line = self.PAL_reader.get_stdout()
-        # elif self.PAL_reader.has_stderr():
-        #     next_line = self.PAL_reader.get_stderr()
-        # else:
-        #     pass
-        # self.PAL_log.message(str(next_line))
-        #
+
         # # write output from procedure A (if there is any)
+        # DN: Remove "blockInFront" data from PAL, as it just gunks up our PAL logs for no good reason.
         try:
             next_line = self.q.get(False, timeout=0.025)
-            self.PAL_log.message(str(next_line))
+            self.PAL_log.message_strip(str(next_line))
         except queue.Empty:
             pass
-
-        # if self.agent_reader.has_stdout():
-        #     next_line = self.agent_reader.get_stdout()
-        # elif self.agent_reader.has_stderr():
-        #     next_line = self.agent_reader.get_stderr()
-        # else:
-        #     pass
-        # self.PAL_log.message(str(next_line))
 
         # write output from procedure B (if there is any)
         try:
@@ -249,6 +238,10 @@ class LaunchTournament:
             self.agent_log.message(str(l))
         except queue.Empty:
             pass
+
+        # Handles edge case where this msg comes sooner than anticipated.
+        if "[EXP] game initialization completed" in str(next_line):
+            self.next_game_initialized_flag = True
 
         return next_line
 
@@ -303,6 +296,7 @@ class LaunchTournament:
                 if "[EXP] game initialization completed" in str(next_line):
                     self.debug_log.message("Game Initialized. ")
                     self.current_state = State.INIT_AGENT
+                    self.next_game_initialized_flag = False
 
             # Launch the AI agent and start the experiment
             elif self.current_state == State.INIT_AGENT:
@@ -374,14 +368,23 @@ class LaunchTournament:
                 self._trigger_reset()
 
                 self.current_state = State.DETECT_RESET
+                # self.wait_for_nextgame_init_timer = time.time()
 
             # Wait for reset to complete; then reset the game loop
             elif self.current_state == State.DETECT_RESET:
+
+                # Typical Scenario: below text shows up after the reset is triggered.
+                # However, case exists where messages may come faster than we can process
+                # New solution: Look for this line and set a global flag in the _check_queues() function
+
+                # FIXME: Should I enable this behaviour?
+                # if "[EXP] game initialization completed" in str(next_line) or self.next_game_initialized_flag:
                 if "[EXP] game initialization completed" in str(next_line):
                     self.debug_log.message("Reset Complete. Switching to Game Loop... ")
                     self.current_state = State.GAME_LOOP
                     self.start_time = time.time() # Start Time at this point.
                     self.score_dict[self.game_index]['startTime'] = PalMessenger.PalMessenger.time_now_str()
+                    self.next_game_initialized_flag = False
 
 
         #output = self.pal_client_process.communicate()[0]
