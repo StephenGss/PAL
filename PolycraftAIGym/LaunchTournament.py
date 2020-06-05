@@ -14,6 +14,7 @@ import re
 from collections import defaultdict
 from copy import copy, deepcopy
 import getopt
+import psutil
 
 
 class LaunchTournament:
@@ -484,22 +485,40 @@ class LaunchTournament:
         """
         self.debug_log.message("Tournament Completed: " + str(len(self.games)) + "games run")
         sys.stdout.flush()
-        os.kill(self.agent.pid, signal.SIGTERM)
-        os.kill(self.pal_client_process.pid, signal.SIGTERM)
+        # os.kill(self.agent.pid, signal.SIGTERM)
+        # os.kill(self.pal_client_process.pid, signal.SIGTERM)
         self.tm_thread.kill()
         if self.threads is not None:
             self.threads.join()
 
+        self._kill_process_children(5)
+
         self.tm_thread.join(5)
         self.tournament_in_progress = False
+
+    def _kill_process_children(self, timeout):
+        # Kill the client process first to stop it from sending messages to the server
+        procs = list(psutil.Process(os.getpid()).children(recursive=True))
+        for p in procs:
+            try:
+                p.terminate()
+            except psutil.NoSuchProcess:
+                pass
+        gone, alive = psutil.wait_procs(procs, timeout=timeout)
+        for p in alive:
+            try:
+                p.kill()
+            except psutil.NoSuchProcess:
+                pass
 
     def _reset_and_flush(self):
         self.tm_thread.queue.put("RESET domain " + self.games[self.game_index + 1])
         self.debug_log.message("RESET domain command sent to tm_thread.")
-        with self.q.mutex:
-            self.q.queue.clear()
-        with self.q2.mutex:
-            self.q2.queue.clear()
+        # We think clearing the queue are causing us to miss key log outputs
+        # with self.q.mutex:
+        #     self.q.queue.clear()
+        # with self.q2.mutex:
+        #     self.q2.queue.clear()
 
     def _trigger_reset(self):
         """
