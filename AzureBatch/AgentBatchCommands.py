@@ -25,6 +25,8 @@ class AgentBatchCommands:
             return self._get_tufts_agent_commands(tournament_zip, tournament_name, prefix)
         elif self.agent_type == AgentType.SRI:
             return self._get_sri_agent_commands(tournament_zip, tournament_name, prefix)
+        elif self.agent_type == AgentType.GT_POGO_BASELINE:
+            return self._get_gt_pogo_agent_commands(tournament_zip, tournament_name, prefix)
         # TODO: implement additional agent-specific commands here
         else:
             return self._get_default_agent_commands(tournament_zip, tournament_name, prefix)
@@ -140,7 +142,7 @@ class AgentBatchCommands:
         copy_files = [
             'cd $HOME',
             'cp secret_real.ini polycraft/pal/',
-            f'unzip {tzip} && cp -r {tname}/ polycraft/pal/',
+            f'unzip {tzip} && mv {tname}/ polycraft/pal/',
             'cp setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
             # 'mv setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
         ]
@@ -171,6 +173,47 @@ class AgentBatchCommands:
 
     def _get_default_agent_commands(self, tzip, tname, prefix=None):
         return []
+
+    def _get_gt_pogo_agent_commands(self, tzip, tname, prefix):
+
+        if prefix is None:
+            prefix = ""
+
+        setup = self._setup_vm()
+
+        github = self._get_github_commands()
+
+        copy_files = [
+            'cd $HOME',
+            'cp secret_real.ini polycraft/pal/',
+            f'unzip {tzip}',
+            f'mv {tname}/ polycraft/pal/',
+            'echo "[DN_MSG]files copied into pal\n"',
+            # 'cp setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
+            # 'mv setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
+        ]
+
+        copy_agent = [
+            'cd $HOME/polycraft/pal',
+            'mkdir agents/',
+            'cp -r ' + self.application_dict['agent_gt_pogo'] + '/* ./agents/',
+            'echo "[DN_MSG]agent moved into place\n"',
+        ]
+
+        polycraft_launch_cmd = "python 1_python_miner_RL_8_trained_DN.py"
+
+        agent_directory = "../agents/pogo_agent_SENSE_RECIPES/trained_pogo_agent_2/"
+
+        launch_polycraft = [
+            'cd $HOME/polycraft/pal/PolycraftAIGym',
+            'mkdir Logs',
+            'echo "[DN_MSG]hopefully moved into the right folder?\n"',
+            'export _JAVA_OPTIONS="-Xmx3G"',
+            f'python LaunchTournament.py -c 1000 -t "{prefix}{tname}" -g "../{tname}" -a "{self.agent_name}" -d "{agent_directory}" -x "{polycraft_launch_cmd}"',
+        ]
+
+        return setup + github + copy_files + copy_agent + launch_polycraft
+
 
 
 if __name__ == '__main__':

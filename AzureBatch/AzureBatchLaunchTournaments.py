@@ -42,24 +42,34 @@ import PolycraftAIGym.common.helpers as helpers
 from AzureBatch.AgentBatchCommands import AgentType, AgentBatchCommands
 
 _CONTAINER_NAME = 'batch-workflow-fog-of-war'
-# APPLICATION_ID = 'image-test'
+
+### SIFT ###
+
 APPLICATION_ID = 'agent_sift'
 APPLICATION_VERSION = '5'
-# APPLICATION_ID_FIXED = 'image_test'
 APPLICATION_ID_FIXED = 'agent_sift'
+APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + APPLICATION_ID_FIXED + '_' + APPLICATION_VERSION
+### TUFTS ###
+
 TUFT_APPLICATION_ID = 'agent_tufts'
 TUFT_VERSION = '2'
-APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + APPLICATION_ID_FIXED + '_' + APPLICATION_VERSION
 TUFT_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + TUFT_APPLICATION_ID + '_' + TUFT_VERSION
+### GT ###
+GT_APP_ID = 'agent_gt_pogo'
+GT_APPLICATION_VERSION = '1'
+GT_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + GT_APP_ID + '_' + GT_APPLICATION_VERSION
+
+POOL_ID = "GT_POGO_VIRGIN"
 # POOL_ID = "ImageTestPool"
 # POOL_ID = "Pogo_Nonov_Tufts_03_10m"
 # POOL_ID = "Pogo_All_Fog"
-POOL_ID = "Pogo_Sift_Fog_T52"
+# POOL_ID = "Pogo_Sift_Fog_T52"
 # POOL_ID = "Pogo_Sift_VIRGIN"
 # POOL_ID = "FogWar25_Air_03"
 
 APP_DICT = {'agent_sift': APPLICATION_DIR,
-            'agent_tufts': TUFT_APPLICATION_DIR, #noTODO: not yet implemented
+            'agent_tufts': TUFT_APPLICATION_DIR,
+            'agent_gt_pogo': GT_APPLICATION_DIR,
             }
 
 # _SIMPLE_TASK_NAME = 'simple_task.py'
@@ -100,6 +110,7 @@ class AzureBatchLaunchTournaments:
         application_package_references = [
             batchmodels.ApplicationPackageReference(application_id=APPLICATION_ID, version=APPLICATION_VERSION),
             batchmodels.ApplicationPackageReference(application_id=TUFT_APPLICATION_ID, version=TUFT_VERSION),
+            batchmodels.ApplicationPackageReference(application_id=GT_APP_ID, version=GT_APPLICATION_VERSION),
         ]
 
         # Create User Accounts
@@ -194,10 +205,10 @@ class AzureBatchLaunchTournaments:
             # Get commands
             cmds = self.agent_commands.get_task_commands(file, filename, self.prefix)
 
-
             application_package_references = [
                 batchmodels.ApplicationPackageReference(application_id=APPLICATION_ID, version=APPLICATION_VERSION),
                 batchmodels.ApplicationPackageReference(application_id=TUFT_APPLICATION_ID, version=TUFT_VERSION),
+                batchmodels.ApplicationPackageReference(application_id=GT_APP_ID, version=GT_APPLICATION_VERSION),
             ]
 
             user_identity = batch.models.UserIdentity(
@@ -362,6 +373,8 @@ if __name__ == '__main__':
     global_config = configparser.ConfigParser()
     global_config.read(helpers._SAMPLES_CONFIG_FILE_NAME)
 
+    gt = AzureBatchLaunchTournaments("GT_AGENT_2_TEST_V1", AgentType.GT_POGO_BASELINE, "../tournaments/POGO_LVL0_T1_1_0000_VIRGIN_15_tournaments/", global_config)
+    gt.execute_sample()
     # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, "../tournaments/POGO_LVL0_T1_1_0000_VIRGIN_15_tournaments/", global_config)
     # sift_v2.execute_sample()
     # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, "../tournaments/POGO_LVL3_T5_1_0050_FOG_25_tournaments/", global_config)
@@ -377,8 +390,8 @@ if __name__ == '__main__':
     # tufts_test_thick = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, "../tournaments/POGO_LVL3_T6_1_0050_THICKAIR_25_tournaments/", global_config)
     # tufts_test_thick.execute_sample()
 
-    sift_v22 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, "../tournaments/POGO_LVL3_T5_2_0050_FOGCLEARS_25_tournaments/", global_config)
-    sift_v22.execute_sample()
+    # sift_v22 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, "../tournaments/POGO_LVL3_T5_2_0050_FOGCLEARS_25_tournaments/", global_config)
+    # sift_v22.execute_sample()
     # sift_v22_thick = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, "../tournaments/POGO_LVL3_T6_2_0050_THICKAIRCLEARS_25_tournaments/", global_config)
     # sift_v22_thick.execute_sample()
     #
