@@ -88,7 +88,10 @@ class LaunchTournament:
                     file_list.append(filepath)
 
         self.debug_log.message(f"Game List created. {len(file_list)} games read. {len(file_list[:ct])} games will be played")
-        sorted_files = self._sort_files(file_list)[:ct]
+        if ct <= 0:
+            sorted_files = self._sort_files(file_list)
+        else:
+            sorted_files = self._sort_files(file_list)[:ct]
 
         self.debug_log.message(f"sorted games to be played: {sorted_files}")
         return sorted_files
