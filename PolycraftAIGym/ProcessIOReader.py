@@ -43,41 +43,37 @@ class ProcessIOReader:
     def merge_queues(self, merge_queue):
         line = ""
         try:
-            while self.qe.not_empty:
-                line = self.qe.get_nowait()  # or q.get(timeout=.1)
-                merge_queue.put(line)
-                # self.unbblocked_err += line
+            line = self.qe.get_nowait()  # or q.get(timeout=.1)
+            merge_queue.put(line)
+            # self.unbblocked_err += line
         except Queue.Empty:
             pass
 
         line = ""
         try:
-            while self.qo.not_empty:
-                line = self.qo.get_nowait()  # or q.get(timeout=.1)
-                merge_queue.put(line)
+            line = self.qo.get_nowait()  # or q.get(timeout=.1)
+            merge_queue.put(line)
         except Queue.Empty:
             pass
-
-    def update(self):
-        line = ""
-        try:
-            while self.qe.not_empty:
-                line = self.qe.get_nowait()  # or q.get(timeout=.1)
-                self.unbblocked_err += line
-        except Queue.Empty:
-            pass
-
-        line = ""
-        try:
-            while self.qo.not_empty:
-                line = self.qo.get_nowait()  # or q.get(timeout=.1)
-                self.unbblocked_out += line
-        except Queue.Empty:
-            pass
-
-        while not self.stdin_queue.empty():
-                s = self.stdin_queue.get()
-                self.p.stdin.write(str(s))
+    #
+    # def update(self):
+    #     line = ""
+    #     try:
+    #         line = self.qe.get_nowait()  # or q.get(timeout=.1)
+    #         self.unbblocked_err += line
+    #     except Queue.Empty:
+    #         pass
+    #
+    #     line = ""
+    #     try:
+    #         line = self.qo.get_nowait()  # or q.get(timeout=.1)
+    #         self.unbblocked_out += line
+    #     except Queue.Empty:
+    #         pass
+    #
+    #     while not self.stdin_queue.empty():
+    #             s = self.stdin_queue.get()
+    #             self.p.stdin.write(str(s))
 
     def get_stdout(self, clear=True):
         ret = self.unbblocked_out
