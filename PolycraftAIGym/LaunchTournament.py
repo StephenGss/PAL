@@ -234,6 +234,7 @@ class LaunchTournament:
             next_line = self.q.get(False, timeout=0.025)
             self.PAL_log.message_strip(str(next_line))
             sys.stdout.flush()
+            sys.stderr.flush()
         except queue.Empty:
             pass
 
@@ -242,6 +243,7 @@ class LaunchTournament:
             l = self.q2.get(False, timeout=0.025)
             self.agent_log.message(str(l))
             sys.stdout.flush()
+            sys.stderr.flush()
         except queue.Empty:
             pass
 
@@ -374,11 +376,14 @@ class LaunchTournament:
                 self._trigger_reset()
 
                 self.current_state = State.DETECT_RESET
+                sys.stdout.flush()
+                sys.stderr.flush()
                 # self.wait_for_nextgame_init_timer = time.time()
 
             # Wait for reset to complete; then reset the game loop
             elif self.current_state == State.DETECT_RESET:
-
+                sys.stdout.flush()
+                sys.stderr.flush()
                 # Typical Scenario: below text shows up after the reset is triggered.
                 # However, case exists where messages may come faster than we can process
                 # New solution: Look for this line and set a global flag in the _check_queues() function
