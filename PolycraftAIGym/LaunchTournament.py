@@ -263,7 +263,11 @@ class LaunchTournament:
         # Launch Minecraft Client
         self.debug_log.message("PAL command: " + self.pal_process_cmd)
         self.pal_client_process = subprocess.Popen(self.pal_process_cmd, shell=True, cwd='../', stdout=subprocess.PIPE,
-                                                   stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+                                                   # stdin=subprocess.PIPE,  # DN: 0606 Removed for perforamnce
+                                                   stderr=subprocess.PIPE,
+                                                   bufsize=1,                # DN: 0606 Added for buffer issues
+                                                   universal_newlines=True,  # DN: 0606 Added for performance - needed for bufsize=1 based on docs?
+                                                   )
         self.PAL_reader = ProcessIOReader(self.pal_client_process,  out_queue=self.q, name="pal")
 
         # self.pa_t = threading.Thread(target=self.read_output, args=(self.pal_client_process, self.q))
@@ -423,7 +427,11 @@ class LaunchTournament:
         self.debug_log.message("Initializing Agent Thread: python hg_agent.py")
 
         self.agent = subprocess.Popen(self.agent_process_cmd, shell=True, cwd=CONFIG.AGENT_DIRECTORY, stdout=subprocess.PIPE,
-                                      stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+                                      # stdin=subprocess.PIPE,      #DN: 0606 Removed for performance
+                                      stderr=subprocess.PIPE,
+                                      bufsize=1,                    #DN: 0606 Added for performance
+                                      universal_newlines=True,      #DN: 0606 Added for performance
+                                      )
         self.agent_reader = ProcessIOReader(self.agent, out_queue=self.q2, name='agent')
         # self.pb_t = threading.Thread(target=self.read_output, args=(self.agent, self.q2))
         self.agent_started = True

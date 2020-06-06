@@ -12,12 +12,12 @@ class ProcessIOReader:
         self.aggregator.join()
         # self.ti.join()
 
-    def enqueue_in(self):
-        while self.running and self.p.stdin is not None:
-            while not self.stdin_queue.empty():
-                s = self.stdin_queue.get()
-                self.p.stdin.write(str(s) + '\n\r')
-            pass
+    # def enqueue_in(self):
+    #     while self.running and self.p.stdin is not None:
+    #         while not self.stdin_queue.empty():
+    #             s = self.stdin_queue.get()
+    #             self.p.stdin.write(str(s) + '\n\r')
+    #         pass
 
     def enqueue_output(self):
         if not self.p.stdout or self.p.stdout.closed:
@@ -123,7 +123,7 @@ class ProcessIOReader:
         self.te.daemon = True  # thread dies with the program
         self.te.start()
 
-        self.stdin_queue = Queue.Queue()
+        # self.stdin_queue = Queue.Queue()
         self.aggregator = threading.Thread(name=f"aggregate_{name}",
                                            target=self.aggregate,
                                            args=[out_queue])
