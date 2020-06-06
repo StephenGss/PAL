@@ -233,6 +233,7 @@ class LaunchTournament:
         try:
             next_line = self.q.get(False, timeout=0.025)
             self.PAL_log.message_strip(str(next_line))
+            sys.stdout.flush()
         except queue.Empty:
             pass
 
@@ -240,6 +241,7 @@ class LaunchTournament:
         try:
             l = self.q2.get(False, timeout=0.025)
             self.agent_log.message(str(l))
+            sys.stdout.flush()
         except queue.Empty:
             pass
 
