@@ -56,10 +56,19 @@ TUFT_VERSION = '2'
 TUFT_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + TUFT_APPLICATION_ID + '_' + TUFT_VERSION
 ### GT ###
 GT_APP_ID = 'agent_gt_pogo'
-GT_APPLICATION_VERSION = '1'
+GT_APPLICATION_VERSION = '2'
 GT_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + GT_APP_ID + '_' + GT_APPLICATION_VERSION
 
-POOL_ID = "GT_POGO_VIRGIN"
+### SRI ###
+SRI_APP_ID = 'agent_sri'
+SRI_VERSION = '1'
+SRI_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + SRI_APP_ID + '_' + SRI_VERSION
+
+POOL_ID = "TUFTS_VIRGIN_NEW"
+# POOL_ID = "TUFTS_THICKAIRCLEARS"
+# POOL_ID = "GT_POGO_VIRGIN_3"
+# POOL_ID = "POGO_VIRGIN_TUFTS"
+# POOL_ID = "POGO_VIRGIN_SIFT"
 # POOL_ID = "ImageTestPool"
 # POOL_ID = "Pogo_Nonov_Tufts_03_10m"
 # POOL_ID = "Pogo_All_Fog"
@@ -70,6 +79,7 @@ POOL_ID = "GT_POGO_VIRGIN"
 APP_DICT = {'agent_sift': APPLICATION_DIR,
             'agent_tufts': TUFT_APPLICATION_DIR,
             'agent_gt_pogo': GT_APPLICATION_DIR,
+            'agent_sri': SRI_APPLICATION_DIR,
             }
 
 # _SIMPLE_TASK_NAME = 'simple_task.py'
@@ -111,6 +121,7 @@ class AzureBatchLaunchTournaments:
             batchmodels.ApplicationPackageReference(application_id=APPLICATION_ID, version=APPLICATION_VERSION),
             batchmodels.ApplicationPackageReference(application_id=TUFT_APPLICATION_ID, version=TUFT_VERSION),
             batchmodels.ApplicationPackageReference(application_id=GT_APP_ID, version=GT_APPLICATION_VERSION),
+            batchmodels.ApplicationPackageReference(application_id=SRI_APP_ID, version=SRI_VERSION),
         ]
 
         # Create User Accounts
@@ -139,6 +150,17 @@ class AzureBatchLaunchTournaments:
             user_accounts=users,
             target_dedicated_nodes=vm_count,
             application_package_references=application_package_references,
+
+            # mount_configuration=[batch.models.MountConfiguration(
+            #     azure_file_share_configuration=batch.models.AzureFileShareConfiguration(
+            #         account_name=global_config.get('Storage', 'storageaccountname'),
+            #         azure_file_url="https://polycrafttournamentdata.file.core.windows.net/pal-sift",
+            #         account_key=global_config.get('Storage', 'storageaccountkey'),
+            #         relative_mount_path='sift_file_share')
+            #     ),
+            # ],
+
+
             start_task=batchmodels.StartTask(
                 command_line=helpers.wrap_commands_in_shell('linux', [
                     'whoami',
@@ -147,6 +169,8 @@ class AzureBatchLaunchTournaments:
                     # causes issues if this is run as azureuser? see: https://askubuntu.com/questions/1109982/e-could-not-get-lock-var-lib-dpkg-lock-frontend-open-11-resource-temporari
                     'apt-add-repository universe',
                     'apt-get update',
+                    'apt-get update && apt-get install cifs-utils && sudo mkdir -p /mnt/PolycraftFileShare',
+                    f'mount -t cifs //polycrafttournamentdata.file.core.windows.net/pal-sift /mnt/PolycraftFileShare -o vers=3.0,username={self.global_config.get("Storage", "storageaccountname")},password={self.global_config.get("Storage", "storageaccountkey")},dir_mode=0777,file_mode=0777,serverino && ls /mnt/PolycraftFileShare',
                     # 'sudo apt-get install -y python3-pip'
                 ]),
                 # TODO: include add'l resource files for initial startup
@@ -159,13 +183,8 @@ class AzureBatchLaunchTournaments:
                         elevation_level=batchmodels.ElevationLevel.admin)
                     # ),
 
-                )
-                # mount_configuration=[batch.models.MountConfiguration(
-                #     azure_file_share_configuration=batch.models.AzureFileShareConfiguration(
-                #         account_name=global_config.get('Storage', 'storageaccountname'),
-                #         azure_file_url="https://polycrafttournamentdata.file.core.windows.net/pal-sift",
-                #         account_key=global_config.get('Storage', 'storageaccountkey'),
-                #         relative_mount_path='mnt1'))]
+                ),
+
             ),
         )
 
@@ -209,6 +228,7 @@ class AzureBatchLaunchTournaments:
                 batchmodels.ApplicationPackageReference(application_id=APPLICATION_ID, version=APPLICATION_VERSION),
                 batchmodels.ApplicationPackageReference(application_id=TUFT_APPLICATION_ID, version=TUFT_VERSION),
                 batchmodels.ApplicationPackageReference(application_id=GT_APP_ID, version=GT_APPLICATION_VERSION),
+                batchmodels.ApplicationPackageReference(application_id=SRI_APP_ID, version=SRI_VERSION),
             ]
 
             user_identity = batch.models.UserIdentity(
@@ -239,6 +259,13 @@ class AzureBatchLaunchTournaments:
                 '../secret_real.ini',
                 datetime.datetime.utcnow() + datetime.timedelta(weeks=2))
 
+            sri_url = helpers.upload_blob_and_create_sas(
+                block_blob_client,
+                _CONTAINER_NAME,
+                "sri_run.sh",
+                '../sri_run.sh',
+                datetime.datetime.utcnow() + datetime.timedelta(weeks=2))
+
             sift_wrap = helpers.upload_blob_and_create_sas(
                 block_blob_client,
                 _CONTAINER_NAME,
@@ -256,6 +283,9 @@ class AzureBatchLaunchTournaments:
                     batchmodels.ResourceFile(
                         file_path='setup/' + 'setup_azure_batch_initial.sh',
                         http_url=setup_url),
+                    batchmodels.ResourceFile(
+                        file_path='setup/' + 'sri_run.sh',
+                        http_url=sri_url),
                     batchmodels.ResourceFile(
                         file_path='secret_real.ini',
                         http_url=secret_url),
@@ -373,46 +403,67 @@ if __name__ == '__main__':
     global_config = configparser.ConfigParser()
     global_config.read(helpers._SAMPLES_CONFIG_FILE_NAME)
 
-    gt = AzureBatchLaunchTournaments("GT_AGENT_2_TEST_V1", AgentType.GT_POGO_BASELINE, "../tournaments/POGO_LVL0_T1_1_0000_VIRGIN_15_tournaments/", global_config)
-    gt.execute_sample()
-    # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, "../tournaments/POGO_LVL0_T1_1_0000_VIRGIN_15_tournaments/", global_config)
+    # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, "../tournaments/POGO_LVL0_T1_1_0000_VIRGIN_15_tournaments/", global_config, "_060612")
     # sift_v2.execute_sample()
-    # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, "../tournaments/POGO_LVL3_T5_1_0050_FOG_25_tournaments/", global_config)
+    #
+    # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, "../tournaments/g50/Pogo_Tours_1-1-1_2-1-1_50/", global_config, "_060612")
     # sift_v2.execute_sample()
-    # sift_v2_thick = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, "../tournaments/POGO_LVL3_T6_1_0050_THICKAIR_25_tournaments/", global_config)
-    # sift_v2_thick.execute_sample()
     #
-    # # tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, "../tournaments/POGO_LVL0_T1_1_0000_VIRGIN_15_tournaments/", global_config)
-    # # tufts_test.execute_sample()
-    #
-    # tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, "../tournaments/POGO_LVL3_T5_1_0050_FOG_25_tournaments/", global_config)
+    # tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, "../tournaments/g50/Pogo_Tours_1-1-1_2-1-1_50/", global_config, "_060612")
     # tufts_test.execute_sample()
-    # tufts_test_thick = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, "../tournaments/POGO_LVL3_T6_1_0050_THICKAIR_25_tournaments/", global_config)
-    # tufts_test_thick.execute_sample()
 
-    # sift_v22 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, "../tournaments/POGO_LVL3_T5_2_0050_FOGCLEARS_25_tournaments/", global_config)
-    # sift_v22.execute_sample()
-    # sift_v22_thick = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, "../tournaments/POGO_LVL3_T6_2_0050_THICKAIRCLEARS_25_tournaments/", global_config)
-    # sift_v22_thick.execute_sample()
-    #
-    # # tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, "../tournaments/POGO_LVL0_T1_1_0000_VIRGIN_15_tournaments/", global_config)
-    # # tufts_test.execute_sample()
-    #
-    # tufts_test2 = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, "../tournaments/POGO_LVL3_T5_2_0050_FOGCLEARS_25_tournaments/", global_config)
-    # tufts_test2.execute_sample()
-    # tufts_test2_thick = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, "../tournaments/POGO_LVL3_T6_2_0050_THICKAIRCLEARS_25_tournaments/", global_config)
-    # tufts_test2_thick.execute_sample()
-    # sample_config = configparser.ConfigParser()
-    # # sample_config.read(
-    # #     os.path.splitext(os.path.basename(__file__))[0] + '.cfg')
-    # sample_config.read(helpers._SAMPLES_CONFIG_FILE_NAME)
+    # sri_test = AzureBatchLaunchTournaments("SRI_AGENT_TEST_01", AgentType.SRI, "../tournaments/HUGA_LVL0_T1_1_0000_VIRGIN_060600_5_tournaments/", global_config, "_060612")
+    # sri_test.execute_sample()
 
-    # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, "../fog_of_war_air/", global_config, "FOG_AIR_")
+    tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, "../tournaments/POGO_LVL0_T1_1_0000_VIRGIN_15_tournaments/", global_config, "_060612")
+    tufts_test.execute_sample()
+
+    #
+    # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT,
+    #                                       "../tournaments/g50/POGO_LVL3_T6_1_0005_THICKAIR_25_tournaments/",
+    #                                       global_config, "_060523")
     # sift_v2.execute_sample()
-    # tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, "../pogo_lvl0_25_2/", global_config, "POGO_NoNov_2_")
-    # tufts_test.execute_sample()
-    # tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, "../pogo_lvl0_25_2/",global_config, "POGO_NoNov_2_10m_")
+    #
+    # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT,
+    #                                       "../tournaments/g50/POGO_LVL3_T6_2_0005_THICKAIRCLEARS_11_tournaments/",
+    #                                       global_config, "_060612")
+    # sift_v2.execute_sample()
+    # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT,
+    #                                       "../tournaments/g50/POGO_LVL3_T5_1_0005_FOG_060501_25_tournaments/",
+    #                                       global_config, "_060523")
+    # sift_v2.execute_sample()
+    #
+    # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT,
+    #                                       "../tournaments/g50/POGO_LVL3_T5_2_0005_FOGCLEARS_25_tournaments/",
+    #                                       global_config, "_060523")
+    # sift_v2.execute_sample()
 
-    # tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_v02", AgentType.TUFTS, "../pogo_lvl_0_tournaments/", global_config)
+    # # #
+    # gta = AzureBatchLaunchTournaments("GT_AGENT_2_TEST_V2", AgentType.GT_POGO_BASELINE, "../tournaments/POGO_LVL0_T1_1_0000_VIRGIN_15_tournaments/", global_config, "_060515")
+    # gta.execute_sample()
+    # gta = AzureBatchLaunchTournaments("GT_AGENT_2_TEST_V2", AgentType.GT_POGO_BASELINE, "../tournaments/g50/POGO_LVL3_T6_1_0005_THICKAIR_25_tournaments/", global_config, "_060502")
+    # gta.execute_sample()
+    # gta = AzureBatchLaunchTournaments("GT_AGENT_2_TEST_V2", AgentType.GT_POGO_BASELINE, "../tournaments/g50/POGO_LVL3_T6_2_0005_THICKAIRCLEARS_25_tournaments/", global_config, "_060502")
+    # gta.execute_sample()
+
+    #
+    #
+    # tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS,
+    #                                          "../tournaments/g50/POGO_LVL3_T6_1_0005_THICKAIR_25_tournaments/",
+    #                                          global_config, "_060523")
+    # tufts_test.execute_sample()
+    #
+    # tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS,
+    #                                          "../tournaments/g50/POGO_LVL3_T6_2_0005_THICKAIRCLEARS_11_tournaments/",
+    #                                          global_config, "_060612")
+    # tufts_test.execute_sample()
+    #
+    # tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS,
+    #                                          "../tournaments/g50/POGO_LVL3_T5_1_0005_FOG_060501_25_tournaments/",
+    #                                          global_config, "_060523")
+    # tufts_test.execute_sample()
+    #
+    # tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, "../tournaments/g50/POGO_LVL3_T5_2_0005_FOGCLEARS_25_tournaments/", global_config, "_060523")
+    # tufts_test.execute_sample()
 
 
