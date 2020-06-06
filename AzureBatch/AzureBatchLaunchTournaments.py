@@ -64,7 +64,7 @@ SRI_APP_ID = 'agent_sri'
 SRI_VERSION = '1'
 SRI_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + SRI_APP_ID + '_' + SRI_VERSION
 
-POOL_ID = "TUFTS_VIRGIN_NEW"
+POOL_ID = "SIFT_VIRGIN_NEW_2"
 # POOL_ID = "TUFTS_THICKAIRCLEARS"
 # POOL_ID = "GT_POGO_VIRGIN_3"
 # POOL_ID = "POGO_VIRGIN_TUFTS"
@@ -403,8 +403,8 @@ if __name__ == '__main__':
     global_config = configparser.ConfigParser()
     global_config.read(helpers._SAMPLES_CONFIG_FILE_NAME)
 
-    # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, "../tournaments/POGO_LVL0_T1_1_0000_VIRGIN_15_tournaments/", global_config, "_060612")
-    # sift_v2.execute_sample()
+    sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, "../tournaments/POGO_LVL0_T1_1_0000_VIRGIN_15_tournaments/", global_config, "_060616")
+    sift_v2.execute_sample()
     #
     # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, "../tournaments/g50/Pogo_Tours_1-1-1_2-1-1_50/", global_config, "_060612")
     # sift_v2.execute_sample()
@@ -414,9 +414,9 @@ if __name__ == '__main__':
 
     # sri_test = AzureBatchLaunchTournaments("SRI_AGENT_TEST_01", AgentType.SRI, "../tournaments/HUGA_LVL0_T1_1_0000_VIRGIN_060600_5_tournaments/", global_config, "_060612")
     # sri_test.execute_sample()
-
-    tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, "../tournaments/POGO_LVL0_T1_1_0000_VIRGIN_15_tournaments/", global_config, "_060612")
-    tufts_test.execute_sample()
+    #
+    # tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, "../tournaments/POGO_LVL0_T1_1_0000_VIRGIN_15_tournaments/", global_config, "_060612")
+    # tufts_test.execute_sample()
 
     #
     # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT,
