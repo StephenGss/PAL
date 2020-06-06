@@ -154,9 +154,9 @@ class LaunchTournament:
         # TODO: Track agent giveup to call reset -- completed?
         # NoTODO: Track end condition flag to call reset -- completed
 
-        line_end_str = '\\r\\n'
+        line_end_str = '\r\n'
         if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
-            line_end_str = '\\n'
+            line_end_str = '\n'
         ## Agent Giveup check:
         if line.find('[AGENT]GIVE_UP') != -1:
             msg = 'Agent Gives Up'
@@ -564,9 +564,9 @@ class LaunchTournament:
         Checks to see if the agent reported that Novelty was Detected
         :param line: Current Line in STDOUT
         """
-        line_end_str = '\\r\\n'
+        line_end_str = '\r\n'
         if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
-            line_end_str = '\\n'
+            line_end_str = '\n'
         if line.find('REPORT_NOVELTY') != -1 and line.find(line_end_str) != -1:
             self.score_dict[self.game_index]['noveltyDetect'] = 1
             self.score_dict[self.game_index]['noveltyDetectStep'] = self.score_dict[self.game_index]['step']
@@ -583,9 +583,9 @@ class LaunchTournament:
         "step":1,
         "gameOver":false}\n'
         """
-        line_end_str = '\\r\\n'
+        line_end_str = '\r\n'
         if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
-            line_end_str = '\\n'
+            line_end_str = '\n'
         if line.find('[CLIENT]{') != -1 and line.find(line_end_str) != -1:
             # Get timestamp:
             json_text = line[line.find('{'):line.find(line_end_str)]  # Make this system agnostic - previously \\r\\n
@@ -663,9 +663,9 @@ class LaunchTournament:
         :return: True if gameOver: true passed to client
         """
 
-        line_end_str = '\\r\\n'
+        line_end_str = '\r\n'
         if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
-            line_end_str = '\\n'
+            line_end_str = '\n'
 
         if line.find('{') != -1 and line.find(line_end_str) != -1:
             json_text = line[line.find('{'):line.find(line_end_str)]  # Make this system agnostic - previously \\r\\n
@@ -683,10 +683,18 @@ class LaunchTournament:
         return False
 
     def _check_agent_cmd(self, line):
-        line_end_str = '\\r\\n'
-        if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
-            line_end_str = '\\n'
-        if line.find('[AGENT]') != -1 and line.find(line_end_str) != -1:
+        """
+        Checks to see if the Agent has sent PAL any messages yet. If so, PAL will print [AGENT] + the msg
+        If so, return true - the agent is running and the gameloop can begin
+        :param line: PAL line
+        :return: True if agent has sent a msg to PAL and PAL indicates that it successfully received it.
+        """
+        # line_end_str = '\\r\\n'
+        # if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
+        #     line_end_str = '\\n'
+        # if line.find('[AGENT]') != -1 and line.find(line_end_str) != -1:
+        #     return True
+        if line.find('[AGENT]') != -1:
             return True
 
         return False
