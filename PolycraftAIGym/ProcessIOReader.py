@@ -25,7 +25,7 @@ class ProcessIOReader:
         out = self.p.stdout
         for line in iter(out.readline, b''):
             self.qo.put(line)
-        #    out.flush()
+            out.flush()     # modified on 06-05-2020 SG, DN, WV
 
     def enqueue_err(self):
         if not self.p.stderr or self.p.stderr.closed:
@@ -33,6 +33,7 @@ class ProcessIOReader:
         err = self.p.stderr
         for line in iter(err.readline, b''):
             self.qe.put(line)
+            err.flush()     # modified on 06-05-2020 SG, DN, WV
 
     def aggregate(self, merge_queue):
         while (self.running):
