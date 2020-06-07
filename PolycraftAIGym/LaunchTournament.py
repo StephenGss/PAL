@@ -262,19 +262,13 @@ class LaunchTournament:
         """
         # Launch Minecraft Client
         self.debug_log.message("PAL command: " + self.pal_process_cmd)
-        # self.pal_client_process = subprocess.Popen(self.pal_process_cmd, shell=True, cwd='../', stdout=subprocess.PIPE,
-        #                                            # stdin=subprocess.PIPE,  # DN: 0606 Removed for perforamnce
-        #                                            stderr=subprocess.PIPE,
-        #                                            bufsize=1,                # DN: 0606 Added for buffer issues
-        #                                            universal_newlines=True,  # DN: 0606 Added for performance - needed for bufsize=1 based on docs?
-        #                                            )
+
         self.pal_client_process = subprocess.Popen(self.pal_process_cmd, shell=True, cwd='../', stdout=subprocess.PIPE,
                                                    # stdin=subprocess.PIPE,  # DN: 0606 Removed for perforamnce
-                                                   stderr=subprocess.STDOUT,
+                                                   stderr=subprocess.STDOUT, # DN: 0606 - pipe stderr to STDOUT. added for performance
                                                    bufsize=1,                # DN: 0606 Added for buffer issues
                                                    universal_newlines=True,  # DN: 0606 Added for performance - needed for bufsize=1 based on docs?
                                                    )
-        # self.PAL_reader = ProcessIOReader(self.pal_client_process,  out_queue=self.q, name="pal")
 
         self.pa_t = threading.Thread(target=self.read_output, args=(self.pal_client_process, self.q))
         self.pa_t.daemon = True
@@ -293,8 +287,25 @@ class LaunchTournament:
                 self.agent.poll()
                 if self.agent.returncode is not None:
                     break
-            if self.pal_client_process.returncode is not None:
-                break
+                # If agent started & PAL crashes, kill the main thread.
+                if self.pal_client_process.returncode is not None:
+                    break
+            # If agent hasn't started yet but PAL crashes, re-start PAL.
+            elif self.pal_client_process.returncode is not None:
+                self.q = queue.Queue()  # Re-initialize the q object & ignore crashed data.
+                self.pal_client_process = subprocess.Popen(self.pal_process_cmd, shell=True, cwd='../',
+                                                           stdout=subprocess.PIPE,
+                                                           # stdin=subprocess.PIPE,  # DN: 0606 Removed for perforamnce
+                                                           stderr=subprocess.STDOUT,
+                                                           bufsize=1,  # DN: 0606 Added for buffer issues
+                                                           universal_newlines=True,
+                                                           # DN: 0606 Added for performance - needed for bufsize=1 based on docs?
+                                                           )
+
+                self.pa_t = threading.Thread(target=self.read_output, args=(self.pal_client_process, self.q))
+                self.pa_t.daemon = True
+                self.pa_t.start()  # Kickoff the PAL Minecraft Client
+                self.debug_log.message("PAL Client ERROR. PAL Client Re-Initialized...")
 
             # wait for PAL to finish initializing. Then call to initialize a game
             if self.current_state == State.INIT_PAL:
