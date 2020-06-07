@@ -64,7 +64,7 @@ SRI_APP_ID = 'agent_sri'
 SRI_VERSION = '1'
 SRI_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + SRI_APP_ID + '_' + SRI_VERSION
 
-POOL_ID = "GT_POGO_G10_POOL_2"
+POOL_ID = "POGO_VIRGIN_X0100"
 # POOL_ID = "TUFTS_THICKAIRCLEARS"
 # POOL_ID = "GT_POGO_VIRGIN_3"
 # POOL_ID = "POGO_VIRGIN_TUFTS"
@@ -400,7 +400,7 @@ class AzureBatchLaunchTournaments:
 
 def launch_g10_tournaments(agent, agentType, test_type, global_config,suffix):
     output = []
-    for subdir, folders, files in os.walk(f'{os.getcwd()}/../tournaments/g10/pogo_lvl1_all/'):
+    for subdir, folders, files in os.walk(f'{os.getcwd()}/../tournaments/g10/POGO_L00_T01_S01_VIRGIN/'):
         for file in files:
             if file.endswith('.zip') and test_type.value in file:
                 print(f'{subdir}/{file}')
@@ -410,6 +410,7 @@ def launch_g10_tournaments(agent, agentType, test_type, global_config,suffix):
     output = list(set(output))
 
     for folder in output:
+        # pass
        agent_pool = AzureBatchLaunchTournaments(agent, agentType, folder, global_config, suffix)
        agent_pool.execute_sample()
 
@@ -425,8 +426,16 @@ if __name__ == '__main__':
     global_config = configparser.ConfigParser()
     global_config.read(helpers._SAMPLES_CONFIG_FILE_NAME)
 
-    launch_g10_tournaments("GT_AGENT_2_TEST_V2", AgentType.GT_POGO_BASELINE, TestType.STAGE4, global_config, "_060712")
+    launch_g10_tournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, TestType.STAGE5, global_config, "_060712")
+    launch_g10_tournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, TestType.STAGE5, global_config, "_060712")
+    launch_g10_tournaments("GT_AGENT_2_TEST_V2", AgentType.GT_POGO_BASELINE, TestType.STAGE5, global_config, "_060712")
+    #
+    # launch_g10_tournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, TestType.STAGE4, global_config, "_060712")
+    # launch_g10_tournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, TestType.STAGE4, global_config, "_060712")
+    # launch_g10_tournaments("GT_AGENT_2_TEST_V2", AgentType.GT_POGO_BASELINE, TestType.STAGE4, global_config, "_060712")
     # launch_g10_tournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, global_config, "_060702")
+    # launch_g10_tournaments("SRI_AGENT_TEST_01", AgentType.SRI, TestType.STAGE6, global_config, "_060712")
+    # launch_g10_tournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, TestType.STAGE4, global_config, "_060712")
 
     # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT,
     #                                       "../tournaments/POGO_LVL0_T1_1_0000_VIRGIN_15_tournaments/", global_config,
