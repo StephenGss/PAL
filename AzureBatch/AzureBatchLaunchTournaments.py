@@ -64,7 +64,7 @@ SRI_APP_ID = 'agent_sri'
 SRI_VERSION = '1'
 SRI_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + SRI_APP_ID + '_' + SRI_VERSION
 
-POOL_ID = "SIFT_VIRGIN_NEW_2"
+POOL_ID = "GT_POGO_G10_POOL"
 # POOL_ID = "TUFTS_THICKAIRCLEARS"
 # POOL_ID = "GT_POGO_VIRGIN_3"
 # POOL_ID = "POGO_VIRGIN_TUFTS"
@@ -214,7 +214,7 @@ class AzureBatchLaunchTournaments:
         # os.chdir('../output/')
         count = 0
         # maxCount = 5  # TODO: move this.
-        for file in os.listdir(f'{os.getcwd()}/{self.library_of_tournaments}'):
+        for file in os.listdir(f'{self.library_of_tournaments}'):
             # if count >= maxCount:
             #     break
             if not file.endswith(".zip"):
@@ -398,13 +398,45 @@ class AzureBatchLaunchTournaments:
         #         print("Deleting pool: ", pool_id)
         #         batch_client.pool.delete(pool_id)
 
+def launch_g10_tournaments(agent, agentType,global_config,suffix):
+    output = []
+    for subdir, folders, files in os.walk(f'{os.getcwd()}/../tournaments/g10/'):
+        for file in files:
+            if file.endswith('.zip'):
+                # print(f'{subdir}/{file}')
+                zip = f'{subdir}/{file}'
+                output.append(f'{subdir}/')
+
+    output = list(set(output))
+
+    for folder in output:
+        agent_pool = AzureBatchLaunchTournaments(agent, agentType, folder, global_config, suffix)
+        agent_pool.execute_sample()
+
+
 
 if __name__ == '__main__':
     global_config = configparser.ConfigParser()
     global_config.read(helpers._SAMPLES_CONFIG_FILE_NAME)
 
-    sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, "../tournaments/POGO_LVL0_T1_1_0000_VIRGIN_15_tournaments/", global_config, "_060617")
-    sift_v2.execute_sample()
+    launch_g10_tournaments("GT_AGENT_2_TEST_V2", AgentType.GT_POGO_BASELINE, global_config, "_060702")
+    # launch_g10_tournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, global_config, "_060702")
+
+    # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT,
+    #                                       "../tournaments/POGO_LVL0_T1_1_0000_VIRGIN_15_tournaments/", global_config,
+    #                                       "_060617")
+    # sift_v2.execute_sample()
+    # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT,
+    #                                       "../tournaments/POGO_LVL0_T1_1_0000_VIRGIN_15_tournaments/", global_config,
+    #                                       "_060617")
+    # sift_v2.execute_sample()
+    # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT,
+    #                                       "../tournaments/POGO_LVL0_T1_1_0000_VIRGIN_15_tournaments/", global_config,
+    #                                       "_060617")
+    # sift_v2.execute_sample()
+
+    # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, "../tournaments/POGO_LVL0_T1_1_0000_VIRGIN_15_tournaments/", global_config, "_060617")
+    # sift_v2.execute_sample()
     #
     # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, "../tournaments/g50/Pogo_Tours_1-1-1_2-1-1_50/", global_config, "_060612")
     # sift_v2.execute_sample()
