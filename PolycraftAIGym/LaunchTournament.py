@@ -207,18 +207,18 @@ class LaunchTournament:
         
         return None
 
-    @DeprecationWarning
+
     def read_output(self, pipe, q, timeout=1):
         """reads output from `pipe`, when line has been read, puts
     line on Queue `q`"""
         # read both stdout and stderr
 
         flag_continue = True
-        while flag_continue and not pipe.stdout.closed and not pipe.stderr.closed:
+        while flag_continue and not pipe.stdout.closed:
             l = pipe.stdout.readline()
             q.put(l)
-            l2 = pipe.stderr.readline()
-            q.put(l2)
+            sys.stdout.flush()
+            pipe.stdout.flush()
 
     def _check_queues(self):
         """
@@ -262,17 +262,23 @@ class LaunchTournament:
         """
         # Launch Minecraft Client
         self.debug_log.message("PAL command: " + self.pal_process_cmd)
+        # self.pal_client_process = subprocess.Popen(self.pal_process_cmd, shell=True, cwd='../', stdout=subprocess.PIPE,
+        #                                            # stdin=subprocess.PIPE,  # DN: 0606 Removed for perforamnce
+        #                                            stderr=subprocess.PIPE,
+        #                                            bufsize=1,                # DN: 0606 Added for buffer issues
+        #                                            universal_newlines=True,  # DN: 0606 Added for performance - needed for bufsize=1 based on docs?
+        #                                            )
         self.pal_client_process = subprocess.Popen(self.pal_process_cmd, shell=True, cwd='../', stdout=subprocess.PIPE,
                                                    # stdin=subprocess.PIPE,  # DN: 0606 Removed for perforamnce
-                                                   stderr=subprocess.PIPE,
+                                                   stderr=subprocess.STDOUT,
                                                    bufsize=1,                # DN: 0606 Added for buffer issues
                                                    universal_newlines=True,  # DN: 0606 Added for performance - needed for bufsize=1 based on docs?
                                                    )
-        self.PAL_reader = ProcessIOReader(self.pal_client_process,  out_queue=self.q, name="pal")
+        # self.PAL_reader = ProcessIOReader(self.pal_client_process,  out_queue=self.q, name="pal")
 
-        # self.pa_t = threading.Thread(target=self.read_output, args=(self.pal_client_process, self.q))
-        # self.pa_t.daemon = True
-        # self.pa_t.start()  # Kickoff the PAL Minecraft Client
+        self.pa_t = threading.Thread(target=self.read_output, args=(self.pal_client_process, self.q))
+        self.pa_t.daemon = True
+        self.pa_t.start()  # Kickoff the PAL Minecraft Client
         self.debug_log.message("PAL Client Initiated")
 
         while self.tournament_in_progress:
@@ -425,18 +431,24 @@ class LaunchTournament:
         Launch the AI agent Thread
         """
         self.debug_log.message("Initializing Agent Thread: python hg_agent.py")
-
+        #
+        # self.agent = subprocess.Popen(self.agent_process_cmd, shell=True, cwd=CONFIG.AGENT_DIRECTORY, stdout=subprocess.PIPE,
+        #                               # stdin=subprocess.PIPE,      #DN: 0606 Removed for performance
+        #                               stderr=subprocess.PIPE,
+        #                               bufsize=1,                    #DN: 0606 Added for performance
+        #                               universal_newlines=True,      #DN: 0606 Added for performance
+        #                               )
         self.agent = subprocess.Popen(self.agent_process_cmd, shell=True, cwd=CONFIG.AGENT_DIRECTORY, stdout=subprocess.PIPE,
                                       # stdin=subprocess.PIPE,      #DN: 0606 Removed for performance
-                                      stderr=subprocess.PIPE,
+                                      stderr=subprocess.STDOUT,
                                       bufsize=1,                    #DN: 0606 Added for performance
                                       universal_newlines=True,      #DN: 0606 Added for performance
                                       )
-        self.agent_reader = ProcessIOReader(self.agent, out_queue=self.q2, name='agent')
-        # self.pb_t = threading.Thread(target=self.read_output, args=(self.agent, self.q2))
+        # self.agent_reader = ProcessIOReader(self.agent, out_queue=self.q2, name='agent')
+        self.pb_t = threading.Thread(target=self.read_output, args=(self.agent, self.q2))
         self.agent_started = True
-        # self.pb_t.daemon = True
-        # self.pb_t.start()
+        self.pb_t.daemon = True
+        self.pb_t.start()
         self.debug_log.message("Launched AI Agent")
 
     def _game_over(self):
