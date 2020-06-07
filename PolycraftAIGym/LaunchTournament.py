@@ -622,7 +622,7 @@ class LaunchTournament:
             data_dict = json.loads(json_text)
             if 'step' in data_dict:
                 cur_step = data_dict['step']
-                rematch = re.match(r'b\'\[(\d\d:\d\d:\d\d)\]', str(line))
+                rematch = re.match('\[(\d\d:\d\d:\d\d)\]', str(line))
                 # rematch = re.match(r'\[\d\d.\d\d.\d\d\]', line)
                 # rematch = re.match(r'(\d\d\d\d.\d\d.\d\d.\d\d.\d\d.\d\d):', line)
                 if rematch:
