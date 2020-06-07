@@ -1,5 +1,5 @@
 from pathlib import Path
-import time
+import time, re
 
 
 class PalMessenger:
@@ -22,6 +22,26 @@ class PalMessenger:
     def __copy__(self):
         return PalMessenger(self.print_log_info, self.write_log_info, self.log_file, self.log_note, self.give_time)
 
+    def message_strip(self, message_to_handle):
+        """
+        We don't care about the "blockInFront" array! Let's strip it out!
+        :param message_to_handle: raw msg
+        :return:
+        """
+        message = ""
+        if self.give_time:
+            message = message + PalMessenger.time_now_str() + ": "
+
+        p = re.compile('(.*\[CLIENT\]{"blockInFront":{).*(},"goal".*)')
+        msg_stripped = p.sub("\g<1>REDACTED\g<2>", str(message_to_handle))
+        message = message + self.log_note + msg_stripped
+        if self.print_log_info:
+            print(message)
+        message = message + "\n"
+        if self.write_log_info:
+            with open(self.log_file, "a") as write_file:
+                write_file.write(message)
+
     def message(self, message_to_handle):
         message = ""
         if self.give_time:
@@ -29,7 +49,8 @@ class PalMessenger:
         message = message + self.log_note + str(message_to_handle)
         if self.print_log_info:
             print(message)
-        message = message + "\n"
+        if not message.endswith("\\n"):
+            message = message + "\n"
         if self.write_log_info:
             with open(self.log_file, "a") as write_file:
                 write_file.write(message)

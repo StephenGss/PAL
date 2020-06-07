@@ -12,12 +12,12 @@ class ProcessIOReader:
         self.aggregator.join()
         # self.ti.join()
 
-    def enqueue_in(self):
-        while self.running and self.p.stdin is not None:
-            while not self.stdin_queue.empty():
-                s = self.stdin_queue.get()
-                self.p.stdin.write(str(s) + '\n\r')
-            pass
+    # def enqueue_in(self):
+    #     while self.running and self.p.stdin is not None:
+    #         while not self.stdin_queue.empty():
+    #             s = self.stdin_queue.get()
+    #             self.p.stdin.write(str(s) + '\n\r')
+    #         pass
 
     def enqueue_output(self):
         if not self.p.stdout or self.p.stdout.closed:
@@ -25,7 +25,7 @@ class ProcessIOReader:
         out = self.p.stdout
         for line in iter(out.readline, b''):
             self.qo.put(line)
-        #    out.flush()
+            out.flush()     # modified on 06-05-2020 SG, DN, WV
 
     def enqueue_err(self):
         if not self.p.stderr or self.p.stderr.closed:
@@ -33,6 +33,7 @@ class ProcessIOReader:
         err = self.p.stderr
         for line in iter(err.readline, b''):
             self.qe.put(line)
+            err.flush()     # modified on 06-05-2020 SG, DN, WV
 
     def aggregate(self, merge_queue):
         while (self.running):
@@ -42,41 +43,37 @@ class ProcessIOReader:
     def merge_queues(self, merge_queue):
         line = ""
         try:
-            while self.qe.not_empty:
-                line = self.qe.get_nowait()  # or q.get(timeout=.1)
-                merge_queue.put(line)
-                # self.unbblocked_err += line
+            line = self.qe.get_nowait()  # or q.get(timeout=.1)
+            merge_queue.put(line)
+            # self.unbblocked_err += line
         except Queue.Empty:
             pass
 
         line = ""
         try:
-            while self.qo.not_empty:
-                line = self.qo.get_nowait()  # or q.get(timeout=.1)
-                merge_queue.put(line)
+            line = self.qo.get_nowait()  # or q.get(timeout=.1)
+            merge_queue.put(line)
         except Queue.Empty:
             pass
-
-    def update(self):
-        line = ""
-        try:
-            while self.qe.not_empty:
-                line = self.qe.get_nowait()  # or q.get(timeout=.1)
-                self.unbblocked_err += line
-        except Queue.Empty:
-            pass
-
-        line = ""
-        try:
-            while self.qo.not_empty:
-                line = self.qo.get_nowait()  # or q.get(timeout=.1)
-                self.unbblocked_out += line
-        except Queue.Empty:
-            pass
-
-        while not self.stdin_queue.empty():
-                s = self.stdin_queue.get()
-                self.p.stdin.write(str(s))
+    #
+    # def update(self):
+    #     line = ""
+    #     try:
+    #         line = self.qe.get_nowait()  # or q.get(timeout=.1)
+    #         self.unbblocked_err += line
+    #     except Queue.Empty:
+    #         pass
+    #
+    #     line = ""
+    #     try:
+    #         line = self.qo.get_nowait()  # or q.get(timeout=.1)
+    #         self.unbblocked_out += line
+    #     except Queue.Empty:
+    #         pass
+    #
+    #     while not self.stdin_queue.empty():
+    #             s = self.stdin_queue.get()
+    #             self.p.stdin.write(str(s))
 
     def get_stdout(self, clear=True):
         ret = self.unbblocked_out
@@ -126,7 +123,7 @@ class ProcessIOReader:
         self.te.daemon = True  # thread dies with the program
         self.te.start()
 
-        self.stdin_queue = Queue.Queue()
+        # self.stdin_queue = Queue.Queue()
         self.aggregator = threading.Thread(name=f"aggregate_{name}",
                                            target=self.aggregate,
                                            args=[out_queue])

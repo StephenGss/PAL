@@ -66,7 +66,7 @@ class AzureConnectionService:
         ConnectionTimeout = 30
         cxn = f'Driver={Driver};Server={Server};Database={Database};Uid={Uid};Pwd={Pwd};Encrypt={Encrypt};TrustServerCertificate={TrustServerCertificate};Connection Timeout={ConnectionTimeout};'
         try:
-            db = pyodbc.connect(cxn)
+            db = pyodbc.connect(cxn, autocommit=True)
             self.valid_connection = AzureConnectionService._validate_db_connection(db)
             return db
         except Exception as e:

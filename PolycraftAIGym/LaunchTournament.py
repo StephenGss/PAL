@@ -14,6 +14,7 @@ import re
 from collections import defaultdict
 from copy import copy, deepcopy
 import getopt
+import psutil
 
 
 class LaunchTournament:
@@ -34,6 +35,8 @@ class LaunchTournament:
         self.total_step_cost = 0
         self.start_time = time.time()
         self.wait_for_gameover_timer = None
+        self.wait_for_nextgame_init_timer = None
+        self.next_game_initialized_flag = False
         #self.games = CONFIG.GAMES
         #self.games = self._build_game_list(CONFIG.GAME_COUNT)
         self.log_dir = log_dir + f"{PalMessenger.PalMessenger.time_now_str()}/"
@@ -85,7 +88,27 @@ class LaunchTournament:
                     file_list.append(filepath)
 
         self.debug_log.message(f"Game List created. {len(file_list)} games read. {len(file_list[:ct])} games will be played")
-        return file_list[:ct]
+        if ct <= 0:
+            sorted_files = self._sort_files(file_list)
+        else:
+            sorted_files = self._sort_files(file_list)[:ct]
+
+        self.debug_log.message(f"sorted games to be played: {sorted_files}")
+        return sorted_files
+
+    def _sort_files(self, files):
+        sorted_dict = {}
+        for file in files:
+            values = re.search("_G(\d+)_", file)
+            if not values:
+                raise ValueError("Error - files are not named correctly! "+ file)
+            sorted_dict[int(values.groups()[0])] = file
+
+        sorted_file_list = []
+        for i in sorted(sorted_dict.keys()):
+            sorted_file_list.append(sorted_dict[i])
+
+        return sorted_file_list
 
     def _create_logs(self):
         """
@@ -131,9 +154,9 @@ class LaunchTournament:
         # TODO: Track agent giveup to call reset -- completed?
         # NoTODO: Track end condition flag to call reset -- completed
 
-        line_end_str = '\\r\\n'
+        line_end_str = '\r\n'
         if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
-            line_end_str = '\\n'
+            line_end_str = '\n'
         ## Agent Giveup check:
         if line.find('[AGENT]GIVE_UP') != -1:
             msg = 'Agent Gives Up'
@@ -184,6 +207,7 @@ class LaunchTournament:
         
         return None
 
+    @DeprecationWarning
     def read_output(self, pipe, q, timeout=1):
         """reads output from `pipe`, when line has been read, puts
     line on Queue `q`"""
@@ -203,35 +227,29 @@ class LaunchTournament:
                     used to determine game ending conditions and update the score_dict{}
         """
         next_line = ""
-        # if self.PAL_reader.has_stdout():
-        #     next_line = self.PAL_reader.get_stdout()
-        # elif self.PAL_reader.has_stderr():
-        #     next_line = self.PAL_reader.get_stderr()
-        # else:
-        #     pass
-        # self.PAL_log.message(str(next_line))
-        #
+
         # # write output from procedure A (if there is any)
+        # DN: Remove "blockInFront" data from PAL, as it just gunks up our PAL logs for no good reason.
         try:
             next_line = self.q.get(False, timeout=0.025)
-            self.PAL_log.message(str(next_line))
+            self.PAL_log.message_strip(str(next_line))
+            sys.stdout.flush()
+            sys.stderr.flush()
         except queue.Empty:
             pass
-
-        # if self.agent_reader.has_stdout():
-        #     next_line = self.agent_reader.get_stdout()
-        # elif self.agent_reader.has_stderr():
-        #     next_line = self.agent_reader.get_stderr()
-        # else:
-        #     pass
-        # self.PAL_log.message(str(next_line))
 
         # write output from procedure B (if there is any)
         try:
             l = self.q2.get(False, timeout=0.025)
             self.agent_log.message(str(l))
+            sys.stdout.flush()
+            sys.stderr.flush()
         except queue.Empty:
             pass
+
+        # Handles edge case where this msg comes sooner than anticipated.
+        if "[EXP] game initialization completed" in str(next_line):
+            self.next_game_initialized_flag = True
 
         return next_line
 
@@ -245,7 +263,11 @@ class LaunchTournament:
         # Launch Minecraft Client
         self.debug_log.message("PAL command: " + self.pal_process_cmd)
         self.pal_client_process = subprocess.Popen(self.pal_process_cmd, shell=True, cwd='../', stdout=subprocess.PIPE,
-                                                   stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+                                                   # stdin=subprocess.PIPE,  # DN: 0606 Removed for perforamnce
+                                                   stderr=subprocess.PIPE,
+                                                   bufsize=1,                # DN: 0606 Added for buffer issues
+                                                   universal_newlines=True,  # DN: 0606 Added for performance - needed for bufsize=1 based on docs?
+                                                   )
         self.PAL_reader = ProcessIOReader(self.pal_client_process,  out_queue=self.q, name="pal")
 
         # self.pa_t = threading.Thread(target=self.read_output, args=(self.pal_client_process, self.q))
@@ -286,6 +308,7 @@ class LaunchTournament:
                 if "[EXP] game initialization completed" in str(next_line):
                     self.debug_log.message("Game Initialized. ")
                     self.current_state = State.INIT_AGENT
+                    self.next_game_initialized_flag = False
 
             # Launch the AI agent and start the experiment
             elif self.current_state == State.INIT_AGENT:
@@ -357,14 +380,26 @@ class LaunchTournament:
                 self._trigger_reset()
 
                 self.current_state = State.DETECT_RESET
+                sys.stdout.flush()
+                sys.stderr.flush()
+                # self.wait_for_nextgame_init_timer = time.time()
 
             # Wait for reset to complete; then reset the game loop
             elif self.current_state == State.DETECT_RESET:
+                sys.stdout.flush()
+                sys.stderr.flush()
+                # Typical Scenario: below text shows up after the reset is triggered.
+                # However, case exists where messages may come faster than we can process
+                # New solution: Look for this line and set a global flag in the _check_queues() function
+
+                # FIXME: Should I enable this behaviour?
+                # if "[EXP] game initialization completed" in str(next_line) or self.next_game_initialized_flag:
                 if "[EXP] game initialization completed" in str(next_line):
                     self.debug_log.message("Reset Complete. Switching to Game Loop... ")
                     self.current_state = State.GAME_LOOP
                     self.start_time = time.time() # Start Time at this point.
                     self.score_dict[self.game_index]['startTime'] = PalMessenger.PalMessenger.time_now_str()
+                    self.next_game_initialized_flag = False
 
 
         #output = self.pal_client_process.communicate()[0]
@@ -392,7 +427,11 @@ class LaunchTournament:
         self.debug_log.message("Initializing Agent Thread: python hg_agent.py")
 
         self.agent = subprocess.Popen(self.agent_process_cmd, shell=True, cwd=CONFIG.AGENT_DIRECTORY, stdout=subprocess.PIPE,
-                                      stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+                                      # stdin=subprocess.PIPE,      #DN: 0606 Removed for performance
+                                      stderr=subprocess.PIPE,
+                                      bufsize=1,                    #DN: 0606 Added for performance
+                                      universal_newlines=True,      #DN: 0606 Added for performance
+                                      )
         self.agent_reader = ProcessIOReader(self.agent, out_queue=self.q2, name='agent')
         # self.pb_t = threading.Thread(target=self.read_output, args=(self.agent, self.q2))
         self.agent_started = True
@@ -464,22 +503,40 @@ class LaunchTournament:
         """
         self.debug_log.message("Tournament Completed: " + str(len(self.games)) + "games run")
         sys.stdout.flush()
-        os.kill(self.agent.pid, signal.SIGTERM)
-        os.kill(self.pal_client_process.pid, signal.SIGTERM)
+        # os.kill(self.agent.pid, signal.SIGTERM)
+        # os.kill(self.pal_client_process.pid, signal.SIGTERM)
         self.tm_thread.kill()
         if self.threads is not None:
             self.threads.join()
 
+        self._kill_process_children(5)
+
         self.tm_thread.join(5)
         self.tournament_in_progress = False
+
+    def _kill_process_children(self, timeout):
+        # Kill the client process first to stop it from sending messages to the server
+        procs = list(psutil.Process(os.getpid()).children(recursive=True))
+        for p in procs:
+            try:
+                p.terminate()
+            except psutil.NoSuchProcess:
+                pass
+        gone, alive = psutil.wait_procs(procs, timeout=timeout)
+        for p in alive:
+            try:
+                p.kill()
+            except psutil.NoSuchProcess:
+                pass
 
     def _reset_and_flush(self):
         self.tm_thread.queue.put("RESET domain " + self.games[self.game_index + 1])
         self.debug_log.message("RESET domain command sent to tm_thread.")
-        with self.q.mutex:
-            self.q.queue.clear()
-        with self.q2.mutex:
-            self.q2.queue.clear()
+        # We think clearing the queue are causing us to miss key log outputs
+        # with self.q.mutex:
+        #     self.q.queue.clear()
+        # with self.q2.mutex:
+        #     self.q2.queue.clear()
 
     def _trigger_reset(self):
         """
@@ -507,9 +564,9 @@ class LaunchTournament:
         Checks to see if the agent reported that Novelty was Detected
         :param line: Current Line in STDOUT
         """
-        line_end_str = '\\r\\n'
+        line_end_str = '\r\n'
         if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
-            line_end_str = '\\n'
+            line_end_str = '\n'
         if line.find('REPORT_NOVELTY') != -1 and line.find(line_end_str) != -1:
             self.score_dict[self.game_index]['noveltyDetect'] = 1
             self.score_dict[self.game_index]['noveltyDetectStep'] = self.score_dict[self.game_index]['step']
@@ -526,9 +583,9 @@ class LaunchTournament:
         "step":1,
         "gameOver":false}\n'
         """
-        line_end_str = '\\r\\n'
+        line_end_str = '\r\n'
         if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
-            line_end_str = '\\n'
+            line_end_str = '\n'
         if line.find('[CLIENT]{') != -1 and line.find(line_end_str) != -1:
             # Get timestamp:
             json_text = line[line.find('{'):line.find(line_end_str)]  # Make this system agnostic - previously \\r\\n
@@ -606,9 +663,9 @@ class LaunchTournament:
         :return: True if gameOver: true passed to client
         """
 
-        line_end_str = '\\r\\n'
+        line_end_str = '\r\n'
         if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
-            line_end_str = '\\n'
+            line_end_str = '\n'
 
         if line.find('{') != -1 and line.find(line_end_str) != -1:
             json_text = line[line.find('{'):line.find(line_end_str)]  # Make this system agnostic - previously \\r\\n
@@ -626,10 +683,18 @@ class LaunchTournament:
         return False
 
     def _check_agent_cmd(self, line):
-        line_end_str = '\\r\\n'
-        if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
-            line_end_str = '\\n'
-        if line.find('[AGENT]') != -1 and line.find(line_end_str) != -1:
+        """
+        Checks to see if the Agent has sent PAL any messages yet. If so, PAL will print [AGENT] + the msg
+        If so, return true - the agent is running and the gameloop can begin
+        :param line: PAL line
+        :return: True if agent has sent a msg to PAL and PAL indicates that it successfully received it.
+        """
+        # line_end_str = '\\r\\n'
+        # if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
+        #     line_end_str = '\\n'
+        # if line.find('[AGENT]') != -1 and line.find(line_end_str) != -1:
+        #     return True
+        if line.find('[AGENT]') != -1:
             return True
 
         return False
@@ -657,8 +722,8 @@ if __name__ == "__main__":
     # output = '../output'
     # output_name = 'hg_lvl-0'
     try:
-        opts, args = getopt.getopt(argv, "hc:t:g:a:d:x:",
-                                       ["game_count=","tournament=","game_folder=","agent name=", "agent directory=", "agent command="])
+        opts, args = getopt.getopt(argv, "hc:t:g:a:d:x:i:",
+                                       ["game_count=","tournament=","game_folder=","agent name=", "agent directory=", "agent command=", "max time="])
     except getopt.GetoptError:
         print('LaunchTournament.py -c <game_count> -t <tournament_name> -g <game_folder> -a <agent_name> -d <agent_directory> -x <agent_command>')
         sys.exit(2)
@@ -684,6 +749,9 @@ if __name__ == "__main__":
         elif opt in ("-x", "--agent-exec"):
             print(f"Agent Command: {arg}")
             CONFIG.AGENT_COMMAND_UNIX = arg
+        elif opt in ("-i", "--max-time"):
+            print(f"Max Time (sec): {arg}")
+            CONFIG.MAX_TIME = int(arg)
 
 
 
