@@ -64,7 +64,7 @@ SRI_APP_ID = 'agent_sri'
 SRI_VERSION = '1'
 SRI_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + SRI_APP_ID + '_' + SRI_VERSION
 
-POOL_ID = "GT_POGO_G10_POOL"
+POOL_ID = "GT_POGO_G10_POOL_2"
 # POOL_ID = "TUFTS_THICKAIRCLEARS"
 # POOL_ID = "GT_POGO_VIRGIN_3"
 # POOL_ID = "POGO_VIRGIN_TUFTS"
@@ -398,28 +398,34 @@ class AzureBatchLaunchTournaments:
         #         print("Deleting pool: ", pool_id)
         #         batch_client.pool.delete(pool_id)
 
-def launch_g10_tournaments(agent, agentType,global_config,suffix):
+def launch_g10_tournaments(agent, agentType, test_type, global_config,suffix):
     output = []
-    for subdir, folders, files in os.walk(f'{os.getcwd()}/../tournaments/g10/'):
+    for subdir, folders, files in os.walk(f'{os.getcwd()}/../tournaments/g10/pogo_lvl1_all/'):
         for file in files:
-            if file.endswith('.zip'):
-                # print(f'{subdir}/{file}')
+            if file.endswith('.zip') and test_type.value in file:
+                print(f'{subdir}/{file}')
                 zip = f'{subdir}/{file}'
                 output.append(f'{subdir}/')
 
     output = list(set(output))
 
     for folder in output:
-        agent_pool = AzureBatchLaunchTournaments(agent, agentType, folder, global_config, suffix)
-        agent_pool.execute_sample()
+       agent_pool = AzureBatchLaunchTournaments(agent, agentType, folder, global_config, suffix)
+       agent_pool.execute_sample()
 
+from enum import Enum
+
+class TestType(Enum):
+    STAGE4 = "X0010"
+    STAGE5 = "X0100"
+    STAGE6 = "X1000"
 
 
 if __name__ == '__main__':
     global_config = configparser.ConfigParser()
     global_config.read(helpers._SAMPLES_CONFIG_FILE_NAME)
 
-    launch_g10_tournaments("GT_AGENT_2_TEST_V2", AgentType.GT_POGO_BASELINE, global_config, "_060702")
+    launch_g10_tournaments("GT_AGENT_2_TEST_V2", AgentType.GT_POGO_BASELINE, TestType.STAGE4, global_config, "_060712")
     # launch_g10_tournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, global_config, "_060702")
 
     # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT,
