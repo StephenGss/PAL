@@ -759,7 +759,7 @@ if __name__ == "__main__":
             print('LaunchTournament.py -c <game_count> -t <tournament_name> -g <game_folder> -a <agent_name> -d <agent_directory> -x <agent_command>')
             sys.exit()
         elif opt in ("-c", "--count"):
-            print(f"Number of Games: {arg}")
+            # print(f"Number of Games: {arg}")
             CONFIG.GAME_COUNT = int(arg)
         elif opt in ("-a", "--agent-name"):
             print(f"Agent Name: {arg}")
