@@ -145,6 +145,8 @@ class AgentBatchCommands:
 
     def _setup_vm(self):
         return [
+            'dpkg --configure -a',
+            'echo "[DN_MSG]dpkg configure re-run\n"',
             './setup/setup_azure_batch_initial.sh',
             'echo "[DN_MSG]azure vm setup complete\n"',
         ]
