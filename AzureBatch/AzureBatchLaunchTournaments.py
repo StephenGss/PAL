@@ -44,13 +44,11 @@ from AzureBatch.AgentBatchCommands import AgentType, AgentBatchCommands
 _CONTAINER_NAME = 'batch-workflow-fog-of-war'
 
 ### SIFT ###
-
 APPLICATION_ID = 'agent_sift'
 APPLICATION_VERSION = '5'
 APPLICATION_ID_FIXED = 'agent_sift'
 APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + APPLICATION_ID_FIXED + '_' + APPLICATION_VERSION
 ### TUFTS ###
-
 TUFT_APPLICATION_ID = 'agent_tufts'
 TUFT_VERSION = '2'
 TUFT_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + TUFT_APPLICATION_ID + '_' + TUFT_VERSION
@@ -59,27 +57,22 @@ GT_APP_ID = 'agent_gt_pogo'
 GT_APPLICATION_VERSION = '6'
 GT_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + GT_APP_ID + '_' + GT_APPLICATION_VERSION
 
+### GT HG ###
+GT_HUGA_APP_ID = 'agent_gt_huga_1'
+GT_HUGA_APP_VERSION = '1'
+GT_HUGA_APP_DIR = '$AZ_BATCH_APP_PACKAGE_' + GT_HUGA_APP_ID + '_' + GT_HUGA_APP_VERSION
+
 ### SRI ###
 SRI_APP_ID = 'agent_sri'
 SRI_VERSION = '1'
 SRI_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + SRI_APP_ID + '_' + SRI_VERSION
 
-POOL_ID = "TUFTS_X1000_RUN_SELECTED"
-# POOL_ID = "TUFTS_THICKAIRCLEARS"
-# POOL_ID = "GT_POGO_VIRGIN_3"
-# POOL_ID = "POGO_VIRGIN_TUFTS"
-# POOL_ID = "POGO_VIRGIN_SIFT"
-# POOL_ID = "ImageTestPool"
-# POOL_ID = "Pogo_Nonov_Tufts_03_10m"
-# POOL_ID = "Pogo_All_Fog"
-# POOL_ID = "Pogo_Sift_Fog_T52"
-# POOL_ID = "Pogo_Sift_VIRGIN"
-# POOL_ID = "FogWar25_Air_03"
 
 APP_DICT = {'agent_sift': APPLICATION_DIR,
             'agent_tufts': TUFT_APPLICATION_DIR,
             'agent_gt_pogo': GT_APPLICATION_DIR,
             'agent_sri': SRI_APPLICATION_DIR,
+            'agent_gt_huga_1': GT_HUGA_APP_DIR,
             }
 
 # _SIMPLE_TASK_NAME = 'simple_task.py'
@@ -88,16 +81,17 @@ APP_DICT = {'agent_sift': APPLICATION_DIR,
 
 class AzureBatchLaunchTournaments:
 
-    def __init__(self, agent_name, agent_type, library_of_tournaments, global_config, prefix=None):
+    def __init__(self, agent_name, agent_type, library_of_tournaments, global_config, pool, suffix=None):
         self.agent_name = agent_name
         self.agent_type = agent_type
-        self.prefix = prefix
+        self.suffix = suffix
+        self.pool = pool
         self.library_of_tournaments = library_of_tournaments
         self.global_config = global_config
         self.agent_commands = AgentBatchCommands(APP_DICT, self.agent_name, self.agent_type)
         # later self.commands = AgentBatchCommands.AgentBatchCommands(self.agent_name, self.agent_type, )
 
-    def create_pool(self, batch_client, block_blob_client, pool_id, vm_size, vm_count):
+    def create_pool(self, batch_client, block_blob_client, vm_size, pool_id, vm_count):
         """Creates an Azure Batch pool with the specified id.
 
         :param batch_client: The batch client to use.
@@ -113,15 +107,15 @@ class AzureBatchLaunchTournaments:
             helpers.select_latest_verified_vm_image_with_node_agent_sku(
                 batch_client, 'Canonical', 'UbuntuServer', '18.04')
 
-        block_blob_client.create_container(
-            _CONTAINER_NAME,
-            fail_on_exist=False)
+        block_blob_client.create_container(_CONTAINER_NAME, fail_on_exist=False)
+
 
         application_package_references = [
             batchmodels.ApplicationPackageReference(application_id=APPLICATION_ID, version=APPLICATION_VERSION),
             batchmodels.ApplicationPackageReference(application_id=TUFT_APPLICATION_ID, version=TUFT_VERSION),
             batchmodels.ApplicationPackageReference(application_id=GT_APP_ID, version=GT_APPLICATION_VERSION),
             batchmodels.ApplicationPackageReference(application_id=SRI_APP_ID, version=SRI_VERSION),
+            batchmodels.ApplicationPackageReference(application_id=GT_HUGA_APP_ID, version=GT_HUGA_APP_VERSION),
         ]
 
         # Create User Accounts
@@ -222,13 +216,14 @@ class AzureBatchLaunchTournaments:
             filename = file.split('.')[0]
 
             # Get commands
-            cmds = self.agent_commands.get_task_commands(file, filename, self.prefix)
+            cmds = self.agent_commands.get_task_commands(file, filename, self.suffix)
 
             application_package_references = [
                 batchmodels.ApplicationPackageReference(application_id=APPLICATION_ID, version=APPLICATION_VERSION),
                 batchmodels.ApplicationPackageReference(application_id=TUFT_APPLICATION_ID, version=TUFT_VERSION),
                 batchmodels.ApplicationPackageReference(application_id=GT_APP_ID, version=GT_APPLICATION_VERSION),
                 batchmodels.ApplicationPackageReference(application_id=SRI_APP_ID, version=SRI_VERSION),
+                batchmodels.ApplicationPackageReference(application_id=GT_HUGA_APP_ID, version=GT_HUGA_APP_VERSION),
             ]
 
             user_identity = batch.models.UserIdentity(
@@ -361,20 +356,22 @@ class AzureBatchLaunchTournaments:
 
         job_id = helpers.generate_unique_resource_name(
             f"{self.agent_name}_Tournaments")
-        pool_id = POOL_ID
+        pool_id = self.pool
         # try:
         self.create_pool(
             batch_client,
             block_blob_client,
-            pool_id,
             pool_vm_size,
+            pool_id,
             pool_vm_count,
             )
 
         self.submit_job_and_add_task(
             batch_client,
             block_blob_client,
-            job_id, pool_id)
+            job_id,
+            pool_id,
+        )
 
         # helpers.wait_for_tasks_to_complete(
         #     batch_client,
@@ -398,9 +395,33 @@ class AzureBatchLaunchTournaments:
         #         print("Deleting pool: ", pool_id)
         #         batch_client.pool.delete(pool_id)
 
-def launch_g10_tournaments(agent, agentType, test_type, global_config,suffix):
+
+def launch_tournament_wrapper(agent, agentType, test_type, global_config, pool, suffix, tournament_directory, ):
+
+    tournaments_to_launch = get_tournaments(test_type, tournament_directory)
+    for folder in tournaments_to_launch:
+        # pass
+        agent_pool = AzureBatchLaunchTournaments(agent, agentType, folder, global_config, pool, suffix)
+        agent_pool.execute_sample()
+
+
+def get_tournaments(test_type,tournament_directory):
+
     output = []
-    for subdir, folders, files in os.walk(f'{os.getcwd()}/../tournaments/g10/pogo_lvl1_thousands/'):
+    for subdir, folders, files in os.walk(f'{os.getcwd()}/{tournament_directory}'):
+        for file in files:
+            if file.endswith('.zip') and test_type.value in file:
+                print(f'{subdir}/{file}')
+                zip = f'{subdir}/{file}'
+                output.append(f'{subdir}/')
+
+    output = list(set(output))
+    return output
+
+@DeprecationWarning
+def launch_g10_tournaments(agent, agentType, test_type, global_config, pool, suffix):
+    output = []
+    for subdir, folders, files in os.walk(f'{os.getcwd()}/../tournaments/g10/HUGA_L00_T01_S01_VIRGIN/'):
         for file in files:
             if file.endswith('.zip') and test_type.value in file:
                 print(f'{subdir}/{file}')
@@ -411,7 +432,7 @@ def launch_g10_tournaments(agent, agentType, test_type, global_config,suffix):
 
     for folder in output:
         # pass
-       agent_pool = AzureBatchLaunchTournaments(agent, agentType, folder, global_config, suffix)
+       agent_pool = AzureBatchLaunchTournaments(agent, agentType, folder, global_config, pool, suffix)
        agent_pool.execute_sample()
 
 from enum import Enum
@@ -422,12 +443,58 @@ class TestType(Enum):
     STAGE6 = "X1000"
 
 
+
 if __name__ == '__main__':
     global_config = configparser.ConfigParser()
     global_config.read(helpers._SAMPLES_CONFIG_FILE_NAME)
 
+
+
+    launch_tournament_wrapper( "SIFT_AGENT_TEST_V3",
+                               AgentType.SIFT,
+                               TestType.STAGE5,
+                               global_config,
+                               pool="POGO_SIFT_L2_X100_POOL",
+                               suffix="_060911",
+                               tournament_directory="../tournaments/g10/pogo/",
+                            )
+
+    launch_tournament_wrapper("TUFTS_AGENT_TEST_02",
+                              AgentType.TUFTS,
+                              TestType.STAGE5,
+                              global_config,
+                              pool="POGO_TUFTS_L2_X100_POOL_1",
+                              suffix="_060911",
+                              tournament_directory="../tournaments/g10/pogo/",
+                              )
+    launch_tournament_wrapper("GT_AGENT_2_TEST_V3",
+                              AgentType.GT_POGO_BASELINE,
+                              TestType.STAGE5,
+                              global_config,
+                              pool="POGO_GT_L2_X100_POOL",
+                              suffix="_060911",
+                              tournament_directory="../tournaments/g10/pogo/",
+                              )
+
+    # launch_tournament_wrapper( "GT_Trained_HUGA_1_V1",
+    #                            AgentType.GT_HG_BASELINE,
+    #                            TestType.STAGE5,
+    #                            global_config,
+    #                            pool="HUGA_X100_POOL_GT",
+    #                            suffix="_060821",
+    #                            tournament_directory="../tournaments/g10/HUGA_L00_T01_S01_VIRGIN/",
+    #                         )
+
+
+    # launch_g10_tournaments("SRI_AGENT_TEST_01",
+    #                        AgentType.SRI,
+    #                        TestType.STAGE5,
+    #                        global_config,
+    #                        pool="HUGA_X100_POOL_SRI",
+    #                        suffix="_060821")
+
     # launch_g10_tournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, TestType.STAGE5, global_config, "_060716")
-    launch_g10_tournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, TestType.STAGE6, global_config, "_060723")
+    # launch_g10_tournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, TestType.STAGE6, global_config, "_060723")
     # launch_g10_tournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, TestType.STAGE5, global_config, "_060716")
     # launch_g10_tournaments("GT_AGENT_2_TEST_V3", AgentType.GT_POGO_BASELINE, TestType.STAGE6, global_config, "_060723")
     # launch_g10_tournaments("GT_AGENT_2_TEST_V3", AgentType.GT_POGO_BASELINE, TestType.STAGE4, global_config, "_060716")
