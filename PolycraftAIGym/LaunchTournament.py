@@ -34,9 +34,6 @@ class LaunchTournament:
         self.commands_sent = 0
         self.total_step_cost = 0
         self.start_time = time.time()
-        self.wait_for_gameover_timer = None
-        self.wait_for_nextgame_init_timer = None
-        self.next_game_initialized_flag = False
         #self.games = CONFIG.GAMES
         #self.games = self._build_game_list(CONFIG.GAME_COUNT)
         self.log_dir = log_dir + f"{PalMessenger.PalMessenger.time_now_str()}/"
@@ -73,6 +70,12 @@ class LaunchTournament:
 
         ##Logging
         self._create_logs()
+
+        ## Monitoring
+        self.wait_for_gameover_timer = None
+        self.wait_for_nextgame_init_timer = None
+        self.next_game_initialized_flag = False
+        self.restart_PAL_counter = 0
 
         #Load Games
         self.games = self._build_game_list(CONFIG.GAME_COUNT)
@@ -292,7 +295,8 @@ class LaunchTournament:
                     break
             # If agent hasn't started yet but PAL crashes, re-start PAL.
             elif self.pal_client_process.returncode is not None:
-                if self.current_state == State.INIT_PAL:
+                if self.current_state == State.INIT_PAL and self.restart_PAL_counter < 10:
+                    self.restart_PAL_counter += 1
                     self.q = queue.Queue()  # Re-initialize the q object & ignore crashed data.
                     self.pal_client_process = subprocess.Popen(self.pal_process_cmd, shell=True, cwd='../',
                                                                stdout=subprocess.PIPE,

@@ -127,8 +127,13 @@ class AzureConnectionService:
                 );
              """)
             self.sql_connection.commit()
-            dbcur.close()
             self.debug_log.message(f"New Table created! Named: {name}")
+            dbcur.execute(f"""
+            exec build_agent_result_view {name};
+            """)
+            self.sql_connection.commit()
+            dbcur.close()
+            self.debug_log.message(f"Agent result view created! Named: {name}_Results_View")
         except Exception as e:
             self.debug_log.message(f"Error! Table could not be created: {str(e)}")
 
