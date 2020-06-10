@@ -136,7 +136,7 @@ class AzureConnectionService:
             dbcur = self.sql_connection.cursor()
             dbcur.execute(f"""
             CREATE TABLE {name} (
-                Tournament_Name VARCHAR(50) not null,
+                Tournament_Name VARCHAR(128) not null,
                 Game_ID INT not null,
                 Step_Number INT not null,
                 Time_Stamp VARCHAR (32) not null,
@@ -393,7 +393,7 @@ class AzureConnectionService:
         """
         # Check to see if file path is valid before attempting to upload.
         if not filepath or not path.exists(filepath):
-            self.debug_log.message("Log not found - not sending to Azure: " + filepath)
+            self.debug_log.message(f"Log not found - not sending to Azure: {filepath}")
             return None
 
         # zip the file

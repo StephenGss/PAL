@@ -29,9 +29,9 @@ PAL_COMMAND_UNIX = "xvfb-run -s '-screen 0 1280x1024x24' ./gradlew --no-daemon r
 ## CONFIGURABLE ##################################### CLI Commands ####################################
 MAX_TIME = 300                                      # change using -i <time>
 TOURNAMENT_ID = "Nonov_Pogo_Test_6_1000g"           # change using -t <tournament_name>
-AGENT_DIRECTORY = "../agents/SIFT_SVN/code/test/"   # change using -d <agent/start/script/folder/>
+AGENT_DIRECTORY = "../agents/change/me/"            # change using -d <agent/start/script/folder/>
 AGENT_COMMAND = "py hg_agent.py"                    # change using -x <windows cmd to launch script - Windows OS only>
 AGENT_COMMAND_UNIX = "python hg_agent.py"           # change using -x <bash cmd to launch script - x changes both vars>
-AGENT_ID = f"SIFT_AGENT_POGO_003"                   # change using -a <agent_name>
+AGENT_ID = f"MY_AGENT_ID"                           # change using -a <agent_name>
 GAME_COUNT = 25                                     # change using -c <count>
-GAMES_FOLDER = "../pogo_json/"                      # change using -g <rel_path/to/games/folder>
+GAMES_FOLDER = "../change/me/please/"               # change using -g <rel_path/to/games/folder>
