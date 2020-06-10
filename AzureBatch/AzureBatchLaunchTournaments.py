@@ -448,23 +448,32 @@ if __name__ == '__main__':
     global_config = configparser.ConfigParser()
     global_config.read(helpers._SAMPLES_CONFIG_FILE_NAME)
 
-    launch_tournament_wrapper( "SIFT_AGENT_TEST_V4",
-                               AgentType.SIFT,
-                               TestType.STAGE5,
-                               global_config,
-                               pool="POGO_SIFT_X100_EMH",
-                               suffix="_061001",
-                               tournament_directory="../tournaments/EMH_pogo_provided/",
-                            )
-
-    launch_tournament_wrapper("TUFTS_AGENT_TEST_02",
-                              AgentType.TUFTS,
+    launch_tournament_wrapper("SRI_AGENT_TEST_01",
+                              AgentType.SRI,
                               TestType.STAGE5,
                               global_config,
-                              pool="POGO_TUFTS_X100_EMH",
-                              suffix="_061001",
-                              tournament_directory="../tournaments/EMH_pogo_provided/",
+                              pool="HUGA_SRI_X100_MIXD",
+                              suffix="_061015",
+                              tournament_directory="../tournaments/tournaments_provided/huga/",
                               )
+
+    # launch_tournament_wrapper( "SIFT_AGENT_TEST_V4",
+    #                            AgentType.SIFT,
+    #                            TestType.STAGE5,
+    #                            global_config,
+    #                            pool="POGO_SIFT_X100_EMH",
+    #                            suffix="_061001",
+    #                            tournament_directory="../tournaments/EMH_pogo_provided/",
+    #                         )
+    #
+    # launch_tournament_wrapper("TUFTS_AGENT_TEST_02",
+    #                           AgentType.TUFTS,
+    #                           TestType.STAGE5,
+    #                           global_config,
+    #                           pool="POGO_TUFTS_X100_EMH",
+    #                           suffix="_061001",
+    #                           tournament_directory="../tournaments/EMH_pogo_provided/",
+    #                           )
     # launch_tournament_wrapper("GT_AGENT_2_TEST_V3",
     #                           AgentType.GT_POGO_BASELINE,
     #                           TestType.STAGE5,
