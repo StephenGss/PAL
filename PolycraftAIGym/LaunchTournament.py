@@ -1,8 +1,6 @@
-import subprocess, threading, socket
-import sys, os, signal
+import subprocess, threading
+import sys, os
 import TournamentManager, PalMessenger, AzureConnectionService
-from ProcessIOReader import ProcessIOReader
-import testThread
 from pathlib import Path
 import queue
 import time
@@ -30,14 +28,14 @@ class LaunchTournament:
 
     All messages in stdout for the AI Agent, PAL client, and Debugging are written to log files (see logging below)
     """
-    def __init__(self, os='Win', log_dir='Logs/', args=(), kwargs=None):
+    def __init__(self, os='Unix', log_dir='Logs/', args=(), kwargs=None):
         self.commands_sent = 0
         self.total_step_cost = 0
         self.start_time = time.time()
-        #self.games = CONFIG.GAMES
-        #self.games = self._build_game_list(CONFIG.GAME_COUNT)
         self.log_dir = log_dir + f"{PalMessenger.PalMessenger.time_now_str()}/"
         self.SYS_FLAG = os  # Change behavior based on SYS FLAG when executing gradlew
+
+        # TODO: use os library to detect this vs. passing in as a command line argument.
         if 'MACOS' in self.SYS_FLAG.upper() or 'UNIX' in self.SYS_FLAG.upper():
             self.agent_process_cmd = CONFIG.AGENT_COMMAND_UNIX
             self.pal_process_cmd = CONFIG.PAL_COMMAND_UNIX
@@ -81,9 +79,19 @@ class LaunchTournament:
         self.games = self._build_game_list(CONFIG.GAME_COUNT)
 
     def _build_game_list(self, ct):
+        """
+        Given a folder containing all games for a tournament, walks through the folder and adds
+        all of the .json files to the list of files to be read.
+
+        As games must be played in the right order, this function uses a helper script to sort the games in the right order
+
+        Note: the .json2 files with the same name must also be in this folder!
+        :param ct: Maximum games to be run. if Count > #games available in a folder, the maximum number of available games are played
+        :return: a sorted list containing all games to be played in this tournament
+        """
         file_type = '.json'
         file_list = []
-        rootdir = CONFIG.GAMES_FOLDER
+        rootdir = CONFIG.GAMES_FOLDER  # Set this either in config.py or by passing in the -g CLI parameter.
         for subdir, dirs, files in os.walk(rootdir):
             for file in files:
                 filepath = subdir + os.sep + file
@@ -100,11 +108,24 @@ class LaunchTournament:
         return sorted_files
 
     def _sort_files(self, files):
+        """
+        (static) Helper Script that sorts the JSON games in a tournament folder. Note that this searches for the pattern
+            '_Gxxxx_'
+        in the file names of the jsons (where x's are digits between 0 & 9 and represent the Game Number of the game),
+        and sorts them from least to greatest.
+
+        All pre-generated tournaments are named with the right pattern.
+        Note that the file path containing this folder cannot contain _Gxxxx_ in its name, as that will cause issues.
+
+        :param files: list of files to be sorted
+        :return: a sorted list of files by Game Number
+        :raise: ValueError if _Gxxxx_ is not found in the file names.
+        """
         sorted_dict = {}
         for file in files:
             values = re.search("_G(\d+)_", file)
             if not values:
-                raise ValueError("Error - files are not named correctly! "+ file)
+                raise ValueError("Error - files are not named correctly! " + file)
             sorted_dict[int(values.groups()[0])] = file
 
         sorted_file_list = []
@@ -116,31 +137,30 @@ class LaunchTournament:
     def _create_logs(self):
         """
         Creates the log file handlers
-        Re-run after each game to separate the log files appropriately.
-        :return:
+        Re-run after each game to create a new log file
         """
-        # self.log_port_activity = True
         log_dir = self.log_dir
-        log_port_file = Path(log_dir) / f"PAL_log_game_{self.game_index}_{PalMessenger.PalMessenger.time_now_str()}"
-        agent_port_file = Path(log_dir) / f"Agent_log_game_{self.game_index}_{PalMessenger.PalMessenger.time_now_str()}"
-        log_debug_file = Path(log_dir) / f"Debug_log_game_{self.game_index}_{PalMessenger.PalMessenger.time_now_str()}"
-        log_speed_file = Path(log_dir) / f"speed_log_game_{self.game_index}_{PalMessenger.PalMessenger.time_now_str()}"
-        # log_port_file = Path(log_dir) / "port_log.txt"  # This file won't be used; see issue_reset()
-        sent_print_bool = False  # PAL commands are short enough to put in the console
-        sent_log_write_bool = True  # Log everything sent to the port to a text file
-        recd_print_bool = False  # PAL responses are often long and ungainly; no need to print them
-        recd_log_write_bool = True  # Log everything that comes from the port to a text file
-        debug_print_bool = True  # For useful stuff, send it to the console
-        debug_log_write_bool = True  # For now, log all debug data to another text file.
-        speed_print_bool = True         # For useful stuff, send it to the console
-        speed_log_write_bool = True     # For now, log all debug data to another text file.
+        log_port_file = Path(log_dir) / f"PAL_log_game_{self.game_index}_{PalMessenger.PalMessenger.time_now_str('_')}.txt"
+        agent_port_file = Path(log_dir) / f"Agent_log_game_{self.game_index}_{PalMessenger.PalMessenger.time_now_str('_')}.txt"
+        log_debug_file = Path(log_dir) / f"Debug_log_game_{self.game_index}_{PalMessenger.PalMessenger.time_now_str('_')}.txt"
+        log_speed_file = Path(log_dir) / f"speed_log_game_{self.game_index}_{PalMessenger.PalMessenger.time_now_str('_')}.txt"
+
+        # To see logs written to STDOUT of the Main Thread, change *_print to True.
+        should_agent_print = False      # should Agent STDOUT print to main thread STDOUT (default: False)
+        should_agent_write_log = True   # should Agent STDOUT write to an Agent Log? (Default: True)
+        should_PAL_print = False        # should PAL STDOUT print to main thread STDOUT (default: False)
+        should_PAL_write_log = True     # should PAL STDOUT write to a PAL log? (default: True)
+        should_debug_print = True       # send useful progress updates to main thread STDOUT (default: True)
+        should_debug_write_log = True   # write useful debug log updates to a Debug log (default: True)
+        speed_print_bool = True         # Speed Log outputs Steps Per Second to log
+        speed_log_write_bool = True     # Speed Log writes Steps per second to File
 
         # # I recognize that some utility like logging may be better, but whatever:
-        self.agent_log = PalMessenger.PalMessenger(sent_print_bool, sent_log_write_bool, agent_port_file,
+        self.agent_log = PalMessenger.PalMessenger(should_agent_print, should_agent_write_log, agent_port_file,
                                                    log_note="AGENT: ")
-        self.PAL_log = PalMessenger.PalMessenger(recd_print_bool, recd_log_write_bool, log_port_file, log_note="PAL: ")
-        # self.junk_log = PalMessenger(junk_print_bool, junk_log_write_bool, log_note="JUNK: ")
-        self.debug_log = PalMessenger.PalMessenger(debug_print_bool, debug_log_write_bool, log_debug_file,
+        self.PAL_log = PalMessenger.PalMessenger(should_PAL_print, should_PAL_write_log, log_port_file, log_note="PAL: ")
+
+        self.debug_log = PalMessenger.PalMessenger(should_debug_print, should_debug_write_log, log_debug_file,
                                                    log_note="DEBUG: ")
         self.speed_log = PalMessenger.PalMessenger(speed_print_bool, speed_log_write_bool, log_speed_file,
                                                    log_note="FPS: ")
@@ -151,16 +171,17 @@ class LaunchTournament:
         :param line: Current Line in the STDOUT of either PAL or AGENT threads
         :return: True if the game has ended.
         """
-        # NoTODO: Track stepcost to call reset -- completed
+        # NoTODO: Track step cost to call reset -- completed
         # TODO: Track total reward to call reset. Not for dry-run
         # NoTODO: Track total run time to call reset -- completed
-        # TODO: Track agent giveup to call reset -- completed?
+        # noTODO: Track agent giveup to call reset -- completed
         # NoTODO: Track end condition flag to call reset -- completed
 
         line_end_str = '\r\n'
         if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
             line_end_str = '\n'
-        ## Agent Giveup check:
+
+        # Agent Giveup check:
         if line.find('[AGENT]GIVE_UP') != -1:
             msg = 'Agent Gives Up'
             self.debug_log.message(f"Game Over: {msg}")
@@ -169,14 +190,13 @@ class LaunchTournament:
             return True
 
         if line.find('{') != -1 and line.find(line_end_str) != -1:
-            json_text = line[line.find('{'):line.find(line_end_str)]  # Make this system agnostic - previously \\r\\n
+            json_text = line[line.find('{'):line.find(line_end_str)]
             # TODO: Potentially remove this?
             json_text = re.sub(r'\\\\\"', '\'', json_text)
             json_text = re.sub(r'\\+\'', '\'', json_text)
             data_dict = json.loads(json_text)
             self.commands_sent += 1
             self.total_step_cost += data_dict["command_result"]["stepCost"]
-            #self.score_dict[self.game_index].update({'elapsed_time': time.time() - self.start_time})
 
             if data_dict["goal"]["goalAchieved"]:
                 msg = 'Goal Achieved'
@@ -190,16 +210,8 @@ class LaunchTournament:
                 self.score_dict[self.game_index]['success'] = 'False'
                 self.score_dict[self.game_index]['success_detail'] = msg
                 return True
-            #if self.score_dict[self.game_index]['elapsed_time'] > CONFIG.MAX_TIME:
-             #   msg = 'time exceeded limit'
-              #  self.debug_log.message(f"Game Over: {msg}")
-               # self.score_dict[self.game_index]['success'] = 'False'
-                #self.score_dict[self.game_index]['success_detail'] = msg
-                #return True
-            # if self.commands_sent > 10000:
-            #     return True
 
-        ## Check If Game Timed out.
+        # Check If Game Timed out.
         self.score_dict[self.game_index].update({'elapsed_time': time.time() - self.start_time})
         if self.score_dict[self.game_index]['elapsed_time'] > CONFIG.MAX_TIME:
             msg = 'time exceeded limit'
@@ -212,8 +224,12 @@ class LaunchTournament:
 
 
     def read_output(self, pipe, q, timeout=1):
-        """reads output from `pipe`, when line has been read, puts
-    line on Queue `q`"""
+        """
+        This is run on a separate daemon thread for both PAL and the AI Agent.
+
+        This takes the STDOUT (and STDERR that gets piped to STDOUT from the Subprocess.POpen() command)
+        and places it into a Queue object accessible by the main thread
+        """
         # read both stdout and stderr
 
         flag_continue = True
@@ -378,8 +394,8 @@ class LaunchTournament:
 
             # Game completed. Wait for Agent to also get the message that game is over before sending logs.
             elif self.current_state == State.WAIT_FOR_GAMEOVER_TRUE:
-                #TODO: adjust this hang time if necessary?
-                MAX_HANG_TIME = 4  # seconds - based on avg ~ 0.25 actions/second + 1 second buffer
+                #TODO: adjust this hang time if necessary
+                MAX_HANG_TIME = 6  # seconds - based on avg ~ 0.25 actions/second + 1 second buffer
                 # Don't record any more scores! Game already completed.
                 # self._record_score(str(next_line))
                 move_on = self._gameover_passed_to_agent(str(next_line))
@@ -417,8 +433,6 @@ class LaunchTournament:
                 # However, case exists where messages may come faster than we can process
                 # New solution: Look for this line and set a global flag in the _check_queues() function
 
-                # FIXME: Should I enable this behaviour?
-                # if "[EXP] game initialization completed" in str(next_line) or self.next_game_initialized_flag:
                 if "[EXP] game initialization completed" in str(next_line):
                     self.debug_log.message("Reset Complete. Switching to Game Loop... ")
                     self.current_state = State.GAME_LOOP
@@ -434,6 +448,7 @@ class LaunchTournament:
         if exitCode == 0 or exitCode is None:
             return
         else:
+            # self._kill_process_children(5)  # FixMe: is this needed?
             raise subprocess.CalledProcessError(exitCode, "")
 
     def _launch_tournament_manager(self):
@@ -450,20 +465,15 @@ class LaunchTournament:
         Launch the AI agent Thread
         """
         self.debug_log.message("Initializing Agent Thread: python hg_agent.py")
-        #
-        # self.agent = subprocess.Popen(self.agent_process_cmd, shell=True, cwd=CONFIG.AGENT_DIRECTORY, stdout=subprocess.PIPE,
-        #                               # stdin=subprocess.PIPE,      #DN: 0606 Removed for performance
-        #                               stderr=subprocess.PIPE,
-        #                               bufsize=1,                    #DN: 0606 Added for performance
-        #                               universal_newlines=True,      #DN: 0606 Added for performance
-        #                               )
+
+
         self.agent = subprocess.Popen(self.agent_process_cmd, shell=True, cwd=CONFIG.AGENT_DIRECTORY, stdout=subprocess.PIPE,
                                       # stdin=subprocess.PIPE,      #DN: 0606 Removed for performance
                                       stderr=subprocess.STDOUT,
                                       bufsize=1,                    #DN: 0606 Added for performance
                                       universal_newlines=True,      #DN: 0606 Added for performance
                                       )
-        # self.agent_reader = ProcessIOReader(self.agent, out_queue=self.q2, name='agent')
+        # Launch Listening Thread to log STDOUT from the Agent.
         self.pb_t = threading.Thread(target=self.read_output, args=(self.agent, self.q2))
         self.agent_started = True
         self.pb_t.daemon = True
@@ -494,42 +504,32 @@ class LaunchTournament:
                                               copy(self.speed_log),
                                               ))
         self.threads.start()
-        # if azure.is_connected():
-        #     azure.send_score_to_azure(score_dict=self.score_dict, game_id=self.game_index)
-        #     azure.send_game_details_to_azure(game_dict=self.game_score_dict, game_id=self.game_index)
-        #     azure.upload_pal_messenger_logs(palMessenger=self.agent_log, log_type="agent", game_id=self.game_index)
-        #     azure.upload_pal_messenger_logs(palMessenger=self.PAL_log, log_type="pal", game_id=self.game_index)
-        #     azure.upload_pal_messenger_logs(palMessenger=self.debug_log, log_type="debug", game_id=self.game_index)
-        #     azure.upload_pal_messenger_logs(palMessenger=self.speed_log, log_type='speed', game_id=self.game_index)
         self.game_index += 1
         self._create_logs()
 
     def _update_azure(self, game_index, score_dict, game_dict, debug_log, agent_log, PAL_log, speed_log):
+        """
+        Threaded function to upload all relevant data to our azure storage. Will Print Errors to STDERR
+        and will print Errors to the Debug Log.
+
+        Any errors will not cause mainThread hangups.
+        """
         # self.pb_t = threading.Thread(target=self.read_output, args=(self.agent, self.q2))
         azure = AzureConnectionService.AzureConnectionService(debug_log)
-        # threads = None
+
         if azure.is_connected():
-            # parallel process all uploads!
-            # threads.append(threading.Thread(name="send_scores", target=azure.send_score_to_azure, args=(self.score_dict, self.game_index)))
-            # threads.append(threading.Thread(name="send_game_score", target=azure.send_game_details_to_azure, args=(self.game_score_dict, self.game_index)))
             azure.send_summary_to_azure(score_dict=score_dict, game_id=game_index)
             azure.send_game_details_to_azure(game_dict=game_dict, game_id=game_index)
-            # threads.append(threading.Thread(name="upld_agent", target=azure.upload_pal_messenger_logs, args=(self.agent_log, self.game_index, "agent")))
-            # threads.append(threading.Thread(name="upld_pal", target=azure.upload_pal_messenger_logs, args=(self.PAL_log, self.game_index, "pal")))
-            # threads.append(threading.Thread(name="upld_debug", target=azure.upload_pal_messenger_logs, args=(self.debug_log, self.game_index, "debug")))
-            # speedlog = threading.Thread(target=azure.upload_pal_messenger_logs, args=(self.agent_log, self.game_index, "agent"))
             azure.upload_pal_messenger_logs(palMessenger=agent_log, log_type="agent", game_id=game_index)
             azure.upload_pal_messenger_logs(palMessenger=PAL_log, log_type="pal", game_id=game_index)
             azure.upload_pal_messenger_logs(palMessenger=debug_log, log_type="debug", game_id=game_index)
             azure.upload_pal_messenger_logs(palMessenger=speed_log, log_type='speed', game_id=game_index)
-        #     for i in threads:
-        #         i.start()
-        # return threads
+
 
     def _tournament_completed(self):
         """
         Tournament Complete - initiate cleanup of threads
-        TODO: Send the score_dict() to a SQL Server or save log files on the Azure Cloud
+
         :return:
         """
         self.debug_log.message("Tournament Completed: " + str(len(self.games)) + "games run")
@@ -546,6 +546,11 @@ class LaunchTournament:
         self.tournament_in_progress = False
 
     def _kill_process_children(self, timeout):
+        """
+        Helper function to kill all child processes of the main thread.
+        :param timeout:
+        :return:
+        """
         # Kill the client process first to stop it from sending messages to the server
         procs = list(psutil.Process(os.getpid()).children(recursive=True))
         for p in procs:
@@ -561,13 +566,13 @@ class LaunchTournament:
                 pass
 
     def _reset_and_flush(self):
+        """
+        Call the Reset Command and send the next game to PAL.
+        :return:
+        """
         self.tm_thread.queue.put("RESET domain " + self.games[self.game_index + 1])
         self.debug_log.message("RESET domain command sent to tm_thread.")
-        # We think clearing the queue are causing us to miss key log outputs
-        # with self.q.mutex:
-        #     self.q.queue.clear()
-        # with self.q2.mutex:
-        #     self.q2.queue.clear()
+
 
     def _trigger_reset(self):
         """
@@ -577,18 +582,7 @@ class LaunchTournament:
         self.commands_sent = 0
         self.total_step_cost = 9
         self._setup_next_game()
-        # if self.threads is not None: #TODO: is this necessary?
-        #     self.threads.join()
-                # i.join()
-        #Flush queues for now - noTODO: this is necessary to catch the Game Initialization Complete string
-        # with self.q.mutex:
-        #     self.q.queue.clear()
-        # with self.q2.mutex:
-        #     self.q2.queue.clear()
 
-
-        # self.q.clear()
-        # self.q2.clear()
 
     def _check_novelty(self, line):
         """
@@ -617,18 +611,18 @@ class LaunchTournament:
         line_end_str = '\r\n'
         if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
             line_end_str = '\n'
+
+        # Case 1: Record a Response from PAL to an Agent Command
         if line.find('[CLIENT]{') != -1 and line.find(line_end_str) != -1:
             # Get timestamp:
-            json_text = line[line.find('{'):line.find(line_end_str)]  # Make this system agnostic - previously \\r\\n
-            # TODO: Potentially remove this?
+            json_text = line[line.find('{'):line.find(line_end_str)]
+
             json_text = re.sub(r'\\\\\"', '\'', json_text)
             json_text = re.sub(r'\\+\'', '\'', json_text)
             data_dict = json.loads(json_text)
             if 'step' in data_dict:
                 cur_step = data_dict['step']
                 rematch = re.match('\[(\d\d:\d\d:\d\d)\]', str(line))
-                # rematch = re.match(r'\[\d\d.\d\d.\d\d\]', line)
-                # rematch = re.match(r'(\d\d\d\d.\d\d.\d\d.\d\d.\d\d.\d\d):', line)
                 if rematch:
                     # Get date, as the logs only provide the time
                     format = "%Y-%m-%d"
@@ -637,11 +631,7 @@ class LaunchTournament:
 
                 if 'command_result' in data_dict:
                     self.game_score_dict[cur_step].update(data_dict['command_result'])
-                    # self.game_score_dict[cur_step]['Command'] = data_dict['command_result']['command']
-                    # self.game_score_dict[cur_step]['Command_Arguments'] = data_dict['command_result']['argument']
-                    # self.game_score_dict[cur_step]['Command_Result'] = data_dict['command_result']['result']
-                    # self.game_score_dict[cur_step]['Command_Message'] = data_dict['command_result']['message']
-                    # self.game_score_dict[cur_step]['Step_Cost'] = data_dict['command_result']['stepCost']
+
                 if 'goal' in data_dict:
                     self.game_score_dict[cur_step].update(data_dict['goal'])
                     if data_dict['goal']['Distribution'] != 'Uninformed':  # TODO: move this elsewhere?
@@ -652,6 +642,7 @@ class LaunchTournament:
                 if 'gameOver' in data_dict:
                     self.game_score_dict[cur_step]['Game_Over'] = data_dict['gameOver']
 
+        # Case 2: Record a [SCORE] Update from PAL, updating the running totals and the intermediate reward tracking
         if line.find('[SCORE]') != -1 and line.find(line_end_str) != -1:
             score_string = line[line.find('[SCORE]')+7:line.find(line_end_str)]
             scores_dict = {v[0]: v[1] for v in [k.split(':') for k in score_string.split(',')]}
@@ -666,8 +657,7 @@ class LaunchTournament:
         Initialize the score_dict variable for the next game.
 
         # TODO: Flag games that have novelty!
-        TODO: Flag games where we communicate to agent that novelty exists!
-        :return:
+        # noTODO: Flag games where we communicate to agent that novelty exists - are flagged in self._record_score()
         """
         if self.game_index == 0:
             self.tm_thread.queue.put("LAUNCH domain " + self.games[self.game_index])
@@ -682,14 +672,10 @@ class LaunchTournament:
         self.score_dict[self.game_index]['novelty'] = 0
         self.score_dict[self.game_index]['groundTruth'] = 0
 
-        #initialize vars - noTODO: make a defaultDict? Not sure if possible -- COMPLETED
-        # self.score_dict[self.game_index]['noveltyDetectStep'] = 0
-        # self.score_dict[self.game_index]['noveltyDetectTime'] = 0
-        # self.score_dict[self.game_index]['noveltyDetect'] = 0
 
     def _gameover_passed_to_agent(self, line):
         """
-        Check to see if Agent has received the gameOver == True parameter before resetting the game
+        Check to see if Agent has been sent the gameOver == True parameter before resetting the game
         :param line: input string (msg in PAL)
         :return: True if gameOver: true passed to client
         """
@@ -720,11 +706,6 @@ class LaunchTournament:
         :param line: PAL line
         :return: True if agent has sent a msg to PAL and PAL indicates that it successfully received it.
         """
-        # line_end_str = '\\r\\n'
-        # if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
-        #     line_end_str = '\\n'
-        # if line.find('[AGENT]') != -1 and line.find(line_end_str) != -1:
-        #     return True
         if line.find('[AGENT]') != -1:
             return True
 
@@ -746,21 +727,15 @@ class State(Enum):
 
 if __name__ == "__main__":
     argv = sys.argv[1:]
-
-    # seed = 0
-    # intensity = 50
-    # template_path = '../available_tests/hg_nonov.json'
-    # output = '../output'
-    # output_name = 'hg_lvl-0'
     try:
         opts, args = getopt.getopt(argv, "hc:t:g:a:d:x:i:",
                                        ["game_count=","tournament=","game_folder=","agent name=", "agent directory=", "agent command=", "max time="])
     except getopt.GetoptError:
-        print('LaunchTournament.py -c <game_count> -t <tournament_name> -g <game_folder> -a <agent_name> -d <agent_directory> -x <agent_command>')
+        print('LaunchTournament.py -c <game_count> -t <tournament_name> -g <game_folder> -a <agent_name> -d <agent_directory> -x <agent_command> -i <maximum time (sec)>')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print('LaunchTournament.py -c <game_count> -t <tournament_name> -g <game_folder> -a <agent_name> -d <agent_directory> -x <agent_command>')
+            print('LaunchTournament.py -c <game_count> -t <tournament_name> -g <game_folder> -a <agent_name> -d <agent_directory> -x <agent_command> -i <maximum time (sec)>')
             sys.exit()
         elif opt in ("-c", "--count"):
             # print(f"Number of Games: {arg}")
@@ -784,7 +759,5 @@ if __name__ == "__main__":
             print(f"Max Time (sec): {arg}")
             CONFIG.MAX_TIME = int(arg)
 
-
-
-    pal = LaunchTournament(os='UNIX')
+    pal = LaunchTournament(os='UNIX')  # TODO: Remove the os command line argument.
     pal.execute()

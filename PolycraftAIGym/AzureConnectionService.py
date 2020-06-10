@@ -26,6 +26,10 @@ class AzureConnectionService:
             self.cursor = self.sql_connection.cursor()
 
     def _check_for_configs(self):
+        """
+        Checks for the config file: "secret_real.ini". If this file does not exist, a SQL connection is not attempted.
+        :return:
+        """
         if path.exists("../secret_real.ini"):
             configs = configparser.ConfigParser()
             configs.read("../secret_real.ini")
@@ -35,6 +39,11 @@ class AzureConnectionService:
 
     @staticmethod
     def _validate_db_connection(dbcon):
+        """
+        Queries a count of tables in the database to confirm whether or not a successful connection exists.
+        :param dbcon:
+        :return:
+        """
         if dbcon is not None:
             dbcur = dbcon.cursor()
             dbcur.execute("""
@@ -49,11 +58,18 @@ class AzureConnectionService:
         return False
 
     def is_connected(self):
+        """
+        :return: True if a valid connection exists to the SQL Database.
+        """
         if self.blob_service_client is not None and self.sql_connection is not None and self.valid_connection:
             return True
         return False
 
     def _get_sql_connection(self):
+        """
+        Connects to the SQL Database if a valid configs file is provided
+        :return: pyodbc.SQL_CONNECTION object if a connection is valid. None if an error occurs.
+        """
         if self.configs is None:
             return None
         Driver = "{ODBC Driver 17 for SQL Server}"
@@ -86,6 +102,11 @@ class AzureConnectionService:
         # table_service = TableService(connection_string=connect_str)
 
     def checkTableExists(self, tablename):
+        """
+        Checks if tablename exists in the SQL Database - used to confirm if an Agent Table needs to be created for a new Agent
+        :param tablename: name of table to check
+        :return: True if a Table exists, False if it does not or if a Table cannot be constructed.
+        """
         if not self.is_connected():
             return False
         dbcur = self.sql_connection.cursor()
@@ -102,6 +123,11 @@ class AzureConnectionService:
         return False
 
     def _create_agent_table_named(self, name):
+        """
+        Creates an Agent Table if it does not already exist.
+        #TODO: Convert this to a stored procedure that can be invoked with a simpler call
+        :param name: Name of Agent Table
+        """
         if not self.is_connected():
             return False
         try:
@@ -138,6 +164,13 @@ class AzureConnectionService:
             self.debug_log.message(f"Error! Table could not be created: {str(e)}")
 
     def send_game_details_to_azure(self, game_dict, game_id):
+        """
+        Send step-by-step game information to the Agent-Specific Table, Creating the Agent-Specific Table if the
+        Agent_ID does not exist.
+        :param game_dict: dictionary containing all of the step-keyed information (see :func:~LaunchTournament._record_score() )
+        :param game_id: ID of the game whose scores we're uploading
+
+        """
         if self.configs is None:
             self.debug_log.message("No Config File available for SQL Connection")
             return None
@@ -189,23 +222,9 @@ class AzureConnectionService:
 
     def send_summary_to_azure(self, score_dict, game_id):
         """
-        CREATE TABLE TOURNAMENT_AGGREGATE (
-Task_Name VARCHAR(50) not null,
-Agent_Name VARCHAR(50) not null,
-Tournament_Name VARCHAR(50) not null,
-Game_ID INT not null,
-Has_Novelty BIT DEFAULT 0,
-Ground_Truth BIT DEFAULT 0,
-Novelty_Detected BIT DEFAULT 0,
-Novelty_Detected_Step INT,
-Novelty_Detected_Time VARCHAR(50),
-Game_End_Condition TEXT,
-Pal_Log_Blob_URL Text,
-Agent_Log_Blob_URL TEXT,
-Debug_Log_Blob_URL Text,
-        :param score_dict:
-        :param game_id:
-        :return:
+        Send a summary view to the Tournament_Aggregate Table of the Game Results (one record per game per tournament per agent)
+        :param score_dict: Data to be sent
+        :param game_id: Game ID for this data
         """
         if self.configs is None:
             self.debug_log.message("No Config File available for SQL Connection")
@@ -240,7 +259,11 @@ Debug_Log_Blob_URL Text,
         except Exception as e:
             self.debug_log.message(f"Error! Scores not sent: {str(e)}")
 
+    @DeprecationWarning
     def send_score_to_azure(self, score_dict, game_id):
+        """
+        Function is No longer used.
+        """
         if self.configs is None:
             self.debug_log.message("No Config File available for SQL Connection")
             return None
@@ -339,12 +362,17 @@ Debug_Log_Blob_URL Text,
         """
         Uploads file to the Azure Blob, using a secret key as defined in a separate file.
         Acquire the SecretKey from AzureStorage, if needed
-        TODO: Confirm that this works on Windows
+        noTODO: Confirm that this works on Windows -- Not necessary as OS preference is UNIX.
         :param filepath: PosixPath object containing a path to the file. use filepath.name to get the file name
         :param game_id: ID of game being uploaded. Used as part of the blob file name to uniquely ID the log.
         :param container: name of container to be uploaded to. If None, defaults to using self.container_name
-        :return: True if a file was successfully uploaded to the Azure Blob. False otherwise.
+        :return: URL of uploaded path if successfully uploaded to Blob; None otherwise.
         """
+        # Check to see if file path is valid before attempting to upload.
+        if not filepath or not path.exists(filepath):
+            self.debug_log.message("Log not found - not sending to Azure: " + filepath)
+            return None
+
         if self.blob_service_client is not None:
             if container is not None:
                 container_to_use = container
