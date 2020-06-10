@@ -45,7 +45,7 @@ _CONTAINER_NAME = 'batch-workflow-fog-of-war'
 
 ### SIFT ###
 APPLICATION_ID = 'agent_sift'
-APPLICATION_VERSION = '5'
+APPLICATION_VERSION = '6'
 APPLICATION_ID_FIXED = 'agent_sift'
 APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + APPLICATION_ID_FIXED + '_' + APPLICATION_VERSION
 ### TUFTS ###
@@ -448,33 +448,31 @@ if __name__ == '__main__':
     global_config = configparser.ConfigParser()
     global_config.read(helpers._SAMPLES_CONFIG_FILE_NAME)
 
-
-
-    launch_tournament_wrapper( "SIFT_AGENT_TEST_V3",
+    launch_tournament_wrapper( "SIFT_AGENT_TEST_V4",
                                AgentType.SIFT,
                                TestType.STAGE5,
                                global_config,
-                               pool="POGO_SIFT_L2_X100_POOL",
-                               suffix="_060911",
-                               tournament_directory="../tournaments/g10/pogo/",
+                               pool="POGO_SIFT_X100_EMH",
+                               suffix="_061001",
+                               tournament_directory="../tournaments/EMH_pogo_provided/",
                             )
 
     launch_tournament_wrapper("TUFTS_AGENT_TEST_02",
                               AgentType.TUFTS,
                               TestType.STAGE5,
                               global_config,
-                              pool="POGO_TUFTS_L2_X100_POOL_1",
-                              suffix="_060911",
-                              tournament_directory="../tournaments/g10/pogo/",
+                              pool="POGO_TUFTS_X100_EMH",
+                              suffix="_061001",
+                              tournament_directory="../tournaments/EMH_pogo_provided/",
                               )
-    launch_tournament_wrapper("GT_AGENT_2_TEST_V3",
-                              AgentType.GT_POGO_BASELINE,
-                              TestType.STAGE5,
-                              global_config,
-                              pool="POGO_GT_L2_X100_POOL",
-                              suffix="_060911",
-                              tournament_directory="../tournaments/g10/pogo/",
-                              )
+    # launch_tournament_wrapper("GT_AGENT_2_TEST_V3",
+    #                           AgentType.GT_POGO_BASELINE,
+    #                           TestType.STAGE5,
+    #                           global_config,
+    #                           pool="POGO_GT_L2_X100_POOL",
+    #                           suffix="_060911",
+    #                           tournament_directory="../tournaments/g10/pogo/",
+    #                           )
 
     # launch_tournament_wrapper( "GT_Trained_HUGA_1_V1",
     #                            AgentType.GT_HG_BASELINE,
