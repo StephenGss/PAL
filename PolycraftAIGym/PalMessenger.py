@@ -62,5 +62,5 @@ class PalMessenger:
         :param sep: separator for minutes
         :return: current GMT, formatted for ease of use in Database
         """
-        format = "%Y-%m-%d %H" + sep + "%M" + sep + "%S"
+        format = "%Y-%m-%d_%H" + sep + "%M" + sep + "%S"
         return time.strftime(format, time.gmtime())

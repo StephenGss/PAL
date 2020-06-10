@@ -32,7 +32,7 @@ class LaunchTournament:
         self.commands_sent = 0
         self.total_step_cost = 0
         self.start_time = time.time()
-        self.log_dir = log_dir + f"{PalMessenger.PalMessenger.time_now_str()}/"
+        self.log_dir = log_dir + f"{PalMessenger.PalMessenger.time_now_str('_')}/"
         self.SYS_FLAG = os  # Change behavior based on SYS FLAG when executing gradlew
 
         # TODO: use os library to detect this vs. passing in as a command line argument.
@@ -65,6 +65,7 @@ class LaunchTournament:
         ## Results
         self.score_dict = {}
         self.game_score_dict = defaultdict(lambda: defaultdict(lambda: 0))
+        self.threads = None
 
         ##Logging
         self._create_logs()
@@ -523,7 +524,7 @@ class LaunchTournament:
             azure.upload_pal_messenger_logs(palMessenger=agent_log, log_type="agent", game_id=game_index)
             azure.upload_pal_messenger_logs(palMessenger=PAL_log, log_type="pal", game_id=game_index)
             azure.upload_pal_messenger_logs(palMessenger=debug_log, log_type="debug", game_id=game_index)
-            azure.upload_pal_messenger_logs(palMessenger=speed_log, log_type='speed', game_id=game_index)
+            # azure.upload_pal_messenger_logs(palMessenger=speed_log, log_type='speed', game_id=game_index)
 
 
     def _tournament_completed(self):
@@ -539,6 +540,8 @@ class LaunchTournament:
         self.tm_thread.kill()
         if self.threads is not None:
             self.threads.join()
+            # for i in self.threads:
+            #     i.join()
 
         self._kill_process_children(5)
 

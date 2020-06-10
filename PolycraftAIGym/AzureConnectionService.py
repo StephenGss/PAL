@@ -1,6 +1,7 @@
 from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 from azure.cosmosdb.table.tableservice import TableService
 from azure.cosmosdb.table.models import Entity
+import os
 from os import path
 import re
 import pyodbc
@@ -10,6 +11,7 @@ import distutils, distutils.util
 from PalMessenger import PalMessenger
 from azure.core.exceptions import ServiceRequestError, ServiceRequestTimeoutError, ServiceResponseError
 import configparser
+import gzip
 
 
 class AzureConnectionService:
@@ -358,6 +360,27 @@ class AzureConnectionService:
             self.debug_log.message(f"Log file uploaded: {log_type}")
             self._update_log_entry(game_id, log_type, uploaded_path)
 
+    def _compress_log_file(self, uncompressed_file):
+        """
+        Compresses a log file
+        :param uncompressed_file: a valid, uncompressed log file path
+        :return: a compressed log file
+        """
+        fzip = None
+        # Zip File
+        if path.exists(uncompressed_file):
+            with open(uncompressed_file, 'rb') as orig_file, gzip.open(f'{uncompressed_file}.gz', 'wb') as zipped_file:
+                    zipped_file.writelines(orig_file)
+                    fzip = zipped_file
+
+            # Delete unzipped file
+            os.remove(uncompressed_file)
+
+        if fzip is not None:
+            return fzip.filename
+        return None
+
+
     def upload_game_log(self, filepath, game_id, container=None):
         """
         Uploads file to the Azure Blob, using a secret key as defined in a separate file.
@@ -373,15 +396,18 @@ class AzureConnectionService:
             self.debug_log.message("Log not found - not sending to Azure: " + filepath)
             return None
 
+        # zip the file
+        filepath = self._compress_log_file(filepath)
+
         if self.blob_service_client is not None:
             if container is not None:
                 container_to_use = container
             else:
                 container_to_use = self.container_name
-            blob_name = f"{CONFIG.TOURNAMENT_ID}_{CONFIG.AGENT_ID}_{game_id}_{filepath.name}"
+            blob_name = f"{CONFIG.TOURNAMENT_ID}_{CONFIG.AGENT_ID}_{game_id}_{filepath}"
             blob_client = self.blob_service_client.get_blob_client(container=container_to_use, blob=blob_name)
             try:
-                with open(filepath, 'rb') as data:
+                with gzip.open(filepath, 'rb') as data:
                     blob_client.upload_blob(data)
                     return blob_client.url
             except ServiceRequestError as e:
