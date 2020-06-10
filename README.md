@@ -6,7 +6,8 @@ below for a quick overview of the updates and read the Setup and Usage sections 
 Please note: We highly recommend using a Linux environment to install and run this tool.
 Our test bench uses a few hundred cores on Azure Batch running Ubuntu 18.04 LTS on AMD EPYC processors in a headless environment.
 
-Your mileage will significantly vary if using Windows. 
+Your mileage will vary if using Windows. 
+
 ## Key Updates
 * config.py (new file) now contains key configurations necessary to launch tournaments. These configurations can be edited through command line arguments, enabling other scripts to "git pull" & execute this code without having to make edits to any files.
 * Game JSONs are now read from a directory containing a "Tournament" of game JSONs. 
@@ -24,8 +25,8 @@ Your mileage will significantly vary if using Windows.
 1. If you haven't already, pull this branch of the repository to your work directory:
     `git clone -b release_1.1 --single-branch https://github.com/StephenGss/pal.git`
 1. For a fresh install:
-    * navigate to the setup folder inside polycraft/pal/ and execute `./setup_linux_shortened.sh` (user will need sudo permissions to wget JAVA).
-    * We have also provided our current setup scripts (they include a few additional packages enabling us to upload tournament results to SQL) for your reference.
+    * navigate to polycraft/pal/setup/ and execute `./setup_linux_shortened.sh` (user will need sudo permissions to wget JAVA).
+    * We have also provided our current setup scripts in that folder (they include a few additional packages enabling us to upload tournament results to SQL) for your reference.
 2. For a pre-existing environment, review the apt-get commands in _setup_linux_shortened.sh_ and execute as-needed.
 3. pip install all requirements. We recommend using a package manager like conda
    * `conda create -name pal_manager python=3.8 # or use your favorite venv`
@@ -60,9 +61,6 @@ Your mileage will significantly vary if using Windows.
 # Launching & Running:
 The main program is found in the PolycraftAIGym folder, called `LaunchTournament.py`
 
-This program is set to launch a Linux-based version by default. To use Windows-specific commands,
-Please edit the last line of the above script, 
-
 A key release update has created a new file, `config.py` containing all config variables necessary 
 for program execution (previously, these were variables simply declared in this file)
 
@@ -82,7 +80,7 @@ if __name__ == __main__(): function (found at the very bottom) as follows:<br>
 3. To execute: <br>
 `python LaunchTournament.py {-h, -i, etc}` (run the manager, optionally passing in flags listed below)
 
-### Config Variables
+### Setting Config Variables
 
 Below is an exhaustive list of variables defined in config.py and their associated CLI flag to override their values (where applicable).
 
@@ -91,6 +89,9 @@ Critical Parameters requiring edits before runtime are:
 * PAL_COMMAND/PAL_COMMAND_UNIX
 * AGENT_DIRECTORY
 * GAMES_FOLDER
+    * Note: please use one of the pre-created tournaments (after unzipping them). 
+    The script reads through this folder in a random order and looks for a specific naming pattern for each game JSON to sort them appropriately and 
+    will raise a ValueError if the pattern is not found.
 * GAME_COUNT 
 
 | Parameter  | CLI flag | Comments |

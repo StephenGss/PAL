@@ -755,6 +755,7 @@ if __name__ == "__main__":
         elif opt in ("-x", "--agent-exec"):
             print(f"Agent Command: {arg}")
             CONFIG.AGENT_COMMAND_UNIX = arg
+            CONFIG.AGENT_COMMAND = arg
         elif opt in ("-i", "--max-time"):
             print(f"Max Time (sec): {arg}")
             CONFIG.MAX_TIME = int(arg)
