@@ -407,7 +407,7 @@ class AzureConnectionService:
             blob_name = f"{CONFIG.TOURNAMENT_ID}_{CONFIG.AGENT_ID}_{game_id}_{filepath}"
             blob_client = self.blob_service_client.get_blob_client(container=container_to_use, blob=blob_name)
             try:
-                with gzip.open(filepath, 'rb') as data:
+                with open(filepath, 'rb') as data:
                     blob_client.upload_blob(data)
                     return blob_client.url
             except ServiceRequestError as e:
