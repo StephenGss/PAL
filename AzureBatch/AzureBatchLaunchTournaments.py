@@ -45,7 +45,7 @@ _CONTAINER_NAME = 'batch-workflow-fog-of-war'
 
 ### SIFT ###
 APPLICATION_ID = 'agent_sift'
-APPLICATION_VERSION = '6'
+APPLICATION_VERSION = '7'
 APPLICATION_ID_FIXED = 'agent_sift'
 APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + APPLICATION_ID_FIXED + '_' + APPLICATION_VERSION
 ### TUFTS ###
@@ -397,6 +397,21 @@ class AzureBatchLaunchTournaments:
 
 
 def launch_tournament_wrapper(agent, agentType, test_type, global_config, pool, suffix, tournament_directory, ):
+    """
+    Launch Script to kick off a series of Tournaments for a given Agent in a named pool
+    Launch ALl tournaments that belong in the same pool using this function
+
+    :param agent: Agent Name (Note: this will create a new Table and View if the agent doesn't already exist)
+    :param agentType: Agent Type (Enum - see AgentBatchCommands for valid options)
+    :param test_type: See Enum
+    :param global_config: Global Config parser object - make sure to create a file called AzureBatch.cfg
+    :param pool: name of pool to be created
+    :param suffix: Tournament Name suffix (usually, date and hour of execution)
+    :param tournament_directory: Location within which to search for all tournament zips
+    I.e., all_tournaments_provided/pogo/ will get the zips from all of the sub folders for the right game type
+    (i.e. all zips inside a X1000/ folder if TestType.Stage6 is passed in)
+
+    """
 
     tournaments_to_launch = get_tournaments(test_type, tournament_directory)
     for folder in tournaments_to_launch:
@@ -406,6 +421,13 @@ def launch_tournament_wrapper(agent, agentType, test_type, global_config, pool, 
 
 
 def get_tournaments(test_type,tournament_directory):
+    """
+    Helper script to iterate through a tournament directory and get all tournament zips of a particular test type
+    (i.e. ,TestType.Stage6 will return any zip file within an X1000/ folder.
+    :param test_type: Testing Stage - see Enum
+    :param tournament_directory: Folder within which to search for zips recursively.
+    :return: A list of zips (each zip file is a tournament that will become a task to complete in the parent pool)
+    """
 
     output = []
     for subdir, folders, files in os.walk(f'{os.getcwd()}/{tournament_directory}'):
@@ -418,22 +440,6 @@ def get_tournaments(test_type,tournament_directory):
     output = list(set(output))
     return output
 
-@DeprecationWarning
-def launch_g10_tournaments(agent, agentType, test_type, global_config, pool, suffix):
-    output = []
-    for subdir, folders, files in os.walk(f'{os.getcwd()}/../tournaments/g10/HUGA_L00_T01_S01_VIRGIN/'):
-        for file in files:
-            if file.endswith('.zip') and test_type.value in file:
-                print(f'{subdir}/{file}')
-                zip = f'{subdir}/{file}'
-                output.append(f'{subdir}/')
-
-    output = list(set(output))
-
-    for folder in output:
-        # pass
-       agent_pool = AzureBatchLaunchTournaments(agent, agentType, folder, global_config, pool, suffix)
-       agent_pool.execute_sample()
 
 from enum import Enum
 
@@ -448,23 +454,25 @@ if __name__ == '__main__':
     global_config = configparser.ConfigParser()
     global_config.read(helpers._SAMPLES_CONFIG_FILE_NAME)
 
-    launch_tournament_wrapper("SRI_AGENT_TEST_01",
-                              AgentType.SRI,
-                              TestType.STAGE5,
-                              global_config,
-                              pool="HUGA_SRI_X100_MIXD",
-                              suffix="_061015",
-                              tournament_directory="../tournaments/tournaments_provided/huga/",
-                              )
+    # launch_tournament_wrapper("SRI_AGENT_TEST_01",
+    #                           AgentType.SRI,
+    #                           TestType.STAGE5,
+    #                           global_config,
+    #                           pool="HUGA_SRI_X100_MIXD2",
+    #                           suffix="_061018",
+    #                           tournament_directory="../tournaments/tournaments_provided/huga/",
+    #                           )
 
-    # launch_tournament_wrapper( "SIFT_AGENT_TEST_V4",
-    #                            AgentType.SIFT,
-    #                            TestType.STAGE5,
-    #                            global_config,
-    #                            pool="POGO_SIFT_X100_EMH",
-    #                            suffix="_061001",
-    #                            tournament_directory="../tournaments/EMH_pogo_provided/",
-    #                         )
+    launch_tournament_wrapper( "SIFT_AGENT_TEST_V4",
+                               AgentType.SIFT,
+                               TestType.STAGE6,
+                               global_config,
+                               pool="POGO_SIFT_X1000_VIRGIN",
+                               suffix="_061114",
+                               tournament_directory="../tournaments/all_tournaments_to_TA2/pogo/POGO_L00_T01_S01_VIRGIN/",
+                            )
+
+
     #
     # launch_tournament_wrapper("TUFTS_AGENT_TEST_02",
     #                           AgentType.TUFTS,
@@ -491,102 +499,5 @@ if __name__ == '__main__':
     #                            suffix="_060821",
     #                            tournament_directory="../tournaments/g10/HUGA_L00_T01_S01_VIRGIN/",
     #                         )
-
-
-    # launch_g10_tournaments("SRI_AGENT_TEST_01",
-    #                        AgentType.SRI,
-    #                        TestType.STAGE5,
-    #                        global_config,
-    #                        pool="HUGA_X100_POOL_SRI",
-    #                        suffix="_060821")
-
-    # launch_g10_tournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, TestType.STAGE5, global_config, "_060716")
-    # launch_g10_tournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, TestType.STAGE6, global_config, "_060723")
-    # launch_g10_tournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, TestType.STAGE5, global_config, "_060716")
-    # launch_g10_tournaments("GT_AGENT_2_TEST_V3", AgentType.GT_POGO_BASELINE, TestType.STAGE6, global_config, "_060723")
-    # launch_g10_tournaments("GT_AGENT_2_TEST_V3", AgentType.GT_POGO_BASELINE, TestType.STAGE4, global_config, "_060716")
-    #
-    # launch_g10_tournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, TestType.STAGE4, global_config, "_060712")
-    # launch_g10_tournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, TestType.STAGE4, global_config, "_060712")
-    # launch_g10_tournaments("GT_AGENT_2_TEST_V2", AgentType.GT_POGO_BASELINE, TestType.STAGE4, global_config, "_060712")
-    # launch_g10_tournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, global_config, "_060702")
-    # launch_g10_tournaments("SRI_AGENT_TEST_01", AgentType.SRI, TestType.STAGE6, global_config, "_060712")
-    # launch_g10_tournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, TestType.STAGE4, global_config, "_060712")
-
-    # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT,
-    #                                       "../tournaments/POGO_LVL0_T1_1_0000_VIRGIN_15_tournaments/", global_config,
-    #                                       "_060617")
-    # sift_v2.execute_sample()
-    # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT,
-    #                                       "../tournaments/POGO_LVL0_T1_1_0000_VIRGIN_15_tournaments/", global_config,
-    #                                       "_060617")
-    # sift_v2.execute_sample()
-    # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT,
-    #                                       "../tournaments/POGO_LVL0_T1_1_0000_VIRGIN_15_tournaments/", global_config,
-    #                                       "_060617")
-    # sift_v2.execute_sample()
-
-    # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, "../tournaments/POGO_LVL0_T1_1_0000_VIRGIN_15_tournaments/", global_config, "_060617")
-    # sift_v2.execute_sample()
-    #
-    # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT, "../tournaments/g50/Pogo_Tours_1-1-1_2-1-1_50/", global_config, "_060612")
-    # sift_v2.execute_sample()
-    #
-    # tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, "../tournaments/g50/Pogo_Tours_1-1-1_2-1-1_50/", global_config, "_060612")
-    # tufts_test.execute_sample()
-
-    # sri_test = AzureBatchLaunchTournaments("SRI_AGENT_TEST_01", AgentType.SRI, "../tournaments/HUGA_LVL0_T1_1_0000_VIRGIN_060600_5_tournaments/", global_config, "_060612")
-    # sri_test.execute_sample()
-    #
-    # tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, "../tournaments/POGO_LVL0_T1_1_0000_VIRGIN_15_tournaments/", global_config, "_060612")
-    # tufts_test.execute_sample()
-
-    #
-    # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT,
-    #                                       "../tournaments/g50/POGO_LVL3_T6_1_0005_THICKAIR_25_tournaments/",
-    #                                       global_config, "_060523")
-    # sift_v2.execute_sample()
-    #
-    # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT,
-    #                                       "../tournaments/g50/POGO_LVL3_T6_2_0005_THICKAIRCLEARS_11_tournaments/",
-    #                                       global_config, "_060612")
-    # sift_v2.execute_sample()
-    # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT,
-    #                                       "../tournaments/g50/POGO_LVL3_T5_1_0005_FOG_060501_25_tournaments/",
-    #                                       global_config, "_060523")
-    # sift_v2.execute_sample()
-    #
-    # sift_v2 = AzureBatchLaunchTournaments("SIFT_AGENT_TEST_V3", AgentType.SIFT,
-    #                                       "../tournaments/g50/POGO_LVL3_T5_2_0005_FOGCLEARS_25_tournaments/",
-    #                                       global_config, "_060523")
-    # sift_v2.execute_sample()
-
-    # # #
-    # gta = AzureBatchLaunchTournaments("GT_AGENT_2_TEST_V2", AgentType.GT_POGO_BASELINE, "../tournaments/POGO_LVL0_T1_1_0000_VIRGIN_15_tournaments/", global_config, "_060515")
-    # gta.execute_sample()
-    # gta = AzureBatchLaunchTournaments("GT_AGENT_2_TEST_V2", AgentType.GT_POGO_BASELINE, "../tournaments/g50/POGO_LVL3_T6_1_0005_THICKAIR_25_tournaments/", global_config, "_060502")
-    # gta.execute_sample()
-    # gta = AzureBatchLaunchTournaments("GT_AGENT_2_TEST_V2", AgentType.GT_POGO_BASELINE, "../tournaments/g50/POGO_LVL3_T6_2_0005_THICKAIRCLEARS_25_tournaments/", global_config, "_060502")
-    # gta.execute_sample()
-
-    #
-    #
-    # tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS,
-    #                                          "../tournaments/g50/POGO_LVL3_T6_1_0005_THICKAIR_25_tournaments/",
-    #                                          global_config, "_060523")
-    # tufts_test.execute_sample()
-    #
-    # tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS,
-    #                                          "../tournaments/g50/POGO_LVL3_T6_2_0005_THICKAIRCLEARS_11_tournaments/",
-    #                                          global_config, "_060612")
-    # tufts_test.execute_sample()
-    #
-    # tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS,
-    #                                          "../tournaments/g50/POGO_LVL3_T5_1_0005_FOG_060501_25_tournaments/",
-    #                                          global_config, "_060523")
-    # tufts_test.execute_sample()
-    #
-    # tufts_test = AzureBatchLaunchTournaments("TUFTS_AGENT_TEST_02", AgentType.TUFTS, "../tournaments/g50/POGO_LVL3_T5_2_0005_FOGCLEARS_25_tournaments/", global_config, "_060523")
-    # tufts_test.execute_sample()
 
 
