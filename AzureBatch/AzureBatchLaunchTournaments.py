@@ -45,7 +45,7 @@ _CONTAINER_NAME = 'batch-workflow-fog-of-war'
 
 ### SIFT ###
 APPLICATION_ID = 'agent_sift'
-APPLICATION_VERSION = '7'
+APPLICATION_VERSION = '8'
 APPLICATION_ID_FIXED = 'agent_sift'
 APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + APPLICATION_ID_FIXED + '_' + APPLICATION_VERSION
 ### TUFTS ###
@@ -463,15 +463,26 @@ if __name__ == '__main__':
     #                           tournament_directory="../tournaments/tournaments_provided/huga/",
     #                           )
 
-    launch_tournament_wrapper( "SIFT_AGENT_TEST_V4",
-                               AgentType.SIFT,
-                               TestType.STAGE6,
-                               global_config,
-                               pool="POGO_SIFT_X1000_VIRGIN",
-                               suffix="_061114",
-                               tournament_directory="../tournaments/all_tournaments_to_TA2/pogo/POGO_L00_T01_S01_VIRGIN/",
-                            )
+    launch_tournament_wrapper(
+        agent="SIFT_AGENT_TEST_V5",
+        agentType=AgentType.SIFT,
+        test_type=TestType.STAGE5,
+        global_config=global_config,
+        pool="POGO_SIFT_X100_NOVELTY",
+        suffix="_061619",
+        tournament_directory="../tournaments/all_tournaments_to_TA2/pogo/",
 
+    )
+
+    # launch_tournament_wrapper( "SIFT_AGENT_TEST_V4",
+    #                            AgentType.SIFT,
+    #                            TestType.STAGE6,
+    #                            global_config,
+    #                            pool="POGO_SIFT_X1000_VIRGIN",
+    #                            suffix="_061114",
+    #                            tournament_directory="../tournaments/all_tournaments_to_TA2/pogo/POGO_L00_T01_S01_VIRGIN/",
+    #                         )
+    #
 
     #
     # launch_tournament_wrapper("TUFTS_AGENT_TEST_02",
