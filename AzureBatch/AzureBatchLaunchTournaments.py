@@ -380,7 +380,7 @@ class AzureBatchLaunchTournaments:
 
         tasks = batch_client.task.list(job_id)
         task_ids = [task.id for task in tasks]
-
+        print(task_ids)
             # helpers.print_task_output(batch_client, job_id, task_ids)
         # finally:
         #     # clean up
@@ -463,16 +463,41 @@ if __name__ == '__main__':
     #                           tournament_directory="../tournaments/tournaments_provided/huga/",
     #                           )
 
+
     launch_tournament_wrapper(
         agent="SIFT_AGENT_TEST_V5",
         agentType=AgentType.SIFT,
         test_type=TestType.STAGE5,
         global_config=global_config,
-        pool="POGO_SIFT_X100_NOVELTY",
-        suffix="_061619",
-        tournament_directory="../tournaments/all_tournaments_to_TA2/pogo/",
-
+        pool="POGO_SIFT_X100_1a",
+        suffix="_061717",
+        tournament_directory="../tournaments/pogo_lvl1a/",
     )
+
+
+    #
+    # launch_tournament_wrapper(
+    #     agent="SIFT_AGENT_TEST_V5",
+    #     agentType=AgentType.SIFT,
+    #     test_type=TestType.STAGE5,
+    #     global_config=global_config,
+    #     pool="POGO_SIFT_X100_TREES2",
+    #     suffix="_061619",
+    #     tournament_directory="../tournaments/all_tournaments_to_TA2/pogo/POGO_L02_T01_S01_TREES/",
+    #
+    # )
+    #
+    # launch_tournament_wrapper(
+    #     agent="SIFT_AGENT_TEST_V5",
+    #     agentType=AgentType.SIFT,
+    #     test_type=TestType.STAGE5,
+    #     global_config=global_config,
+    #     pool="POGO_SIFT_X100_AXE2",
+    #     suffix="_061619",
+    #     tournament_directory="../tournaments/all_tournaments_to_TA2/pogo/POGO_L01_T01_S01_AXE/",
+    #
+    # )
+
 
     # launch_tournament_wrapper( "SIFT_AGENT_TEST_V4",
     #                            AgentType.SIFT,

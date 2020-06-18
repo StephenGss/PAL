@@ -157,7 +157,8 @@ class AgentBatchCommands:
             'mkdir agents/',
             'cp -r ' + self.application_dict['agent_sift'] + '/* ./agents/',
             'mkdir ./agents/SIFT_SVN/',
-            'mv ./agents/SIFT\ \(copy\)/trunk/* ./agents/SIFT_SVN/',
+            'mv ./agents/SIFT\ 2020\ 06\ 16\ 1707/trunk/* ./agents/SIFT_SVN/',
+            # 'mv ./agents/SIFT\ \(copy\)/trunk/* ./agents/SIFT_SVN/',
             'echo "[DN_MSG]agent moved into place\n"',
         ]
 
