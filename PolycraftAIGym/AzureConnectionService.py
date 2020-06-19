@@ -24,6 +24,7 @@ class AzureConnectionService:
         self.valid_connection = False
         self.sql_connection = self._get_sql_connection()
         self.cursor = None
+        self.max_retries = 10
         if self.is_connected():
             self.cursor = self.sql_connection.cursor()
 
@@ -208,19 +209,29 @@ class AzureConnectionService:
 
         self.debug_log.message(f"Sending Game Details to SQL: {rows_to_add}")
 
-        try:
-            self.cursor = self.sql_connection.cursor()
-            self.cursor.executemany(f"""
-                INSERT INTO {CONFIG.AGENT_ID} (
-                    {', '.join([i for i in all_vals[1].keys()])}
-                    ) 
-                  VALUES ({', '.join(['?' for i in rows_to_add[0]])}) ; 
-                                """, rows_to_add)
+        count = 0
+        while count < self.max_retries:
+            try:
+                count += 1
+                self.cursor = self.sql_connection.cursor()
+                self.cursor.executemany(f"""
+                    INSERT INTO {CONFIG.AGENT_ID} (
+                        {', '.join([i for i in all_vals[1].keys()])}
+                        ) 
+                      VALUES ({', '.join(['?' for i in rows_to_add[0]])}) ; 
+                                    """, rows_to_add)
 
-            self.sql_connection.commit()
-            self.debug_log.message(f"Game sent! Game: {game_id}")
-        except Exception as e:
-            self.debug_log.message(f"Error! Scores not sent: {str(e)}")
+                self.sql_connection.commit()
+                self.debug_log.message(f"Game sent! Game: {game_id}")
+                break
+            except Exception as e:
+                time.sleep(1)
+                self.debug_log.message(f"Error! Scores not sent: {str(e)}")
+                self.debug_log.message(f"retrying... ({count})")
+
+        if count >= self.max_retries:
+            self.debug_log.message(
+                f"ERROR: Unable to Update {CONFIG.AGENT_ID}. Offending Game: {game_id}")
 
     def send_summary_to_azure(self, score_dict, game_id):
         """
@@ -250,16 +261,25 @@ class AzureConnectionService:
 
         dictionary_as_tuple_list = [tuple(vals.values())]
         self.debug_log.message(f"Sending Score to SQL: {dictionary_as_tuple_list}")
-        try:
-            self.cursor.executemany(f"""
-                            INSERT INTO TOURNAMENT_AGGREGATE ({', '.join([k for k in vals.keys()])}) 
-                              VALUES ({', '.join(['?' for i in dictionary_as_tuple_list[0]])}) ; 
-                                            """, dictionary_as_tuple_list)
+        count = 0
+        while count < self.max_retries:
+            try:
+                count += 1
+                self.cursor.executemany(f"""
+                                INSERT INTO TOURNAMENT_AGGREGATE ({', '.join([k for k in vals.keys()])}) 
+                                  VALUES ({', '.join(['?' for i in dictionary_as_tuple_list[0]])}) ; 
+                                                """, dictionary_as_tuple_list)
 
-            self.sql_connection.commit()
-            self.debug_log.message(f"Game summary sent! Game: {game_id}")
-        except Exception as e:
-            self.debug_log.message(f"Error! Scores not sent: {str(e)}")
+                self.sql_connection.commit()
+                self.debug_log.message(f"Game summary sent! Game: {game_id}")
+                break
+            except Exception as e:
+                time.sleep(1)
+                self.debug_log.message(f"Error! Scores not sent: {str(e)}")
+                self.debug_log.message(f"retrying... ({count})")
+
+        if count >= self.max_retries:
+            self.debug_log.message(f"ERROR: Unable to Update TOURNAMENT_AGGREGATE. Offending Game: {game_id}, Tournament: {CONFIG.TOURNAMENT_ID}")
 
 
     def _update_log_entry(self, game_id, logType, path):
@@ -285,11 +305,11 @@ class AzureConnectionService:
         # Using the ? approach automatically escapes strings to be "SQL" safe. Would recommend! :)
         # For now, try uploading no more than 5 times
         count = 0
-        while count < 5:
+        while count < self.max_retries:
             try:
                 count += 1
                 self.cursor.execute(f"""
-                    UPDATE TOURNAMENT_AGGREGATE WITH(UPDLOCK)
+                    UPDATE TOURNAMENT_AGGREGATE
                     SET {var_to_adjust} = ?
                     WHERE   Tournament_Name = ? AND
                             Agent_Name = ? AND
@@ -298,11 +318,11 @@ class AzureConnectionService:
                 self.sql_connection.commit()
                 break
             except Exception as e:
-                time.sleep(0.25)
+                time.sleep(1)
                 self.debug_log.message(f"MSSQL Simultaneous Upload Lock - retrying... ({count})\n" + str(e))
 
         # Print an error letting user know upload failed (print to debug log for now, even if it's already uploaded)
-        if count >= 5:
+        if count >= self.max_retries:
             self.debug_log.message(f"ERROR: Unable to Update TOURNAMENT_AGGREGATE. Offending Game: {game_id}, Tournament: {CONFIG.TOURNAMENT_ID}, Variable: {var_to_adjust}")
 
     def upload_pal_messenger_logs(self, palMessenger, game_id, log_type, container=None):
