@@ -50,7 +50,7 @@ APPLICATION_ID_FIXED = 'agent_sift'
 APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + APPLICATION_ID_FIXED + '_' + APPLICATION_VERSION
 ### TUFTS ###
 TUFT_APPLICATION_ID = 'agent_tufts'
-TUFT_VERSION = '2'
+TUFT_VERSION = '3'
 TUFT_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + TUFT_APPLICATION_ID + '_' + TUFT_VERSION
 ### GT ###
 GT_APP_ID = 'agent_gt_pogo'
@@ -64,7 +64,7 @@ GT_HUGA_APP_DIR = '$AZ_BATCH_APP_PACKAGE_' + GT_HUGA_APP_ID + '_' + GT_HUGA_APP_
 
 ### SRI ###
 SRI_APP_ID = 'agent_sri'
-SRI_VERSION = '1'
+SRI_VERSION = '2'
 SRI_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + SRI_APP_ID + '_' + SRI_VERSION
 
 
@@ -451,18 +451,45 @@ class TestType(Enum):
 
 
 if __name__ == '__main__':
+    """
+    AS of 6/19/2020 11:50AM CT:
+    Latest AGENT NAMES:
+        SIFT:               SIFT_AGENT_TEST_V5
+        GT_POGO_BASELINE:   GT_AGENT_2_TEST_V3
+        TUFTS:              TUFTS_AGENT_TEST_V3
+        SRI:                SRI_AGENT_TEST_V2
+        GT_HUGA_BASELINE:   GT_Trained_HUGA_1_V1
+    """
+
     global_config = configparser.ConfigParser()
     global_config.read(helpers._SAMPLES_CONFIG_FILE_NAME)
 
-    # launch_tournament_wrapper("SRI_AGENT_TEST_01",
-    #                           AgentType.SRI,
+    """
+    Want to change the Pool size? Edit AzureBatch.cfg
+    OR
+    run this, changing 18 to whatever number you'd like:
+    global_config.set('DEFAULT', 'poolvmcount', '18')
+    """
+    # global_config.set('DEFAULT', 'poolvmcount', '18')
+
+    # launch_tournament_wrapper("TUFTS_AGENT_TEST_V3",
+    #                           AgentType.TUFTS,
     #                           TestType.STAGE5,
     #                           global_config,
-    #                           pool="HUGA_SRI_X100_MIXD2",
-    #                           suffix="_061018",
-    #                           tournament_directory="../tournaments/tournaments_provided/huga/",
+    #                           pool="POGO_TUFTS_REAPER_CHECK",
+    #                           suffix="_061911",
+    #                           tournament_directory="../tournaments/all_tournaments_to_TA2/reaper_check/",
     #                           )
 
+    # launch_tournament_wrapper(
+    #     agent="SRI_AGENT_TEST_V2",
+    #     agentType=AgentType.SRI,
+    #     test_type=TestType.STAGE6,
+    #     global_config=global_config,
+    #     pool="HUGA_SRI_VIRGIN_1000",
+    #     suffix="_061911",
+    #     tournament_directory="../tournaments/all_tournaments_to_TA2/huga/HUGA_L00_T01_S01_VIRGIN/",
+    # )
 
     # launch_tournament_wrapper(
     #     agent="SIFT_AGENT_TEST_V5",
@@ -474,100 +501,6 @@ if __name__ == '__main__':
     #     tournament_directory="../tournaments/pogo_lvl1a/",
     # )
 
-    launch_tournament_wrapper(
-        agent="SIFT_AGENT_TEST_V5",
-        agentType=AgentType.SIFT,
-        test_type=TestType.STAGE5,
-        global_config=global_config,
-        pool="POGO_SIFT_X100_3b",
-        suffix="_061717",
-        tournament_directory="../tournaments/pogo_lvl3b/",
-    )
-
-    launch_tournament_wrapper(
-        agent="SIFT_AGENT_TEST_V5",
-        agentType=AgentType.SIFT,
-        test_type=TestType.STAGE5,
-        global_config=global_config,
-        pool="POGO_SIFT_X100_3a",
-        suffix="_061717",
-        tournament_directory="../tournaments/pogo_lvl3a/",
-    )
-    #
-    # launch_tournament_wrapper(
-    #     agent="SIFT_AGENT_TEST_V5",
-    #     agentType=AgentType.SIFT,
-    #     test_type=TestType.STAGE5,
-    #     global_config=global_config,
-    #     pool="POGO_SIFT_X100_1b",
-    #     suffix="_061717",
-    #     tournament_directory="../tournaments/pogo_lvl1b/",
-    # )
-    #
-    # launch_tournament_wrapper(
-    #     agent="SIFT_AGENT_TEST_V5",
-    #     agentType=AgentType.SIFT,
-    #     test_type=TestType.STAGE5,
-    #     global_config=global_config,
-    #     pool="POGO_SIFT_X100_2a",
-    #     suffix="_061717",
-    #     tournament_directory="../tournaments/pogo_lvl2a/",
-    # )
-    #
-    # launch_tournament_wrapper(
-    #     agent="SIFT_AGENT_TEST_V5",
-    #     agentType=AgentType.SIFT,
-    #     test_type=TestType.STAGE5,
-    #     global_config=global_config,
-    #     pool="POGO_SIFT_X100_2b",
-    #     suffix="_061717",
-    #     tournament_directory="../tournaments/pogo_lvl2b/",
-    # )
-
-
-    #
-    # launch_tournament_wrapper(
-    #     agent="SIFT_AGENT_TEST_V5",
-    #     agentType=AgentType.SIFT,
-    #     test_type=TestType.STAGE5,
-    #     global_config=global_config,
-    #     pool="POGO_SIFT_X100_TREES2",
-    #     suffix="_061619",
-    #     tournament_directory="../tournaments/all_tournaments_to_TA2/pogo/POGO_L02_T01_S01_TREES/",
-    #
-    # )
-    #
-    # launch_tournament_wrapper(
-    #     agent="SIFT_AGENT_TEST_V5",
-    #     agentType=AgentType.SIFT,
-    #     test_type=TestType.STAGE5,
-    #     global_config=global_config,
-    #     pool="POGO_SIFT_X100_AXE2",
-    #     suffix="_061619",
-    #     tournament_directory="../tournaments/all_tournaments_to_TA2/pogo/POGO_L01_T01_S01_AXE/",
-    #
-    # )
-
-
-    # launch_tournament_wrapper( "SIFT_AGENT_TEST_V4",
-    #                            AgentType.SIFT,
-    #                            TestType.STAGE6,
-    #                            global_config,
-    #                            pool="POGO_SIFT_X1000_VIRGIN",
-    #                            suffix="_061114",
-    #                            tournament_directory="../tournaments/all_tournaments_to_TA2/pogo/POGO_L00_T01_S01_VIRGIN/",
-    #                         )
-    #
-
-    #
-    # launch_tournament_wrapper("TUFTS_AGENT_TEST_02",
-    #                           AgentType.TUFTS,
-    #                           TestType.STAGE5,
-    #                           global_config,
-    #                           pool="POGO_TUFTS_X100_EMH",
-    #                           suffix="_061001",
-    #                           tournament_directory="../tournaments/EMH_pogo_provided/",
-    #                           )
     # launch_tournament_wrapper("GT_AGENT_2_TEST_V3",
     #                           AgentType.GT_POGO_BASELINE,
     #                           TestType.STAGE5,

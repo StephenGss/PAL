@@ -43,6 +43,8 @@ class AgentBatchCommands:
 
         github = self._get_github_commands()
 
+        agent_folder_name = 'sri-dryrun-20200617'
+
         copy_files = [
             'cd $HOME',
             'cp secret_real.ini polycraft/pal/',
@@ -57,10 +59,10 @@ class AgentBatchCommands:
             'mkdir agents/',
             'cp -r ' + self.application_dict['agent_sri'] + '/* ./agents/',
             'echo "[DN_MSG]agent moved into place\n"',
-            'cd $HOME/polycraft/pal/agents/sri-dryrun-20200604/',
+            f'cd $HOME/polycraft/pal/agents/{agent_folder_name}/',
             'chmod +x *.sh',
             './build.sh',
-            'mv $HOME/setup/sri_run.sh $HOME/polycraft/pal/agents/sri-dryrun-20200604/',
+            f'mv $HOME/setup/sri_run.sh $HOME/polycraft/pal/agents/{agent_folder_name}/',
             'echo "[DN_MSG]SRI Agent Docker Built\n"',
         ]
 
@@ -72,7 +74,7 @@ class AgentBatchCommands:
             'export AIGYM_REPORTING=true',
             'export REPORT_SCREEN=true',
             # f'python LaunchTournament.py -t "{suffix}{tname}" -g "../{tname}" -a "{self.agent_name}" -d "../agents/" -x "./play.sh" ',
-            f'python LaunchTournament.py -c 1000 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "../agents/sri-dryrun-20200604/" -x "./sri_run.sh" -i 60 ',
+            f'python LaunchTournament.py -c 1000 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "../agents/{agent_folder_name}/" -x "./sri_run.sh" -i 60 ',
         ]
 
         return setup + github + copy_files + copy_agent + launch_polycraft
