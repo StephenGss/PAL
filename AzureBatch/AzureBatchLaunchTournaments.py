@@ -464,15 +464,65 @@ if __name__ == '__main__':
     #                           )
 
 
+    # launch_tournament_wrapper(
+    #     agent="SIFT_AGENT_TEST_V5",
+    #     agentType=AgentType.SIFT,
+    #     test_type=TestType.STAGE5,
+    #     global_config=global_config,
+    #     pool="POGO_SIFT_X100_1a",
+    #     suffix="_061717",
+    #     tournament_directory="../tournaments/pogo_lvl1a/",
+    # )
+
     launch_tournament_wrapper(
         agent="SIFT_AGENT_TEST_V5",
         agentType=AgentType.SIFT,
         test_type=TestType.STAGE5,
         global_config=global_config,
-        pool="POGO_SIFT_X100_1a",
+        pool="POGO_SIFT_X100_3b",
         suffix="_061717",
-        tournament_directory="../tournaments/pogo_lvl1a/",
+        tournament_directory="../tournaments/pogo_lvl3b/",
     )
+
+    launch_tournament_wrapper(
+        agent="SIFT_AGENT_TEST_V5",
+        agentType=AgentType.SIFT,
+        test_type=TestType.STAGE5,
+        global_config=global_config,
+        pool="POGO_SIFT_X100_3a",
+        suffix="_061717",
+        tournament_directory="../tournaments/pogo_lvl3a/",
+    )
+    #
+    # launch_tournament_wrapper(
+    #     agent="SIFT_AGENT_TEST_V5",
+    #     agentType=AgentType.SIFT,
+    #     test_type=TestType.STAGE5,
+    #     global_config=global_config,
+    #     pool="POGO_SIFT_X100_1b",
+    #     suffix="_061717",
+    #     tournament_directory="../tournaments/pogo_lvl1b/",
+    # )
+    #
+    # launch_tournament_wrapper(
+    #     agent="SIFT_AGENT_TEST_V5",
+    #     agentType=AgentType.SIFT,
+    #     test_type=TestType.STAGE5,
+    #     global_config=global_config,
+    #     pool="POGO_SIFT_X100_2a",
+    #     suffix="_061717",
+    #     tournament_directory="../tournaments/pogo_lvl2a/",
+    # )
+    #
+    # launch_tournament_wrapper(
+    #     agent="SIFT_AGENT_TEST_V5",
+    #     agentType=AgentType.SIFT,
+    #     test_type=TestType.STAGE5,
+    #     global_config=global_config,
+    #     pool="POGO_SIFT_X100_2b",
+    #     suffix="_061717",
+    #     tournament_directory="../tournaments/pogo_lvl2b/",
+    # )
 
 
     #
