@@ -101,7 +101,7 @@ class AgentBatchCommands:
         copy_agent = [
             'cd $HOME/polycraft/pal',
             'mkdir agents/',
-            'cp -r ' + self.application_dict['agent_tufts'] + '/* ./agents/',
+            'cp -r ' + self.application_dict['agent_tufts'] + '/TUFTS\ 0617/* ./agents/',
             'echo "[DN_MSG]agent moved into place\n"',
         ]
 
