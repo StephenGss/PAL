@@ -16,7 +16,8 @@ class AgentBatchCommands:
         self.agent_name = agent_name
         self.agent_type = agent_type
         self.application_dict = APP_DICT
-        self.git_branch = "dev_unix_sri"  # FIXME: update this as needed
+        # self.git_branch = "dev_unix_sri"  # FIXME: update this as needed
+        self.git_branch = "dev_unix_lockfiles"  # FIXME: update this as needed
 
     def get_task_commands(self, tournament_zip, tournament_name, suffix=None):
 
