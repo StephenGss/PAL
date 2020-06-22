@@ -302,9 +302,11 @@ class AzureConnectionService:
         max_retries = 3
         try_counter = 0
         global_upload_count = 0
+        self.debug_log.message("Thread Initialized.")
         while should_continue:
             time.sleep(CONFIG.MAX_TIME*1.5)  # Run every 1.5 max-time game cycles (TODO: increase this?)
             upload_count = 0
+            self.debug_log.message("Attempting Upload...")
             with self.lock.acquire():
                 try:
                     with open(self.temp_logs_path, 'r') as rf:  # This file is "touched" above
@@ -320,7 +322,7 @@ class AzureConnectionService:
                             self.sql_connection.commit()
                     os.remove(self.temp_logs_path)          # File deleted in this thread
                 except FileNotFoundError as e:
-                    self.debug_log.message("Error: File not found. Main Thread over. (Double-incrementing try_counter)")
+                    self.debug_log.message("ALERT: File not found. Main Thread over. (Double-incrementing try_counter)")
                     try_counter += 2
                 except Exception as e:
                     with open(self.temp_logs_path, 'r') as rf, open(f"{self.temp_logs_path}.err", 'a') as wf:
@@ -328,6 +330,7 @@ class AzureConnectionService:
                     self.debug_log.message(f"ERROR: Cannot Upload! Temp saving file and moving on. PLease re-run manually: {self.temp_logs_path}.err\n {str(e)}")
 
             global_upload_count += upload_count
+            self.debug_log.message(f"Uploaded {upload_count} Logs for {(upload_count/3)} games. Running total: {global_upload_count}")
             if upload_count == 0:
                 try_counter += 1
             if try_counter >= max_retries:

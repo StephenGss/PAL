@@ -371,7 +371,8 @@ class LaunchTournament:
                     self.current_state = State.GAME_LOOP
 
                     # Initialize Uploading Thread
-                    self.upload_thread = threading.Thread(name="update_logs_thread", target=self._launch_interval_update_results_table)
+                    self.upload_thread = threading.Thread(name="update_logs_thread",
+                                                          target=self._launch_interval_update_results_table)
                     self.upload_thread.daemon = True
                     self.upload_thread.start()
 
@@ -498,8 +499,8 @@ class LaunchTournament:
         if azure.is_connected():
             azure.threaded_update_logs()
         else:
-            self.debug_log("Azure Connection Error! Something went wrong in Upload Thread")
-            raise ConnectionError("Error - cannot update results table")
+            self.debug_log("Azure Connection Error - cannot connect to SQL database")
+            # raise ConnectionError("Error - cannot update results table")
 
     def _game_over(self):
         """
