@@ -13,6 +13,8 @@ from collections import defaultdict
 from copy import copy, deepcopy
 import getopt
 import psutil
+from filelock import Timeout, FileLock
+
 
 
 class LaunchTournament:
@@ -34,6 +36,8 @@ class LaunchTournament:
         self.start_time = time.time()
         self.log_dir = log_dir + f"{PalMessenger.PalMessenger.time_now_str('_')}/"
         self.SYS_FLAG = os  # Change behavior based on SYS FLAG when executing gradlew
+        self.temp_logs_path = "log_file_paths.txt"
+        self.lock = FileLock(f"{self.temp_logs_path}.lock")  # Lock file for all log files
 
         # TODO: use os library to detect this vs. passing in as a command line argument.
         if 'MACOS' in self.SYS_FLAG.upper() or 'UNIX' in self.SYS_FLAG.upper():
@@ -61,6 +65,7 @@ class LaunchTournament:
         self.current_state = State.INIT_PAL
         self.tournament_in_progress = True
         self.agent_started = False
+        self.upload_thread = None
 
         ## Results
         self.score_dict = {}
@@ -365,6 +370,11 @@ class LaunchTournament:
                     self.score_dict[self.game_index]['startTime'] = PalMessenger.PalMessenger.time_now_str()
                     self.current_state = State.GAME_LOOP
 
+                    # Initialize Uploading Thread
+                    self.upload_thread = threading.Thread(name="update_logs_thread", target=self._launch_interval_update_results_table)
+                    self.upload_thread.daemon = True
+                    self.upload_thread.start()
+
             # Begin the Game Loop
             elif self.current_state == State.GAME_LOOP:
 
@@ -465,8 +475,7 @@ class LaunchTournament:
         """
         Launch the AI agent Thread
         """
-        self.debug_log.message("Initializing Agent Thread: python hg_agent.py")
-
+        self.debug_log.message(f"Initializing Agent Thread: {CONFIG.AGENT_COMMAND_UNIX}")
 
         self.agent = subprocess.Popen(self.agent_process_cmd, shell=True, cwd=CONFIG.AGENT_DIRECTORY, stdout=subprocess.PIPE,
                                       # stdin=subprocess.PIPE,      #DN: 0606 Removed for performance
@@ -480,6 +489,17 @@ class LaunchTournament:
         self.pb_t.daemon = True
         self.pb_t.start()
         self.debug_log.message("Launched AI Agent")
+
+    def _launch_interval_update_results_table(self):
+        self.debug_log.message("Initializing Interval Upload Thread")
+        upload_file = Path(self.log_dir) / f"{CONFIG.TOURNAMENT_ID}.txt"
+        upload_log = PalMessenger(True, True, upload_file, log_note="UPLOAD: ")
+        azure = AzureConnectionService.AzureConnectionService(upload_log)
+        if azure.is_connected():
+            azure.threaded_update_logs()
+        else:
+            self.debug_log("Azure Connection Error! Something went wrong in Upload Thread")
+            raise ConnectionError("Error - cannot update results table")
 
     def _game_over(self):
         """
@@ -527,6 +547,7 @@ class LaunchTournament:
             # azure.upload_pal_messenger_logs(palMessenger=speed_log, log_type='speed', game_id=game_index)
 
 
+
     def _tournament_completed(self):
         """
         Tournament Complete - initiate cleanup of threads
@@ -542,10 +563,14 @@ class LaunchTournament:
             self.threads.join()
             # for i in self.threads:
             #     i.join()
-
         self._kill_process_children(5)
 
         self.tm_thread.join(5)
+
+        if self.upload_thread is not None:
+            self.upload_thread.join()
+
+
         self.tournament_in_progress = False
 
     def _kill_process_children(self, timeout):
