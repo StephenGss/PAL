@@ -493,7 +493,7 @@ class LaunchTournament:
     def _launch_interval_update_results_table(self):
         self.debug_log.message("Initializing Interval Upload Thread")
         upload_file = Path(self.log_dir) / f"{CONFIG.TOURNAMENT_ID}.txt"
-        upload_log = PalMessenger(True, True, upload_file, log_note="UPLOAD: ")
+        upload_log = PalMessenger.PalMessenger(True, True, upload_file, log_note="UPLOAD: ")
         azure = AzureConnectionService.AzureConnectionService(upload_log)
         if azure.is_connected():
             azure.threaded_update_logs()
