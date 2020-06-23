@@ -17,6 +17,9 @@ class TournamentThread(threading.Thread):
             self.sock.connect((HOST, TM_PORT))
             print('Using Port: ' + str(TM_PORT))
 
+    def kill(self):
+        self.queue.put(None)
+
     def run(self):
         print(threading.currentThread().getName(), self.receive_messages)
         print("Initializing TM Thread")
