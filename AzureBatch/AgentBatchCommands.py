@@ -16,8 +16,8 @@ class AgentBatchCommands:
         self.agent_name = agent_name
         self.agent_type = agent_type
         self.application_dict = APP_DICT
-        # self.git_branch = "dev_unix_sri"  # FIXME: update this as needed
-        self.git_branch = "dev_unix_lockfiles"  # FIXME: update this as needed
+        self.git_branch = "dev_unix_sri"  # FIXME: update this as needed
+        # self.git_branch = "dev_unix_lockfiles"  # FIXME: update this as needed
 
     def get_task_commands(self, tournament_zip, tournament_name, suffix=None):
 
@@ -31,6 +31,8 @@ class AgentBatchCommands:
             return self._get_gt_pogo_agent_commands(tournament_zip, tournament_name, suffix)
         elif self.agent_type == AgentType.GT_HG_BASELINE:
             return self._get_gt_huga_1_agent_commands(tournament_zip, tournament_name, suffix)
+        elif self.agent_type == AgentType.GT_HG_BASELINE_MATLAB:
+            return self._get_gt_huga_2_agent_commands(tournament_zip, tournament_name, suffix)
         # TODO: implement additional agent-specific commands here
         else:
             return self._get_default_agent_commands(tournament_zip, tournament_name, suffix)
@@ -282,6 +284,40 @@ class AgentBatchCommands:
 
         return setup + github + copy_files + copy_agent + launch_polycraft
 
+    def _get_gt_huga_2_agent_commands(self, tzip, tname, suffix):
+        if suffix is None:
+            suffix = ""
+
+        setup = self._setup_vm()
+
+        github = self._get_github_commands()
+
+        copy_files = [
+            'cd $HOME',
+            'cp secret_real.ini polycraft/pal/',
+            f'unzip {tzip}',
+            f'mv {tname}/ polycraft/pal/',
+            'echo "[DN_MSG]files copied into pal\n"',
+            # 'cp setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
+            # 'mv setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
+        ]
+
+        copy_agent = [
+            'cd $HOME/polycraft/pal',
+            'mkdir agents/',
+            'cp -r ' + self.application_dict['agent_gt_huga_matlab'] + '/* ./agents/',
+            'echo "[DN_MSG]agent moved into place\n"',
+        ]
+
+        install_matlab = [
+
+            'sudo ./install -mode silent -agreeToLicense yes'
+
+        ]
+
+        polycraft_launch_cmd = "python Hunter_Gatherer_agent_3_vDN_EDITS.py"
+
+        pass
 
 
 if __name__ == '__main__':
