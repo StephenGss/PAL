@@ -499,7 +499,7 @@ class LaunchTournament:
         if azure.is_connected():
             azure.threaded_update_logs()
         else:
-            self.debug_log("Azure Connection Error - cannot connect to SQL database")
+            self.debug_log.message("Azure Connection Error - cannot connect to SQL database")
             # raise ConnectionError("Error - cannot update results table")
 
     def _game_over(self):
