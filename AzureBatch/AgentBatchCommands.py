@@ -9,6 +9,7 @@ class AgentType(Enum):
     GT_HG_BASELINE = 4
     GT_POGO_BASELINE = 5
     GT_HG_BASELINE_MATLAB = 6
+    GT_POGO_PLAN_BASELINE = 7
 
 class AgentBatchCommands:
 
@@ -33,6 +34,8 @@ class AgentBatchCommands:
             return self._get_gt_huga_1_agent_commands(tournament_zip, tournament_name, suffix)
         elif self.agent_type == AgentType.GT_HG_BASELINE_MATLAB:
             return self._get_gt_huga_2_agent_commands(tournament_zip, tournament_name, suffix)
+        elif self.agent_type == AgentType.GT_POGO_PLAN_BASELINE:
+            return self._get_gt_pogo_plan_agent_commands(tournament_zip, tournament_name, suffix)
         # TODO: implement additional agent-specific commands here
         else:
             return self._get_default_agent_commands(tournament_zip, tournament_name, suffix)
@@ -106,6 +109,9 @@ class AgentBatchCommands:
             'mkdir agents/',
             'cp -r ' + self.application_dict['agent_tufts'] + '/TUFTS\ 0617/* ./agents/',
             'echo "[DN_MSG]agent moved into place\n"',
+            'docker kill $(docker ps -q) || true',
+            'echo "[DN_MSG]attempted to kill running dockers\n"',
+
         ]
 
         launch_polycraft = [
@@ -161,8 +167,8 @@ class AgentBatchCommands:
             'cd $HOME/polycraft/pal',
             'mkdir agents/',
             'cp -r ' + self.application_dict['agent_sift'] + '/* ./agents/',
-            'mkdir ./agents/SIFT_SVN/',
-            'mv ./agents/SIFT\ 2020\ 06\ 16\ 1707/trunk/* ./agents/SIFT_SVN/',
+            # 'mkdir ./agents/SIFT_SVN/',
+            # 'mv ./agents/SIFT\ 2020\ 06\ 16\ 1707/trunk/* ./agents/SIFT_SVN/',
             # 'mv ./agents/SIFT\ \(copy\)/trunk/* ./agents/SIFT_SVN/',
             'echo "[DN_MSG]agent moved into place\n"',
         ]
@@ -244,6 +250,46 @@ class AgentBatchCommands:
 
         return setup + github + copy_files + copy_agent + launch_polycraft
 
+    def _get_gt_pogo_plan_agent_commands(self, tzip, tname, suffix):
+        if suffix is None:
+            suffix = ""
+
+        setup = self._setup_vm()
+
+        github = self._get_github_commands()
+
+        copy_files = [
+            'cd $HOME',
+            'cp secret_real.ini polycraft/pal/',
+            f'unzip {tzip}',
+            f'mv {tname}/ polycraft/pal/',
+            'echo "[DN_MSG]files copied into pal\n"',
+            # 'cp setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
+            # 'mv setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
+        ]
+
+        copy_agent = [
+            'cd $HOME/polycraft/pal',
+            'mkdir agents/',
+            'cp -r ' + self.application_dict['agent_gt_pogo_planner'] + '/* ./agents/',
+            'echo "[DN_MSG]agent moved into place\n"',
+        ]
+
+        polycraft_launch_cmd = "python 1_python_miner_PLANNER_FF_1_vDN_EDITS.py"
+
+        agent_directory = "../agents/pogo_stick_planner_agent/"
+
+        launch_polycraft = [
+            'cd $HOME/polycraft/pal/PolycraftAIGym',
+            'mkdir Logs',
+            'echo "[DN_MSG]hopefully moved into the right folder?\n"',
+            'export _JAVA_OPTIONS="-Xmx3G"',
+            f'python LaunchTournament.py -c 1000 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "{agent_directory}" -x "{polycraft_launch_cmd}"',
+        ]
+
+        return setup + github + copy_files + copy_agent + launch_polycraft
+
+
     def _get_gt_pogo_agent_commands(self, tzip, tname, suffix):
 
         if suffix is None:
@@ -307,17 +353,22 @@ class AgentBatchCommands:
             'mkdir agents/',
             'cp -r ' + self.application_dict['agent_gt_huga_matlab'] + '/* ./agents/',
             'echo "[DN_MSG]agent moved into place\n"',
+            'export LD_LIBRARY_PATH=/usr/local/MATLAB/MATLAB_Runtime/v98/runtime/glnxa64:/usr/local/MATLAB/MATLAB_Runtime/v98/bin/glnxa64:/usr/local/MATLAB/MATLAB_Runtime/v98/sys/os/glnxa64:/usr/local/MATLAB/MATLAB_Runtime/v98/extern/bin/glnxa64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}',
         ]
 
-        install_matlab = [
+        agent_directory = "../agents/GTech_HG_MATLAB_Agent/"
 
-            'sudo ./install -mode silent -agreeToLicense yes'
+        polycraft_launch_cmd = "./run_step_04_RL_DQN_simple_try_05_test_online_vDN_EDITS.sh /usr/local/MATLAB/MATLAB_Runtime/v98"
 
+        launch_polycraft = [
+            'cd $HOME/polycraft/pal/PolycraftAIGym',
+            'mkdir Logs',
+            'echo "[DN_MSG]hopefully moved into the right folder?\n"',
+            'export _JAVA_OPTIONS="-Xmx3G"',
+            f'python LaunchTournament.py -c 1000 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "{agent_directory}" -x "{polycraft_launch_cmd}"',
         ]
 
-        polycraft_launch_cmd = "python Hunter_Gatherer_agent_3_vDN_EDITS.py"
-
-        pass
+        return setup + github + copy_files + copy_agent + launch_polycraft
 
 
 if __name__ == '__main__':

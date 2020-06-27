@@ -45,7 +45,7 @@ _CONTAINER_NAME = 'batch-workflow-fog-of-war'
 
 ### SIFT ###
 APPLICATION_ID = 'agent_sift'
-APPLICATION_VERSION = '8'
+APPLICATION_VERSION = '9'
 APPLICATION_ID_FIXED = 'agent_sift'
 APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + APPLICATION_ID_FIXED + '_' + APPLICATION_VERSION
 ### TUFTS ###
@@ -57,10 +57,21 @@ GT_APP_ID = 'agent_gt_pogo'
 GT_APPLICATION_VERSION = '6'
 GT_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + GT_APP_ID + '_' + GT_APPLICATION_VERSION
 
+### GT Plan ###
+GT_PLAN_APP_ID = 'agent_gt_pogo_planner'
+GT_PLAN_APPLICATION_VERSION = '1'
+GT_PLAN_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + GT_PLAN_APP_ID + '_' + GT_PLAN_APPLICATION_VERSION
+
+
 ### GT HG ###
 GT_HUGA_APP_ID = 'agent_gt_huga_1'
 GT_HUGA_APP_VERSION = '1'
 GT_HUGA_APP_DIR = '$AZ_BATCH_APP_PACKAGE_' + GT_HUGA_APP_ID + '_' + GT_HUGA_APP_VERSION
+
+### GT HG MATLAB ###
+GT_HUGA_MLAB_APP_ID = 'agent_gt_huga_matlab'
+GT_HUGA_MLAB_APP_VERSION = '1'
+GT_HUGA_MLAB_APP_DIR = '$AZ_BATCH_APP_PACKAGE_' + GT_HUGA_MLAB_APP_ID + '_' + GT_HUGA_MLAB_APP_VERSION
 
 ### SRI ###
 SRI_APP_ID = 'agent_sri'
@@ -73,6 +84,8 @@ APP_DICT = {'agent_sift': APPLICATION_DIR,
             'agent_gt_pogo': GT_APPLICATION_DIR,
             'agent_sri': SRI_APPLICATION_DIR,
             'agent_gt_huga_1': GT_HUGA_APP_DIR,
+            'agent_gt_huga_matlab': GT_HUGA_MLAB_APP_DIR,
+            'agent_gt_pogo_planner': GT_PLAN_APPLICATION_DIR,
             }
 
 # _SIMPLE_TASK_NAME = 'simple_task.py'
@@ -116,6 +129,8 @@ class AzureBatchLaunchTournaments:
             batchmodels.ApplicationPackageReference(application_id=GT_APP_ID, version=GT_APPLICATION_VERSION),
             batchmodels.ApplicationPackageReference(application_id=SRI_APP_ID, version=SRI_VERSION),
             batchmodels.ApplicationPackageReference(application_id=GT_HUGA_APP_ID, version=GT_HUGA_APP_VERSION),
+            batchmodels.ApplicationPackageReference(application_id=GT_HUGA_MLAB_APP_ID, version=GT_HUGA_MLAB_APP_VERSION),
+            batchmodels.ApplicationPackageReference(application_id=GT_PLAN_APP_ID, version=GT_PLAN_APPLICATION_VERSION),
         ]
 
         # Create User Accounts
@@ -165,6 +180,12 @@ class AzureBatchLaunchTournaments:
                     'apt-get update',
                     'apt-get update && apt-get install cifs-utils && sudo mkdir -p /mnt/PolycraftFileShare',
                     f'mount -t cifs //polycrafttournamentdata.file.core.windows.net/pal-sift /mnt/PolycraftFileShare -o vers=3.0,username={self.global_config.get("Storage", "storageaccountname")},password={self.global_config.get("Storage", "storageaccountkey")},dir_mode=0777,file_mode=0777,serverino && ls /mnt/PolycraftFileShare',
+                    'mkdir ~/matlab && cp /mnt/PolycraftFileShare/setup/MATLAB_Runtime_R2020a_Update_2_glnxa64.zip ~/matlab/',
+                    'cd ~/matlab',
+                    'apt install unzip -y',
+                    'unzip MATLAB_Runtime_R2020a_Update_2_glnxa64.zip',
+                    './install -mode silent -agreeToLicense yes',
+                    'export LD_LIBRARY_PATH=/usr/local/MATLAB/MATLAB_Runtime/v98/runtime/glnxa64:/usr/local/MATLAB/MATLAB_Runtime/v98/bin/glnxa64:/usr/local/MATLAB/MATLAB_Runtime/v98/sys/os/glnxa64:/usr/local/MATLAB/MATLAB_Runtime/v98/extern/bin/glnxa64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}',
                     # 'sudo apt-get install -y python3-pip'
                 ]),
                 # TODO: include add'l resource files for initial startup
@@ -197,7 +218,9 @@ class AzureBatchLaunchTournaments:
         """
         job = batchmodels.JobAddParameter(
             id=job_id,
-            pool_info=batchmodels.PoolInformation(pool_id=pool_id))
+            pool_info=batchmodels.PoolInformation(pool_id=pool_id),
+            on_all_tasks_complete='terminateJob',
+        )
 
         batch_client.job.add(job)
 
@@ -224,6 +247,10 @@ class AzureBatchLaunchTournaments:
                 batchmodels.ApplicationPackageReference(application_id=GT_APP_ID, version=GT_APPLICATION_VERSION),
                 batchmodels.ApplicationPackageReference(application_id=SRI_APP_ID, version=SRI_VERSION),
                 batchmodels.ApplicationPackageReference(application_id=GT_HUGA_APP_ID, version=GT_HUGA_APP_VERSION),
+                batchmodels.ApplicationPackageReference(application_id=GT_HUGA_MLAB_APP_ID,
+                                                        version=GT_HUGA_MLAB_APP_VERSION),
+                batchmodels.ApplicationPackageReference(application_id=GT_PLAN_APP_ID,
+                                                        version=GT_PLAN_APPLICATION_VERSION),
             ]
 
             user_identity = batch.models.UserIdentity(
@@ -268,9 +295,14 @@ class AzureBatchLaunchTournaments:
                 '../sift_tournament_agent_launcher.sh',
                 datetime.datetime.utcnow() + datetime.timedelta(weeks=2))
 
+            constraint = batchmodels.TaskConstraints(
+                retention_time=datetime.timedelta(minutes=30),
+            )
+
             task = batchmodels.TaskAddParameter(
                 id=f"Tournament-{str(count)}-{filename}",
                 command_line=helpers.wrap_commands_in_shell('linux', cmds),
+                constraints=constraint,
                 resource_files=[
                     batchmodels.ResourceFile(
                         file_path=file,
@@ -440,6 +472,19 @@ def get_tournaments(test_type,tournament_directory):
     output = list(set(output))
     return output
 
+def launch_pools_per_novelty(agent, agentType, test_type, global_config, pool, suffix, tournament_directory, ):
+    r=f'{os.getcwd()}/{tournament_directory}'
+    pools = {f'{a}': f'{r}/{a}/' for a in os.listdir(r) if not '.' in a}
+    print(pools)
+    for pool_name, tournaments in pools.items():
+        tournaments_to_launch = get_tournaments(test_type, f'{tournament_directory}{pool_name}/')
+        print(f"pool name: {pool}{pool_name}")
+        print(tournaments_to_launch)
+        for folder in tournaments_to_launch:
+            # pass
+            agent_pool = AzureBatchLaunchTournaments(agent, agentType, folder, global_config, f"{pool}{pool_name}", suffix)
+            agent_pool.execute_sample()
+
 
 from enum import Enum
 
@@ -451,35 +496,255 @@ class TestType(Enum):
 
 
 if __name__ == '__main__':
-    """
-    AS of 6/19/2020 11:50AM CT:
-    Latest AGENT NAMES:
-        SIFT:               SIFT_AGENT_TEST_V5
-        GT_POGO_BASELINE:   GT_AGENT_2_TEST_V3
-        TUFTS:              TUFTS_AGENT_TEST_V3
-        SRI:                SRI_AGENT_TEST_V2
-        GT_HUGA_BASELINE:   GT_Trained_HUGA_1_V1
-    """
-
     global_config = configparser.ConfigParser()
     global_config.read(helpers._SAMPLES_CONFIG_FILE_NAME)
+    #
+    global_config.set('DEFAULT', 'poolvmcount', '2')
 
-    """
-    Want to change the Pool size? Edit AzureBatch.cfg
-    OR
-    run this, changing 18 to whatever number you'd like:
-    global_config.set('DEFAULT', 'poolvmcount', '18')
-    """
-    # global_config.set('DEFAULT', 'poolvmcount', '18')
+    # launch_pools_per_novelty(
+    #     "TUFTS_AGENT_TEST_V3",
+    #     AgentType.TUFTS,
+    #     TestType.STAGE5,
+    #     global_config,
+    #     pool="POGO_TUFTS_",
+    #     suffix="_062622",
+    #     tournament_directory="../tournaments/old/tufts_0626_launch/",
+    # )
+
+    launch_tournament_wrapper("GT_AGENT_POGO_PLAN_V1",
+                              AgentType.GT_POGO_PLAN_BASELINE,
+                              TestType.STAGE5,
+                              global_config,
+                              pool="POGO_GT_PLAN_R2_L1T2",
+                              suffix="_062622",
+                              tournament_directory="../tournaments/unknown_all_tournaments_to_TA2/pogo/POGO_L01_T01_S01_AXE/",
+                              )
+    #
+    # launch_tournament_wrapper("GT_AGENT_POGO_PLAN_V1",
+    #                           AgentType.GT_POGO_PLAN_BASELINE,
+    #                           TestType.STAGE5,
+    #                           global_config,
+    #                           pool="POGO_GT_PLAN_R2_L2",
+    #                           suffix="_062622",
+    #                           tournament_directory="../tournaments/unknown_all_tournaments_to_TA2/pogo/POGO_L02_T01_S01_TREES/",
+    #                           )
+    #
+    #
+    # launch_tournament_wrapper("GT_AGENT_POGO_PLAN_V1",
+    #                           AgentType.GT_POGO_PLAN_BASELINE,
+    #                           TestType.STAGE5,
+    #                           global_config,
+    #                           pool="POGO_GT_PLAN_R2_L3",
+    #                           suffix="_062622",
+    #                           tournament_directory="../tournaments/unknown_all_tournaments_to_TA2/pogo/POGO_L03_T01_S01_FAKE_RECIPE_O/",
+    #                           )
+
+    # launch_tournament_wrapper("GT_AGENT_POGO_PLAN_V1"
+    #                           AgentType.GT_POGO_PLAN_BASELINE,
+    #
+    #                           )
+
+    # global_config.set('DEFAULT', 'poolvmcount', '12')
+    # #
+    # launch_tournament_wrapper("GT_HUGA_MLAB_V1",
+    #                           AgentType.GT_HG_BASELINE_MATLAB,
+    #                           TestType.STAGE5,
+    #                           global_config,
+    #                           pool="HUGA_GT_MLAB_L1",
+    #                           suffix="_062422",
+    #                           tournament_directory="../tournaments/unknown_all_tournaments_to_TA2/huga/HUGA_L01_T02_S02_DETRITUS/")
+    #
+    # launch_tournament_wrapper("GT_HUGA_MLAB_V1",
+    #                           AgentType.GT_HG_BASELINE_MATLAB,
+    #                           TestType.STAGE5,
+    #                           global_config,
+    #                           pool="HUGA_GT_MLAB_L2",
+    #                           suffix="_062422",
+    #                           tournament_directory="../tournaments/unknown_all_tournaments_to_TA2/huga/HUGA_L02_T01_S01_WALL_COLOR/")
+    #
+    # launch_tournament_wrapper("GT_HUGA_MLAB_V1",
+    #                           AgentType.GT_HG_BASELINE_MATLAB,
+    #                           TestType.STAGE5,
+    #                           global_config,
+    #                           pool="HUGA_GT_MLAB_L3",
+    #                           suffix="_062422",
+    #                           tournament_directory="../tournaments/unknown_all_tournaments_to_TA2/huga/HUGA_L03_T01_S01_SCREEN_FLIP/")
+
+    # #
+    # launch_tournament_wrapper("TUFTS_AGENT_TEST_V3",
+    #                           AgentType.TUFTS,
+    #                           TestType.STAGE5,
+    #                           global_config,
+    #                           pool="POGO_TUFTS_R2_L1",
+    #                           suffix="_062221",
+    #                           tournament_directory="../tournaments/unknown_all_tournaments_to_TA2/pogo/POGO_L01_T01_S01_AXE/",
+    #                           )
 
     # launch_tournament_wrapper("TUFTS_AGENT_TEST_V3",
     #                           AgentType.TUFTS,
     #                           TestType.STAGE5,
     #                           global_config,
-    #                           pool="POGO_TUFTS_REAPER_CHECK",
-    #                           suffix="_061911",
-    #                           tournament_directory="../tournaments/all_tournaments_to_TA2/reaper_check/",
+    #                           pool="POGO_TUFTS_R2_L2",
+    #                           suffix="_062221",
+    #                           tournament_directory="../tournaments/unknown_all_tournaments_to_TA2/pogo/POGO_L02_T01_S01_TREES/",
     #                           )
+    #
+
+    # launch_tournament_wrapper("TUFTS_AGENT_TEST_V3",
+    #                           AgentType.TUFTS,
+    #                           TestType.STAGE5,
+    #                           global_config,
+    #                           pool="POGO_TUFTS_VIRGIN_X100",
+    #                           suffix="_062322",
+    #                           tournament_directory="../tournaments/unknown_all_tournaments_to_TA2/pogo/POGO_L03_T01_S01_FAKE_RECIPE_O/",
+    #                           )
+
+    # launch_tournament_wrapper("TUFTS_AGENT_TEST_V3",
+    #                           AgentType.TUFTS,
+    #                           TestType.STAGE5,
+    #                           global_config,
+    #                           pool="POGO_TUFTS_VIRGIN_X100",
+    #                           suffix="_062322",
+    #                           tournament_directory="../tournaments/pogo_no_novelty/",
+    #                           )
+
+   # global_config.set('DEFAULT', 'poolvmcount', '16')
+
+    # launch_tournament_wrapper(
+    #     agent="SIFT_AGENT_TEST_V6",
+    #     agentType=AgentType.SIFT,
+    #     test_type=TestType.STAGE5,
+    #     global_config=global_config,
+    #     pool="POGO_SIFT_L1_T1_6",
+    #     suffix="_062611",
+    #     tournament_directory="../tournaments/old/pogo_lvl1a/",
+    # )
+
+    # launch_tournament_wrapper(
+    #     agent="SIFT_AGENT_TEST_V6",
+    #     agentType=AgentType.SIFT,
+    #     test_type=TestType.STAGE5,
+    #     global_config=global_config,
+    #     pool="POGO_SIFT_L1_T1_6b",
+    #     suffix="_062611",
+    #     tournament_directory="../tournaments/old/pogo_lvl1b/",
+    # )
+
+    # global_config.set('DEFAULT', 'poolvmcount', '18')
+    #
+    # launch_tournament_wrapper(
+    #     agent="SIFT_AGENT_TEST_V6",
+    #     agentType=AgentType.SIFT,
+    #     test_type=TestType.STAGE5,
+    #     global_config=global_config,
+    #     pool="POGO_SIFT_L2_T1_6",
+    #     suffix="_062611",
+    #     tournament_directory="../tournaments/old/pogo_lvl2a/",
+    # )
+    #
+    # launch_tournament_wrapper(
+    #     agent="SIFT_AGENT_TEST_V6",
+    #     agentType=AgentType.SIFT,
+    #     test_type=TestType.STAGE5,
+    #     global_config=global_config,
+    #     pool="POGO_SIFT_L2_T1_6b",
+    #     suffix="_062611",
+    #     tournament_directory="../tournaments/old/pogo_lvl2b/",
+    # )
+    #
+    # launch_tournament_wrapper(
+    #     agent="SIFT_AGENT_TEST_V6",
+    #     agentType=AgentType.SIFT,
+    #     test_type=TestType.STAGE5,
+    #     global_config=global_config,
+    #     pool="POGO_SIFT_L3_T1_6",
+    #     suffix="_062611",
+    #     tournament_directory="../tournaments/old/pogo_lvl3a/",
+    # )
+    #
+    # launch_tournament_wrapper(
+    #     agent="SIFT_AGENT_TEST_V6",
+    #     agentType=AgentType.SIFT,
+    #     test_type=TestType.STAGE5,
+    #     global_config=global_config,
+    #     pool="POGO_SIFT_L3_T1_6b",
+    #     suffix="_062611",
+    #     tournament_directory="../tournaments/old/pogo_lvl3b/",
+    # )
+
+    # launch_tournament_wrapper(
+    #     agent="TUFTS_AGENT_TEST_V3",
+    #     agentType=AgentType.TUFTS,
+    #     test_type=TestType.STAGE5,
+    #     global_config=global_config,
+    #     pool="POGO_TUFTS_L2_T7",
+    #     suffix="_062522",
+    #     tournament_directory="../tournaments/pogo_l2_t7/",
+    # )
+
+    # launch_tournament_wrapper(
+    #     "TUFTS_AGENT_TEST_V3",
+    #     AgentType.TUFTS,
+    #     TestType.STAGE5,
+    #     global_config,
+    #     pool="POGO_TUFTS_X100_1a",
+    #     suffix="_062423",
+    #     tournament_directory="../tournaments/pogo_lvl1a/",
+    # )
+
+    # global_config.set('DEFAULT', 'poolvmcount', '12')
+
+    # launch_tournament_wrapper(
+    #     "TUFTS_AGENT_TEST_V3",
+    #     AgentType.TUFTS,
+    #     TestType.STAGE5,
+    #     global_config,
+    #     pool="POGO_TUFTS_X100_3a",
+    #     suffix="_062423",
+    #     tournament_directory="../tournaments/pogo_lvl3a/",
+    # )
+    #
+    # launch_tournament_wrapper(
+    #     "TUFTS_AGENT_TEST_V3",
+    #     AgentType.TUFTS,
+    #     TestType.STAGE5,
+    #     global_config,
+    #     pool="POGO_TUFTS_X100_3b",
+    #     suffix="_062423",
+    #     tournament_directory="../tournaments/pogo_lvl3b/",
+    # )
+    #
+    # global_config.set('DEFAULT', 'poolvmcount', '18')
+    #
+    # launch_tournament_wrapper(
+    #     "TUFTS_AGENT_TEST_V3",
+    #     AgentType.TUFTS,
+    #     TestType.STAGE5,
+    #     global_config,
+    #     pool="POGO_TUFTS_X100_1b",
+    #     suffix="_062423",
+    #     tournament_directory="../tournaments/pogo_lvl1b/",
+    # )
+    # #
+    # launch_tournament_wrapper(
+    #     "TUFTS_AGENT_TEST_V3",
+    #     AgentType.TUFTS,
+    #     TestType.STAGE5,
+    #     global_config,
+    #     pool="POGO_TUFTS_X100_2a",
+    #     suffix="_062423",
+    #     tournament_directory="../tournaments/pogo_lvl2a/",
+    # )
+    #
+    # launch_tournament_wrapper(
+    #     "TUFTS_AGENT_TEST_V3",
+    #     AgentType.TUFTS,
+    #     TestType.STAGE5,
+    #     global_config,
+    #     pool="POGO_TUFTS_X100_2b",
+    #     suffix="_062423",
+    #     tournament_directory="../tournaments/pogo_lvl2b/",
+    # )
 
     # launch_tournament_wrapper(
     #     agent="SRI_AGENT_TEST_V2",
@@ -487,20 +752,54 @@ if __name__ == '__main__':
     #     test_type=TestType.STAGE6,
     #     global_config=global_config,
     #     pool="HUGA_SRI_VIRGIN_1000",
-    #     suffix="_061911",
+    #     suffix="_061913",
     #     tournament_directory="../tournaments/all_tournaments_to_TA2/huga/HUGA_L00_T01_S01_VIRGIN/",
     # )
 
+
+    #
     # launch_tournament_wrapper(
     #     agent="SIFT_AGENT_TEST_V5",
     #     agentType=AgentType.SIFT,
     #     test_type=TestType.STAGE5,
     #     global_config=global_config,
-    #     pool="POGO_SIFT_X100_1a",
-    #     suffix="_061717",
-    #     tournament_directory="../tournaments/pogo_lvl1a/",
+    #     pool="POGO_SIFT_X100_TREES2",
+    #     suffix="_061619",
+    #     tournament_directory="../tournaments/all_tournaments_to_TA2/pogo/POGO_L02_T01_S01_TREES/",
+    #
+    # )
+    #
+    # launch_tournament_wrapper(
+    #     agent="SIFT_AGENT_TEST_V5",
+    #     agentType=AgentType.SIFT,
+    #     test_type=TestType.STAGE5,
+    #     global_config=global_config,
+    #     pool="POGO_SIFT_X100_AXE2",
+    #     suffix="_061619",
+    #     tournament_directory="../tournaments/all_tournaments_to_TA2/pogo/POGO_L01_T01_S01_AXE/",
+    #
     # )
 
+
+    # launch_tournament_wrapper( "SIFT_AGENT_TEST_V4",
+    #                            AgentType.SIFT,
+    #                            TestType.STAGE6,
+    #                            global_config,
+    #                            pool="POGO_SIFT_X1000_VIRGIN",
+    #                            suffix="_061114",
+    #                            tournament_directory="../tournaments/all_tournaments_to_TA2/pogo/POGO_L00_T01_S01_VIRGIN/",
+    #                         )
+    #
+
+    #
+    # launch_tournament_wrapper("TUFTS_AGENT_TEST_02",
+    #                           AgentType.TUFTS,
+    #                           TestType.STAGE5,
+    #                           global_config,
+    #                           pool="POGO_TUFTS_X100_EMH",
+    #                           suffix="_061001",
+    #                           tournament_directory="../tournaments/EMH_pogo_provided/",
+    #                           )
     # launch_tournament_wrapper("GT_AGENT_2_TEST_V3",
     #                           AgentType.GT_POGO_BASELINE,
     #                           TestType.STAGE5,
