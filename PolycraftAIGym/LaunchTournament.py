@@ -315,6 +315,12 @@ class LaunchTournament:
                 # If agent started & PAL crashes, kill the main thread.
                 if self.pal_client_process.returncode is not None:
                     break
+
+                # If upload thread has stopped prematurely, then there is cause for concern.
+                if self.upload_thread is not None and not self.upload_thread.is_alive():
+                    self.debug_log.message(f"Alert: Upload Thread has ended. Tournament Complete or Agent thread has hung")
+                    #self._tournament_completed()
+                    break
             # If agent hasn't started yet but PAL crashes, re-start PAL.
             elif self.pal_client_process.returncode is not None:
                 if self.current_state == State.INIT_PAL and self.restart_PAL_counter < 10:
@@ -460,7 +466,7 @@ class LaunchTournament:
         if exitCode == 0 or exitCode is None:
             return
         else:
-            # self._kill_process_children(5)  # FixMe: is this needed?
+            self._kill_process_children(5)  # FixMe: is this needed?
             raise subprocess.CalledProcessError(exitCode, "")
 
     def _launch_tournament_manager(self):
