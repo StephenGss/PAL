@@ -66,6 +66,7 @@ class LaunchTournament:
         self.tournament_in_progress = True
         self.agent_started = False
         self.upload_thread = None
+        self.upload_thread_running = False
 
         ## Results
         self.score_dict = {}
@@ -317,9 +318,9 @@ class LaunchTournament:
                     break
 
                 # If upload thread has stopped prematurely, then there is cause for concern.
-                if self.upload_thread is not None and not self.upload_thread.is_alive():
+                if self.upload_thread_running and self.upload_thread is not None and not self.upload_thread.is_alive():
                     self.debug_log.message(f"Alert: Upload Thread has ended. Tournament Complete or Agent thread has hung")
-                    #self._tournament_completed()
+                    self._tournament_completed()
                     break
             # If agent hasn't started yet but PAL crashes, re-start PAL.
             elif self.pal_client_process.returncode is not None:
@@ -463,9 +464,15 @@ class LaunchTournament:
         exitCode = self.pal_client_process.returncode
 
         # TODO: Safe to remove? Not sure how this is helpful.
-        if exitCode == 0 or exitCode is None:
+        if exitCode == 0:
+            print("Tournament Completed -ExitCode 0")
+            return
+        elif exitCode is None:
+            self._kill_process_children(5)  # FixMe: is this needed?
+            print("ERROR: tournament incomplete - critical thread failure during execution. Agent Hung?")
             return
         else:
+            print(f"ERROR: ExitCode: {exitCode}")
             self._kill_process_children(5)  # FixMe: is this needed?
             raise subprocess.CalledProcessError(exitCode, "")
 
@@ -503,6 +510,7 @@ class LaunchTournament:
         upload_log = PalMessenger.PalMessenger(True, True, upload_file, log_note="UPLOAD: ")
         azure = AzureConnectionService.AzureConnectionService(upload_log)
         if azure.is_connected():
+            self.upload_thread_running = True
             azure.threaded_update_logs()
         else:
             self.debug_log.message("Azure Connection Error - cannot connect to SQL database")

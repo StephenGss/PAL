@@ -210,6 +210,11 @@ class AzureConnectionService:
         for dict in all_vals.values():
             rows_to_add.extend([tuple(dict.values())])
 
+        # Check to see if any steps were taken to prevent PKEY errors
+        if len(rows_to_add) == 0:
+            self.debug_log.message(f"Not Sending Game Details - No Steps Taken!: {rows_to_add}")
+            return
+
         self.debug_log.message(f"Sending Game Details to SQL: {rows_to_add}")
 
         count = 0
