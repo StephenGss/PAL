@@ -49,7 +49,7 @@ class AgentBatchCommands:
 
         github = self._get_github_commands()
 
-        agent_folder_name = 'sri-dryrun-20200617'
+        agent_folder_name = 'sri-dryrun-20200626'
 
         copy_files = [
             'cd $HOME',
