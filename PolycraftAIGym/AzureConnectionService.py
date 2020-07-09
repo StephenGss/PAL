@@ -5,10 +5,10 @@ import os, time
 from os import path
 import re
 import pyodbc
-import config as CONFIG
+import PolycraftAIGym.config as CONFIG
 from collections import OrderedDict
 import distutils, distutils.util
-from PalMessenger import PalMessenger
+from PolycraftAIGym.PalMessenger import PalMessenger
 from azure.core.exceptions import ServiceRequestError, ServiceRequestTimeoutError, ServiceResponseError
 import configparser
 import gzip
