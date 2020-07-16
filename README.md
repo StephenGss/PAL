@@ -204,9 +204,9 @@ The Polycraft World AI API consists of 28 total different API commands at Releas
 * **TILT** -90
 	* alters player's vertical facing direction (pitch) in 15-degree increments (no interpolation)
 	* also can be parameterized with FORWARD, DOWN and UP
-* **TP_TO** 20 4 21 
+* **TP_TO** 20,4,21 
 	* as in TELEPORT without adjusting yaw and pitch
-* **TP_TO** 20 4 21 2
+* **TP_TO** 20,4,21 2
 	* as in teleport without adjusting yaw and pitch, but with an offset straight backwards
 	* offset must yield allowable move_to location or command fails
 * **TP_TO** 7101
