@@ -2,8 +2,11 @@ from PolycraftAIGym.AzureConnectionService import AzureConnectionService
 from PolycraftAIGym.PalMessenger import PalMessenger
 import pandas as pd
 import numpy as np
+from enum import Enum
 
 debug = False
+
+
 
 def stack_baseline(group, baselineA):
     # group.loc[:, 'type'] = 'NOVEL'
@@ -138,7 +141,7 @@ def get_data():
 
 # get_data()
 
-def upload_to_sql(csv_file, tbl_name):
+def upload_to_sql(csv_file, tbl_name='LOOKUP_PERFORMANCE_ZONES'):
     df = pd.read_csv(csv_file)
     rows_to_add = []
     for index, row in df.iterrows():
