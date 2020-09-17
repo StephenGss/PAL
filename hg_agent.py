@@ -83,7 +83,7 @@ while True:
                 break
         data_dict = json.loads(data)
         print(data_dict)
-        time.sleep(0.1)
+        time.sleep(0.02)
 
 sock.close()
 
