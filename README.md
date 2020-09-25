@@ -1,5 +1,5 @@
 # Release 1.2
-The latest release of the Polycraft Tournament Manager includes updates across the board to better facilitate
+The latest release of the Polycraft Tournament Manager includes minor updates across the board to better facilitate
 running large scale tournaments in a robust fashion. Please see the Key Updates section
 below for a quick overview of the updates and read the Setup and Usage sections to understand how to run it. 
 
@@ -9,6 +9,12 @@ Our test bench uses a few hundred cores on Azure Batch running Ubuntu 18.04 LTS 
 Your mileage will vary if using Windows. 
 
 ## Key Updates
+### Release 1.2
+* New Environment variable SENSE_SCREEN_FORMAT to set default image compression format. This can directly affect performance on different systems when the agent calls SENSE_SCREEN. Default is PNG, but on many systems PNG compression can take many ms to process. When this process takes more than 50ms it can slow down game performance if called on every action.  It is recommended to test different options to increase performance. Options include: {"PNG", "BMP", "JPEG", "JPG", "WBMP", "GIF"}.
+* New HUGA lvl 0 novelties
+    * Wall and floor textures are now randomly picked between 32 different variations to give training diversity and better distinctions between walls and floors for visual agents.
+    * Pathways in walls are now randomly moved around and there will be between 3 and 5 pathways total.
+### Release 1.1
 * config.py (new file) now contains key configurations necessary to launch tournaments. These configurations can be edited through command line arguments, enabling other scripts to "git pull" & execute this code without having to make edits to any files.
 * Game JSONs are now read from a directory containing a "Tournament" of game JSONs. 
     * JSON zips of 10, 100, & 1000 game tournaments __will be provided separately__. Usage instructions will be attached.
