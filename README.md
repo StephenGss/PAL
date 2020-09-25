@@ -1,4 +1,4 @@
-# Release 1.1
+# Release 1.2
 The latest release of the Polycraft Tournament Manager includes updates across the board to better facilitate
 running large scale tournaments in a robust fashion. Please see the Key Updates section
 below for a quick overview of the updates and read the Setup and Usage sections to understand how to run it. 
@@ -23,7 +23,7 @@ Your mileage will vary if using Windows.
 # Installation:
 ## 1. Ubuntu
 1. If you haven't already, pull this branch of the repository to your work directory:
-    `git clone -b release_1.1 --single-branch https://github.com/StephenGss/pal.git`
+    `git clone -b release_1.2 --single-branch https://github.com/StephenGss/pal.git`
 1. For a fresh install:
     * navigate to polycraft/pal/setup/ and execute `./setup_linux_shortened.sh` (user will need sudo permissions to wget JAVA).
     * We have also provided our current setup scripts in that folder (they include a few additional packages enabling us to upload tournament results to SQL) for your reference.
@@ -164,7 +164,7 @@ The Polycraft World AI API consists of 28 total different API commands at Releas
 * Dev commands must be enabled by setting a client virtual machine argument: "-Ddev=True" Details on setting this outside of a development environment are still being worked out, as solutions are fickle and system dependent. Please contact us if you need these commands.
 * **CHAT** "Hello world."
 * **CHAT** /give @p minecraft:stick
-	* not used in DRY-RUN Tournaments, but active for debugging/training/development
+	* not cuurently used in evaluation Tournaments, but active for debugging/training/development
 * The following function on the cloud virtual machine for the test harness.
 	* **CREATE_NOVELTY_VARIATIONS** -d ../available_tests/hg_2.X.json -s 42 -i 60
 	* **CREATE_NOVELTY_VARIATIONS** -d ../ available_tests/pogo_2.X.json -s -37489 -i 10
