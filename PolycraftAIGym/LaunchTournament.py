@@ -663,6 +663,7 @@ class LaunchTournament:
         # noTODO: Flag games where we communicate to agent that novelty exists - are flagged in self._record_score()
         """
         if self.game_index == 0:
+            self.tm_thread.queue.put("SPEED " + str(CONFIG.SPEED))
             self.tm_thread.queue.put("LAUNCH domain " + self.games[self.game_index])
             self.debug_log.message("LAUNCH domain command issued")
 
@@ -762,6 +763,9 @@ if __name__ == "__main__":
         elif opt in ("-i", "--max-time"):
             print(f"Max Time (sec): {arg}")
             CONFIG.MAX_TIME = int(arg)
+        elif opt in ("-s", "--speed"):
+            print(f"Speed: {arg} Ticks per second")
+            CONFIG.SPEED = int(arg)
 
     pal = LaunchTournament(os='UNIX')  # TODO: Remove the os command line argument.
     pal.execute()

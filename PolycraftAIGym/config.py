@@ -35,3 +35,4 @@ AGENT_COMMAND_UNIX = "python hg_agent.py"           # change using -x <bash cmd 
 AGENT_ID = f"MY_AGENT_ID"                           # change using -a <agent_name>
 GAME_COUNT = 25                                     # change using -c <count>
 GAMES_FOLDER = "../change/me/please/"               # change using -g <rel_path/to/games/folder>
+SPEED = 20                                          # change using -s <ticks_per_second>
