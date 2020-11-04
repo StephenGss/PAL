@@ -10,6 +10,7 @@ class AgentType(Enum):
     GT_POGO_BASELINE = 5
     GT_HG_BASELINE_MATLAB = 6
     GT_POGO_PLAN_BASELINE = 7
+    RAYTHEON = 8
 
 class AgentBatchCommands:
 
@@ -36,6 +37,8 @@ class AgentBatchCommands:
             return self._get_gt_huga_2_agent_commands(tournament_zip, tournament_name, suffix)
         elif self.agent_type == AgentType.GT_POGO_PLAN_BASELINE:
             return self._get_gt_pogo_plan_agent_commands(tournament_zip, tournament_name, suffix)
+        elif self.agent_type == AgentType.RAYTHEON:
+            return self._get_raytheon_agent_commands(tournament_zip, tournament_name, suffix)
         # TODO: implement additional agent-specific commands here
         else:
             return self._get_default_agent_commands(tournament_zip, tournament_name, suffix)
@@ -359,6 +362,47 @@ class AgentBatchCommands:
         agent_directory = "../agents/GTech_HG_MATLAB_Agent/"
 
         polycraft_launch_cmd = "./run_step_04_RL_DQN_simple_try_05_test_online_vDN_EDITS.sh /usr/local/MATLAB/MATLAB_Runtime/v98"
+
+        launch_polycraft = [
+            'cd $HOME/polycraft/pal/PolycraftAIGym',
+            'mkdir Logs',
+            'echo "[DN_MSG]hopefully moved into the right folder?\n"',
+            'export _JAVA_OPTIONS="-Xmx3G"',
+            f'python LaunchTournament.py -c 1000 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "{agent_directory}" -x "{polycraft_launch_cmd}"',
+        ]
+
+        return setup + github + copy_files + copy_agent + launch_polycraft
+
+    def _get_raytheon_agent_commands(self, tzip, tname, suffix):
+
+        if suffix is None:
+            suffix = ""
+
+        setup = self._setup_vm()
+
+        github = self._get_github_commands()
+
+        copy_files = [
+            'cd $HOME',
+            'cp secret_real.ini polycraft/pal/',
+            f'unzip {tzip}',
+            f'mv {tname}/ polycraft/pal/',
+            'echo "[DN_MSG]files copied into pal\n"',
+            # 'cp setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
+            # 'mv setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
+        ]
+
+        copy_agent = [
+            'cd $HOME/polycraft/pal',
+            'mkdir agents/',
+            'cp -r ' + self.application_dict['agent_raytheon'] + '/* ./agents/',
+            'sed -i -e "s+\'paths\' : \[+\'paths\' : \[\n        \'$HOME/polycraft/pal/agents/Huga/ImageProcessing/checkpoint.pth.tar\',+" agents/Huga/ImageProcessing/fast.py',
+            'echo "[DN_MSG]agent moved into place\n"',
+        ]
+
+        agent_directory = "../agents/"
+
+        polycraft_launch_cmd = "python -m Huga.TournamentAgent"
 
         launch_polycraft = [
             'cd $HOME/polycraft/pal/PolycraftAIGym',

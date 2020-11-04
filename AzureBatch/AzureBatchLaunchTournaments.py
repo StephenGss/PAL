@@ -48,6 +48,7 @@ APPLICATION_ID = 'agent_sift'
 APPLICATION_VERSION = '9'
 APPLICATION_ID_FIXED = 'agent_sift'
 APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + APPLICATION_ID_FIXED + '_' + APPLICATION_VERSION
+
 ### TUFTS ###
 TUFT_APPLICATION_ID = 'agent_tufts'
 TUFT_VERSION = '3'
@@ -78,6 +79,11 @@ SRI_APP_ID = 'agent_sri'
 SRI_VERSION = '2'
 SRI_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + SRI_APP_ID + '_' + SRI_VERSION
 
+### RAYTHEON ###
+RAYTHEON_APP_ID = 'agent_raytheon'  # APP ID
+RAYTHEON_VERSION = '1'
+RAYTHEON_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + RAYTHEON_APP_ID + '_' + RAYTHEON_VERSION
+
 
 APP_DICT = {'agent_sift': APPLICATION_DIR,
             'agent_tufts': TUFT_APPLICATION_DIR,
@@ -86,6 +92,7 @@ APP_DICT = {'agent_sift': APPLICATION_DIR,
             'agent_gt_huga_1': GT_HUGA_APP_DIR,
             'agent_gt_huga_matlab': GT_HUGA_MLAB_APP_DIR,
             'agent_gt_pogo_planner': GT_PLAN_APPLICATION_DIR,
+            'agent_raytheon': RAYTHEON_APPLICATION_DIR,
             }
 
 # _SIMPLE_TASK_NAME = 'simple_task.py'
@@ -131,6 +138,7 @@ class AzureBatchLaunchTournaments:
             batchmodels.ApplicationPackageReference(application_id=GT_HUGA_APP_ID, version=GT_HUGA_APP_VERSION),
             batchmodels.ApplicationPackageReference(application_id=GT_HUGA_MLAB_APP_ID, version=GT_HUGA_MLAB_APP_VERSION),
             batchmodels.ApplicationPackageReference(application_id=GT_PLAN_APP_ID, version=GT_PLAN_APPLICATION_VERSION),
+            batchmodels.ApplicationPackageReference(application_id=RAYTHEON_APP_ID, version=RAYTHEON_VERSION),
         ]
 
         # Create User Accounts
@@ -251,6 +259,7 @@ class AzureBatchLaunchTournaments:
                                                         version=GT_HUGA_MLAB_APP_VERSION),
                 batchmodels.ApplicationPackageReference(application_id=GT_PLAN_APP_ID,
                                                         version=GT_PLAN_APPLICATION_VERSION),
+                batchmodels.ApplicationPackageReference(application_id=RAYTHEON_APP_ID, version=RAYTHEON_VERSION),
             ]
 
             user_identity = batch.models.UserIdentity(
