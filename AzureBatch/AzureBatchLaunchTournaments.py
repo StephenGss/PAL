@@ -386,6 +386,8 @@ class AzureBatchLaunchTournaments:
         # Retry 5 times -- default is 3
         batch_client.config.retry_policy.retries = 5
 
+        # azureblob.BlobServiceClient()
+
         block_blob_client = azureblob.BlockBlobService(
             account_name=storage_account_name,
             account_key=storage_account_key,
@@ -471,7 +473,7 @@ def get_tournaments(test_type,tournament_directory):
     """
 
     output = []
-    for subdir, folders, files in os.walk(f'{os.getcwd()}/{tournament_directory}'):
+    for subdir, folders, files in os.walk(f'{tournament_directory}'):
         for file in files:
             if file.endswith('.zip') and test_type.value in file:
                 print(f'{subdir}/{file}')
@@ -508,7 +510,7 @@ if __name__ == '__main__':
     global_config = configparser.ConfigParser()
     global_config.read(helpers._SAMPLES_CONFIG_FILE_NAME)
     #
-    global_config.set('DEFAULT', 'poolvmcount', '2')
+    global_config.set('DEFAULT', 'poolvmcount', '5')
 
     # launch_pools_per_novelty(
     #     "TUFTS_AGENT_TEST_V3",
@@ -519,15 +521,26 @@ if __name__ == '__main__':
     #     suffix="_062622",
     #     tournament_directory="../tournaments/old/tufts_0626_launch/",
     # )
+    huga_files = "C:\\Users\\DhruvNarayanan\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\huga-6M-tournaments-zipped\\HUGA_L00_T01_S01"
 
-    launch_tournament_wrapper("GT_AGENT_POGO_PLAN_V1",
-                              AgentType.GT_POGO_PLAN_BASELINE,
-                              TestType.STAGE5,
-                              global_config,
-                              pool="POGO_GT_PLAN_R2_L1T2",
-                              suffix="_062622",
-                              tournament_directory="../tournaments/unknown_all_tournaments_to_TA2/pogo/POGO_L01_T01_S01_AXE/",
-                              )
+    launch_tournament_wrapper(
+        "RAYTHEON_AGENT_V1",
+        AgentType.RAYTHEON,
+        TestType.STAGE4,
+        global_config,
+        pool="HUGA_RAYTHEON_10g_Test3",
+        suffix="_110515",
+        tournament_directory=huga_files,
+    )
+
+    # launch_tournament_wrapper("GT_AGENT_POGO_PLAN_V1",
+    #                           AgentType.GT_POGO_PLAN_BASELINE,
+    #                           TestType.STAGE5,
+    #                           global_config,
+    #                           pool="POGO_GT_PLAN_R2_L1T2",
+    #                           suffix="_062622",
+    #                           tournament_directory="../tournaments/unknown_all_tournaments_to_TA2/pogo/POGO_L01_T01_S01_AXE/",
+    #                           )
     #
     # launch_tournament_wrapper("GT_AGENT_POGO_PLAN_V1",
     #                           AgentType.GT_POGO_PLAN_BASELINE,
