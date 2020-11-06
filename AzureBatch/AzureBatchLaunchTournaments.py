@@ -24,7 +24,7 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-from __future__ import print_function
+# from __future__ import print_function
 
 try:
     import configparser
@@ -42,6 +42,8 @@ import PolycraftAIGym.common.helpers as helpers
 from AzureBatch.AgentBatchCommands import AgentType, AgentBatchCommands
 
 _CONTAINER_NAME = 'batch-workflow-fog-of-war'
+
+DEBUG_FLAG = True
 
 ### SIFT ###
 APPLICATION_ID = 'agent_sift'
@@ -81,7 +83,7 @@ SRI_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + SRI_APP_ID + '_' + SRI_VERSION
 
 ### RAYTHEON ###
 RAYTHEON_APP_ID = 'agent_raytheon'  # APP ID
-RAYTHEON_VERSION = '1'
+RAYTHEON_VERSION = '2'
 RAYTHEON_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + RAYTHEON_APP_ID + '_' + RAYTHEON_VERSION
 
 
@@ -238,10 +240,10 @@ class AzureBatchLaunchTournaments:
 
         # os.chdir('../output/')
         count = 0
-        # maxCount = 5  # TODO: move this.
+        maxCount = 1  # TODO: move this.
         for file in os.listdir(f'{self.library_of_tournaments}'):
-            # if count >= maxCount:
-            #     break
+            if count >= maxCount and DEBUG_FLAG:
+                break
             if not file.endswith(".zip"):
                 continue
             filename = file.split('.')[0]
@@ -250,15 +252,15 @@ class AzureBatchLaunchTournaments:
             cmds = self.agent_commands.get_task_commands(file, filename, self.suffix)
 
             application_package_references = [
-                batchmodels.ApplicationPackageReference(application_id=APPLICATION_ID, version=APPLICATION_VERSION),
-                batchmodels.ApplicationPackageReference(application_id=TUFT_APPLICATION_ID, version=TUFT_VERSION),
-                batchmodels.ApplicationPackageReference(application_id=GT_APP_ID, version=GT_APPLICATION_VERSION),
-                batchmodels.ApplicationPackageReference(application_id=SRI_APP_ID, version=SRI_VERSION),
-                batchmodels.ApplicationPackageReference(application_id=GT_HUGA_APP_ID, version=GT_HUGA_APP_VERSION),
-                batchmodels.ApplicationPackageReference(application_id=GT_HUGA_MLAB_APP_ID,
-                                                        version=GT_HUGA_MLAB_APP_VERSION),
-                batchmodels.ApplicationPackageReference(application_id=GT_PLAN_APP_ID,
-                                                        version=GT_PLAN_APPLICATION_VERSION),
+                # batchmodels.ApplicationPackageReference(application_id=APPLICATION_ID, version=APPLICATION_VERSION),
+                # batchmodels.ApplicationPackageReference(application_id=TUFT_APPLICATION_ID, version=TUFT_VERSION),
+                # batchmodels.ApplicationPackageReference(application_id=GT_APP_ID, version=GT_APPLICATION_VERSION),
+                # batchmodels.ApplicationPackageReference(application_id=SRI_APP_ID, version=SRI_VERSION),
+                # batchmodels.ApplicationPackageReference(application_id=GT_HUGA_APP_ID, version=GT_HUGA_APP_VERSION),
+                # batchmodels.ApplicationPackageReference(application_id=GT_HUGA_MLAB_APP_ID,
+                #                                         version=GT_HUGA_MLAB_APP_VERSION),
+                # batchmodels.ApplicationPackageReference(application_id=GT_PLAN_APP_ID,
+                #                                         version=GT_PLAN_APPLICATION_VERSION),
                 batchmodels.ApplicationPackageReference(application_id=RAYTHEON_APP_ID, version=RAYTHEON_VERSION),
             ]
 
@@ -305,7 +307,7 @@ class AzureBatchLaunchTournaments:
                 datetime.datetime.utcnow() + datetime.timedelta(weeks=2))
 
             constraint = batchmodels.TaskConstraints(
-                retention_time=datetime.timedelta(minutes=30),
+                retention_time=datetime.timedelta(minutes=1440),
             )
 
             task = batchmodels.TaskAddParameter(
@@ -510,7 +512,7 @@ if __name__ == '__main__':
     global_config = configparser.ConfigParser()
     global_config.read(helpers._SAMPLES_CONFIG_FILE_NAME)
     #
-    global_config.set('DEFAULT', 'poolvmcount', '5')
+    global_config.set('DEFAULT', 'poolvmcount', '1')
 
     # launch_pools_per_novelty(
     #     "TUFTS_AGENT_TEST_V3",
@@ -528,8 +530,8 @@ if __name__ == '__main__':
         AgentType.RAYTHEON,
         TestType.STAGE4,
         global_config,
-        pool="HUGA_RAYTHEON_10g_Test3",
-        suffix="_110515",
+        pool="SED_TEST4",
+        suffix="_110523",
         tournament_directory=huga_files,
     )
 
