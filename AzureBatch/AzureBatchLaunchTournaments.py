@@ -523,7 +523,7 @@ if __name__ == '__main__':
     #     suffix="_062622",
     #     tournament_directory="../tournaments/old/tufts_0626_launch/",
     # )
-    huga_files = "C:\\Users\\Joey\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\huga-6M-tournaments-zipped\\HUGA_L00_T01_S01"
+    huga_files = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\huga-6M-tournaments-zipped\\HUGA_L00_T01_S01"
 
     # launch_tournament_wrapper(
     #     "RAYTHEON_AGENT_V1",
