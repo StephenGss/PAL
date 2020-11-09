@@ -55,7 +55,7 @@ class AgentBatchCommands:
 
         github = self._get_github_commands()
 
-        agent_folder_name = 'sri-dryrun-20200626'
+        agent_folder_name = 'sri-m12-v1'
 
         copy_files = [
             'cd $HOME',
@@ -88,7 +88,7 @@ class AgentBatchCommands:
             'export AIGYM_REPORTING=true',
             'export REPORT_SCREEN=true',
             # f'python LaunchTournament.py -t "{suffix}{tname}" -g "../{tname}" -a "{self.agent_name}" -d "../agents/" -x "./play.sh" ',
-            f'python LaunchTournament.py -c 1000 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "../agents/{agent_folder_name}/" -x "./sri_run.sh" -i 90 ',
+            f'python LaunchTournament.py -c 1000 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "../agents/{agent_folder_name}/" -x "./sri_run.sh" ',
         ]
 
         return setup + github + copy_files + copy_agent + launch_polycraft

@@ -78,7 +78,7 @@ GT_HUGA_MLAB_APP_DIR = '$AZ_BATCH_APP_PACKAGE_' + GT_HUGA_MLAB_APP_ID + '_' + GT
 
 ### SRI ###
 SRI_APP_ID = 'agent_sri'
-SRI_VERSION = '2'
+SRI_VERSION = '4'
 SRI_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + SRI_APP_ID + '_' + SRI_VERSION
 
 ### RAYTHEON ###
@@ -255,13 +255,13 @@ class AzureBatchLaunchTournaments:
                 # batchmodels.ApplicationPackageReference(application_id=APPLICATION_ID, version=APPLICATION_VERSION),
                 # batchmodels.ApplicationPackageReference(application_id=TUFT_APPLICATION_ID, version=TUFT_VERSION),
                 # batchmodels.ApplicationPackageReference(application_id=GT_APP_ID, version=GT_APPLICATION_VERSION),
-                # batchmodels.ApplicationPackageReference(application_id=SRI_APP_ID, version=SRI_VERSION),
+                batchmodels.ApplicationPackageReference(application_id=SRI_APP_ID, version=SRI_VERSION),
                 # batchmodels.ApplicationPackageReference(application_id=GT_HUGA_APP_ID, version=GT_HUGA_APP_VERSION),
                 # batchmodels.ApplicationPackageReference(application_id=GT_HUGA_MLAB_APP_ID,
                 #                                         version=GT_HUGA_MLAB_APP_VERSION),
                 # batchmodels.ApplicationPackageReference(application_id=GT_PLAN_APP_ID,
                 #                                         version=GT_PLAN_APPLICATION_VERSION),
-                batchmodels.ApplicationPackageReference(application_id=RAYTHEON_APP_ID, version=RAYTHEON_VERSION),
+                # batchmodels.ApplicationPackageReference(application_id=RAYTHEON_APP_ID, version=RAYTHEON_VERSION),
             ]
 
             user_identity = batch.models.UserIdentity(
@@ -523,15 +523,25 @@ if __name__ == '__main__':
     #     suffix="_062622",
     #     tournament_directory="../tournaments/old/tufts_0626_launch/",
     # )
-    huga_files = "C:\\Users\\DhruvNarayanan\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\huga-6M-tournaments-zipped\\HUGA_L00_T01_S01"
+    huga_files = "C:\\Users\\Joey\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\huga-6M-tournaments-zipped\\HUGA_L00_T01_S01"
+
+    # launch_tournament_wrapper(
+    #     "RAYTHEON_AGENT_V1",
+    #     AgentType.RAYTHEON,
+    #     TestType.STAGE4,
+    #     global_config,
+    #     pool="SED_TEST4",
+    #     suffix="_110523",
+    #     tournament_directory=huga_files,
+    # )
 
     launch_tournament_wrapper(
-        "RAYTHEON_AGENT_V1",
-        AgentType.RAYTHEON,
-        TestType.STAGE4,
-        global_config,
-        pool="SED_TEST4",
-        suffix="_110523",
+        agent="SRI_AGENT_12M_V4",
+        agentType=AgentType.SRI,
+        test_type=TestType.STAGE4,
+        global_config=global_config,
+        pool="HUGA_SRI_VIRGIN_10",
+        suffix="_110916",
         tournament_directory=huga_files,
     )
 
@@ -779,7 +789,6 @@ if __name__ == '__main__':
     #     suffix="_061913",
     #     tournament_directory="../tournaments/all_tournaments_to_TA2/huga/HUGA_L00_T01_S01_VIRGIN/",
     # )
-
 
     #
     # launch_tournament_wrapper(
