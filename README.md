@@ -1,5 +1,5 @@
-# Release 1.1
-The latest release of the Polycraft Tournament Manager includes updates across the board to better facilitate
+# Release 1.2
+The latest release of the Polycraft Tournament Manager includes minor updates across the board to better facilitate
 running large scale tournaments in a robust fashion. Please see the Key Updates section
 below for a quick overview of the updates and read the Setup and Usage sections to understand how to run it. 
 
@@ -9,6 +9,12 @@ Our test bench uses a few hundred cores on Azure Batch running Ubuntu 18.04 LTS 
 Your mileage will vary if using Windows. 
 
 ## Key Updates
+### Release 1.2
+* New Environment variable SENSE_SCREEN_FORMAT to set default image compression format. This can directly affect performance on different systems when the agent calls SENSE_SCREEN. Default is PNG, but on many systems PNG compression can take many ms to process. When this process takes more than 50ms it can slow down game performance if called on every action.  It is recommended to test different options to increase performance. Options include: {"PNG", "BMP", "JPEG", "JPG", "WBMP", "GIF"}.
+* New HUGA lvl 0 novelties
+    * Wall and floor textures are now randomly picked between 32 different variations to give training diversity and better distinctions between walls and floors for visual agents.
+    * Pathways in walls are now randomly moved around and there will be between 3 and 5 pathways total.
+### Release 1.1
 * config.py (new file) now contains key configurations necessary to launch tournaments. These configurations can be edited through command line arguments, enabling other scripts to "git pull" & execute this code without having to make edits to any files.
 * Game JSONs are now read from a directory containing a "Tournament" of game JSONs. 
     * JSON zips of 10, 100, & 1000 game tournaments __will be provided separately__. Usage instructions will be attached.
@@ -23,7 +29,7 @@ Your mileage will vary if using Windows.
 # Installation:
 ## 1. Ubuntu
 1. If you haven't already, pull this branch of the repository to your work directory:
-    `git clone -b release_1.1 --single-branch https://github.com/StephenGss/pal.git`
+    `git clone -b release_1.2 --single-branch https://github.com/StephenGss/pal.git`
 1. For a fresh install:
     * navigate to polycraft/pal/setup/ and execute `./setup_linux_shortened.sh` (user will need sudo permissions to wget JAVA).
     * We have also provided our current setup scripts in that folder (they include a few additional packages enabling us to upload tournament results to SQL) for your reference.
@@ -164,7 +170,7 @@ The Polycraft World AI API consists of 28 total different API commands at Releas
 * Dev commands must be enabled by setting a client virtual machine argument: "-Ddev=True" Details on setting this outside of a development environment are still being worked out, as solutions are fickle and system dependent. Please contact us if you need these commands.
 * **CHAT** "Hello world."
 * **CHAT** /give @p minecraft:stick
-	* not used in DRY-RUN Tournaments, but active for debugging/training/development
+	* not cuurently used in evaluation Tournaments, but active for debugging/training/development
 * The following function on the cloud virtual machine for the test harness.
 	* **CREATE_NOVELTY_VARIATIONS** -d ../available_tests/hg_2.X.json -s 42 -i 60
 	* **CREATE_NOVELTY_VARIATIONS** -d ../ available_tests/pogo_2.X.json -s -37489 -i 10
@@ -204,9 +210,9 @@ The Polycraft World AI API consists of 28 total different API commands at Releas
 * **TILT** -90
 	* alters player's vertical facing direction (pitch) in 15-degree increments (no interpolation)
 	* also can be parameterized with FORWARD, DOWN and UP
-* **TP_TO** 20 4 21 
+* **TP_TO** 20,4,21 
 	* as in TELEPORT without adjusting yaw and pitch
-* **TP_TO** 20 4 21 2
+* **TP_TO** 20,4,21 2
 	* as in teleport without adjusting yaw and pitch, but with an offset straight backwards
 	* offset must yield allowable move_to location or command fails
 * **TP_TO** 7101
