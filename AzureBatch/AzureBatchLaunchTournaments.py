@@ -43,7 +43,7 @@ from AzureBatch.AgentBatchCommands import AgentType, AgentBatchCommands
 
 _CONTAINER_NAME = 'batch-workflow-fog-of-war'
 
-DEBUG_FLAG = True
+DEBUG_FLAG = False
 
 ### SIFT ###
 SIFT_APPLICATION_ID = 'agent_sift'
@@ -83,7 +83,7 @@ SRI_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + SRI_APP_ID + '_' + SRI_VERSION
 
 ### RAYTHEON ###
 RAYTHEON_APP_ID = 'agent_raytheon'  # APP ID
-RAYTHEON_VERSION = '2'
+RAYTHEON_VERSION = '3'
 RAYTHEON_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + RAYTHEON_APP_ID + '_' + RAYTHEON_VERSION
 
 ### CRA ###
@@ -519,7 +519,7 @@ if __name__ == '__main__':
     global_config = configparser.ConfigParser()
     global_config.read(helpers._SAMPLES_CONFIG_FILE_NAME)
     #
-    global_config.set('DEFAULT', 'poolvmcount', '1')
+    global_config.set('DEFAULT', 'poolvmcount', '5')
 
     # launch_pools_per_novelty(
     #     "TUFTS_AGENT_TEST_V3",
@@ -827,6 +827,7 @@ if __name__ == '__main__':
     #     suffix="_061913",
     #     tournament_directory="../tournaments/all_tournaments_to_TA2/huga/HUGA_L00_T01_S01_VIRGIN/",
     # )
+
 
     #
     # launch_tournament_wrapper(

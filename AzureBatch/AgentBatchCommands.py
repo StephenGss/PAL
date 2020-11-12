@@ -430,8 +430,12 @@ class AgentBatchCommands:
             f'cd agents/',
             'find . -not -type d -exec file "{}" ";" | grep CRLF | sed -n "s/:.*//p" | xargs -I {} sed -i "s/\r$//g" {} || true',
             'echo "[DN_MSG]CRLF endings removed"',
-            'echo "[DN_MSG]attempting to insert: \\n\\        \\\'$HOME/polycraft/pal/agents/Huga/ImageProcessing/checkpoint.pth.tar\\\' into fast.py"',
-            "sed -i -e \"s+\\'paths\\' : \[+&\\n\\        '$HOME/polycraft/pal/agents/Huga/ImageProcessing/checkpoint.pth.tar',+\" Huga/ImageProcessing/fast.py",
+            'python -m pip install torch',
+            'python -m pip install torchvision',
+            'python -m pip install opencv-python',
+            'echo "[DN_MSG]raytheon requirements installed"',
+            # 'echo "[DN_MSG]attempting to insert: \\n\\        \\\'$HOME/polycraft/pal/agents/Huga/ImageProcessing/checkpoint.pth.tar\\\' into fast.py"',
+            # "sed -i -e \"s+\\'paths\\' : \[+&\\n\\        '$HOME/polycraft/pal/agents/Huga/ImageProcessing/checkpoint.pth.tar',+\" Huga/ImageProcessing/fast.py",
             'echo "[DN_MSG]agent moved into place\n"',
         ]
 
