@@ -11,6 +11,7 @@ class AgentType(Enum):
     GT_HG_BASELINE_MATLAB = 6
     GT_POGO_PLAN_BASELINE = 7
     RAYTHEON = 8
+    CRA = 9
 
 class AgentBatchCommands:
 
@@ -18,7 +19,7 @@ class AgentBatchCommands:
         self.agent_name = agent_name
         self.agent_type = agent_type
         self.application_dict = APP_DICT
-        self.git_branch = "dev_unix_sri"  # FIXME: update this as needed
+        self.git_branch = "node/12M_evaluation"  # FIXME: update this as needed
         # self.git_branch = "dev_unix_lockfiles"  # FIXME: update this as needed
 
     def get_task_commands(self, tournament_zip, tournament_name, suffix=None):
@@ -39,6 +40,8 @@ class AgentBatchCommands:
             return self._get_gt_pogo_plan_agent_commands(tournament_zip, tournament_name, suffix)
         elif self.agent_type == AgentType.RAYTHEON:
             return self._get_raytheon_agent_commands(tournament_zip, tournament_name, suffix)
+        elif self.agent_type == AgentType.CRA:
+            return self._get_cra_agent_commands(tournament_zip, tournament_name, suffix)
         # TODO: implement additional agent-specific commands here
         else:
             return self._get_default_agent_commands(tournament_zip, tournament_name, suffix)
@@ -52,13 +55,14 @@ class AgentBatchCommands:
 
         github = self._get_github_commands()
 
-        agent_folder_name = 'sri-dryrun-20200626'
+        agent_folder_name = 'sri-m12-v1'
 
         copy_files = [
             'cd $HOME',
             'cp secret_real.ini polycraft/pal/',
-            f'unzip -l {tzip} | grep -q "*/"',
-            f'if [ "$?" == "0"]; then unzip {tzip}; else unzip {tzip} -d {tname}/; fi',
+            f'if unzip -l {tzip} | grep -q "*/"; then unzip {tzip}; else unzip {tzip} -d {tname}/;fi',
+            # f'unzip -l {tzip} | grep -q "*/"',
+            # f'if [ "$?" == "0"]; then unzip {tzip}; else unzip {tzip} -d {tname}/; fi',
             # f'unzip {tzip}',
             f'mv {tname}/ polycraft/pal/',
             'echo "[DN_MSG]files copied into pal\n"',
@@ -85,7 +89,7 @@ class AgentBatchCommands:
             'export AIGYM_REPORTING=true',
             'export REPORT_SCREEN=true',
             # f'python LaunchTournament.py -t "{suffix}{tname}" -g "../{tname}" -a "{self.agent_name}" -d "../agents/" -x "./play.sh" ',
-            f'python LaunchTournament.py -c 1000 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "../agents/{agent_folder_name}/" -x "./sri_run.sh" -i 90 ',
+            f'python LaunchTournament.py -c 1000 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "../agents/{agent_folder_name}/" -x "./sri_run.sh" ',
         ]
 
         return setup + github + copy_files + copy_agent + launch_polycraft
@@ -102,8 +106,9 @@ class AgentBatchCommands:
         copy_files = [
             'cd $HOME',
             'cp secret_real.ini polycraft/pal/',
-            f'unzip -l {tzip} | grep -q "*/"',
-            f'if [ "$?" == "0"]; then unzip {tzip}; else unzip {tzip} -d {tname}/; fi',
+            f'if unzip -l {tzip} | grep -q "*/"; then unzip {tzip}; else unzip {tzip} -d {tname}/;fi',
+            # f'unzip -l {tzip} | grep -q "*/"',
+            # f'if [ "$?" == "0"]; then unzip {tzip}; else unzip {tzip} -d {tname}/; fi',
             # f'unzip {tzip}',
             f'mv {tname}/ polycraft/pal/',
             'echo "[DN_MSG]files copied into pal\n"',
@@ -114,7 +119,7 @@ class AgentBatchCommands:
         copy_agent = [
             'cd $HOME/polycraft/pal',
             'mkdir agents/',
-            'cp -r ' + self.application_dict['agent_tufts'] + '/TUFTS\ 0617/* ./agents/',
+            'cp -r ' + self.application_dict['agent_tufts'] + '/v2.0/* ./agents/',
             'echo "[DN_MSG]agent moved into place\n"',
             'docker kill $(docker ps -q) || true',
             'echo "[DN_MSG]attempted to kill running dockers\n"',
@@ -183,11 +188,12 @@ class AgentBatchCommands:
         copy_files = [
             'cd $HOME',
             'cp secret_real.ini polycraft/pal/',
-            f'unzip -l {tzip} | grep -q "*/"',
-            f'if [ "$?" == "0"]; then unzip {tzip}; else unzip {tzip} -d {tname}/; fi',
+            f'if unzip -l {tzip} | grep -q "*/"; then unzip {tzip}; else unzip {tzip} -d {tname}/;fi',
+            # f'unzip -l {tzip} | grep -q "*/"',
+            # f'if [ "$?" == "0"]; then unzip {tzip}; else unzip {tzip} -d {tname}/; fi',
             # f'unzip {tzip}',
             f'mv {tname}/ polycraft/pal/',
-            'cp setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
+            'cp setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/code/test/',
             # 'mv setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
             f'cd $HOME/polycraft/pal/agents/',
             'find . -not -type d -exec file "{}" ";" | grep CRLF | sed -n "s/:.*//p" | xargs -I {} sed -i "s/\r$//g" {} || true',
@@ -195,7 +201,7 @@ class AgentBatchCommands:
         ]
 
         build_agent = [
-            'cd $HOME/polycraft/pal/agents/SIFT_SVN/code/docker',
+            'cd $HOME/polycraft/pal/agents/code/docker',
             'DOCKER_TAG="latest"; export DOCKER_TAG',
             './build.sh',
             'echo "[DN_MSG]docker build completed\n"',
@@ -204,7 +210,7 @@ class AgentBatchCommands:
         ]
 
 
-        LOG_FILE_DIR = f"/mnt/PolycraftFileShare/sift/{tname}{suffix}/"
+        LOG_FILE_DIR = f"/mnt/PolycraftFileShare/sift_12M/{tname}{suffix}/"
         # LOG_FILE_DIR = "$HOME/polycraft/pal/agents/agent_logs_sift/"
 
         polycraft_launch_cmd = f"./sift_tournament_agent_launcher.sh {LOG_FILE_DIR}"
@@ -215,7 +221,7 @@ class AgentBatchCommands:
             # 'sudo pkill Xvfb',
             'echo "[DN_MSG]hopefully moved into the right folder?\n"',
             'export _JAVA_OPTIONS="-Xmx3G"',
-            f'python LaunchTournament.py -c 1000 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "../agents/SIFT_SVN/code/test/" -x "{polycraft_launch_cmd}"',
+            f'python LaunchTournament.py -c 1000 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "../agents/code/test/" -x "{polycraft_launch_cmd}"',
         ]
 
         return start + setup_vm + pull_github + move_agent + copy_files + build_agent + launch_polycraft
@@ -235,8 +241,9 @@ class AgentBatchCommands:
         copy_files = [
             'cd $HOME',
             'cp secret_real.ini polycraft/pal/',
-            f'unzip -l {tzip} | grep -q "*/"',
-            f'if [ "$?" == "0"]; then unzip {tzip}; else unzip {tzip} -d {tname}/; fi',
+            f'if unzip -l {tzip} | grep -q "*/"; then unzip {tzip}; else unzip {tzip} -d {tname}/;fi',
+            # f'unzip -l {tzip} | grep -q "*/"',
+            # f'if [ "$?" == "0"]; then unzip {tzip}; else unzip {tzip} -d {tname}/; fi',
             # f'unzip {tzip}',
             f'mv {tname}/ polycraft/pal/',
             'echo "[DN_MSG]files copied into pal\n"',
@@ -276,8 +283,9 @@ class AgentBatchCommands:
         copy_files = [
             'cd $HOME',
             'cp secret_real.ini polycraft/pal/',
-            f'unzip -l {tzip} | grep -q "*/"',
-            f'if [ "$?" == "0"]; then unzip {tzip}; else unzip {tzip} -d {tname}/; fi',
+            f'if unzip -l {tzip} | grep -q "*/"; then unzip {tzip}; else unzip {tzip} -d {tname}/;fi',
+            # f'unzip -l {tzip} | grep -q "*/"',
+            # f'if [ "$?" == "0"]; then unzip {tzip}; else unzip {tzip} -d {tname}/; fi',
             # f'unzip {tzip}',
             f'mv {tname}/ polycraft/pal/',
             'echo "[DN_MSG]files copied into pal\n"',
@@ -319,8 +327,9 @@ class AgentBatchCommands:
         copy_files = [
             'cd $HOME',
             'cp secret_real.ini polycraft/pal/',
-            f'unzip -l {tzip} | grep -q "*/"',
-            f'if [ "$?" == "0"]; then unzip {tzip}; else unzip {tzip} -d {tname}/; fi',
+            f'if unzip -l {tzip} | grep -q "*/"; then unzip {tzip}; else unzip {tzip} -d {tname}/;fi',
+            # f'unzip -l {tzip} | grep -q "*/"',
+            # f'if [ "$?" == "0"]; then unzip {tzip}; else unzip {tzip} -d {tname}/; fi',
             # f'unzip {tzip}',
             f'mv {tname}/ polycraft/pal/',
             'echo "[DN_MSG]files copied into pal\n"',
@@ -360,8 +369,9 @@ class AgentBatchCommands:
         copy_files = [
             'cd $HOME',
             'cp secret_real.ini polycraft/pal/',
-            f'unzip -l {tzip} | grep -q "*/"',
-            f'if [ "$?" == "0"]; then unzip {tzip}; else unzip {tzip} -d {tname}/; fi',
+            f'if unzip -l {tzip} | grep -q "*/"; then unzip {tzip}; else unzip {tzip} -d {tname}/;fi',
+            # f'unzip -l {tzip} | grep -q "*/"',
+            # f'if [ "$?" == "0"]; then unzip {tzip}; else unzip {tzip} -d {tname}/; fi',
             # f'unzip {tzip}',
             f'mv {tname}/ polycraft/pal/',
             'echo "[DN_MSG]files copied into pal\n"',
@@ -445,6 +455,63 @@ class AgentBatchCommands:
 
         # return setup + github + copy_files + copy_agent
         return setup + github + copy_files + copy_agent + launch_polycraft
+
+    def _get_cra_agent_commands(self, tzip, tname, suffix):
+        if suffix is None:
+            suffix = ""
+
+        setup = self._setup_vm()
+
+        github = self._get_github_commands()
+
+        copy_files = [
+            'cd $HOME',
+            'cp secret_real.ini polycraft/pal/',
+            # f'unzip -l {tzip} | grep -q "*/"',
+            f'if unzip -l {tzip} | grep -q "*/"; then unzip {tzip}; else unzip {tzip} -d {tname}/;fi',
+            # f'if [ "$?" == "0"]; then unzip {tzip}; else unzip {tzip} -d {tname}/; fi',
+            # f'unzip {tzip}',
+            f'mv {tname}/ polycraft/pal/',
+            'echo "[DN_MSG]files copied into pal\n"',
+            # 'cp setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
+            # 'mv setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
+        ]
+
+        copy_agent = [
+            'cd $HOME/polycraft/pal',
+            'mkdir agents/',
+            'wget https://julialang-s3.julialang.org/bin/linux/x64/1.3/julia-1.3.1-linux-x86_64.tar.gz',
+            'tar -xf julia-1.3.1-linux-x86_64.tar.gz',
+
+            'sudo ln -s $(pwd)/julia-1.3.1/bin/julia /usr/local/bin/julia',
+
+            'cp -r ' + self.application_dict['agent_cra'] + '/* ./agents/',
+            f'cd agents/',
+            'julia setup.jl',
+            # 'find . -not -type d -exec file "{}" ";" | grep CRLF | sed -n "s/:.*//p" | xargs -I {} sed -i "s/\r$//g" {}',
+            # 'echo "[DN_MSG]CRLF endings removed"',
+            # 'echo "[DN_MSG]attempting to insert: \\n\\        \\\'$HOME/polycraft/pal/agents/Huga/ImageProcessing/checkpoint.pth.tar\\\' into fast.py"',
+            # "sed -i -e \"s+\\'paths\\' : \[+&\\n\\        '$HOME/polycraft/pal/agents/Huga/ImageProcessing/checkpoint.pth.tar',+\" Huga/ImageProcessing/fast.py",
+            'echo "[DN_MSG]agent moved into place\n"',
+        ]
+
+        agent_directory = "../agents/"
+
+        polycraft_launch_cmd = "julia deploy.jl"
+
+        launch_polycraft = [
+            'cd $HOME/polycraft/pal/PolycraftAIGym',
+            'mkdir Logs',
+            'echo "[DN_MSG]hopefully moved into the right folder?\n"',
+            'export _JAVA_OPTIONS="-Xmx3G"',
+            f'python LaunchTournament.py -c 1000 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "{agent_directory}" -x "{polycraft_launch_cmd}"',
+        ]
+
+        # return github + copy_files + copy_agent
+
+        # return setup + github + copy_files + copy_agent
+        return setup + github + copy_files + copy_agent + launch_polycraft
+
 
 
 if __name__ == '__main__':

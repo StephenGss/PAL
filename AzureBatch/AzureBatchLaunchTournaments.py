@@ -46,14 +46,14 @@ _CONTAINER_NAME = 'batch-workflow-fog-of-war'
 DEBUG_FLAG = False
 
 ### SIFT ###
-APPLICATION_ID = 'agent_sift'
-APPLICATION_VERSION = '9'
+SIFT_APPLICATION_ID = 'agent_sift'
+SIFT_APPLICATION_VERSION = '10'
 APPLICATION_ID_FIXED = 'agent_sift'
-APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + APPLICATION_ID_FIXED + '_' + APPLICATION_VERSION
+APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + APPLICATION_ID_FIXED + '_' + SIFT_APPLICATION_VERSION
 
 ### TUFTS ###
 TUFT_APPLICATION_ID = 'agent_tufts'
-TUFT_VERSION = '3'
+TUFT_VERSION = '4'
 TUFT_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + TUFT_APPLICATION_ID + '_' + TUFT_VERSION
 ### GT ###
 GT_APP_ID = 'agent_gt_pogo'
@@ -78,7 +78,7 @@ GT_HUGA_MLAB_APP_DIR = '$AZ_BATCH_APP_PACKAGE_' + GT_HUGA_MLAB_APP_ID + '_' + GT
 
 ### SRI ###
 SRI_APP_ID = 'agent_sri'
-SRI_VERSION = '2'
+SRI_VERSION = '4'
 SRI_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + SRI_APP_ID + '_' + SRI_VERSION
 
 ### RAYTHEON ###
@@ -86,6 +86,10 @@ RAYTHEON_APP_ID = 'agent_raytheon'  # APP ID
 RAYTHEON_VERSION = '3'
 RAYTHEON_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + RAYTHEON_APP_ID + '_' + RAYTHEON_VERSION
 
+### CRA ###
+CRA_APP_ID = 'agent_cra'  # APP ID
+CRA_VERSION = '1'
+CRA_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + CRA_APP_ID + '_' + CRA_VERSION
 
 APP_DICT = {'agent_sift': APPLICATION_DIR,
             'agent_tufts': TUFT_APPLICATION_DIR,
@@ -95,6 +99,7 @@ APP_DICT = {'agent_sift': APPLICATION_DIR,
             'agent_gt_huga_matlab': GT_HUGA_MLAB_APP_DIR,
             'agent_gt_pogo_planner': GT_PLAN_APPLICATION_DIR,
             'agent_raytheon': RAYTHEON_APPLICATION_DIR,
+            'agent_cra': CRA_APPLICATION_DIR,
             }
 
 # _SIMPLE_TASK_NAME = 'simple_task.py'
@@ -133,14 +138,15 @@ class AzureBatchLaunchTournaments:
 
 
         application_package_references = [
-            # batchmodels.ApplicationPackageReference(application_id=APPLICATION_ID, version=APPLICATION_VERSION),
+            batchmodels.ApplicationPackageReference(application_id=SIFT_APPLICATION_ID, version=SIFT_APPLICATION_VERSION),
             # batchmodels.ApplicationPackageReference(application_id=TUFT_APPLICATION_ID, version=TUFT_VERSION),
             # batchmodels.ApplicationPackageReference(application_id=GT_APP_ID, version=GT_APPLICATION_VERSION),
             # batchmodels.ApplicationPackageReference(application_id=SRI_APP_ID, version=SRI_VERSION),
             # batchmodels.ApplicationPackageReference(application_id=GT_HUGA_APP_ID, version=GT_HUGA_APP_VERSION),
             # batchmodels.ApplicationPackageReference(application_id=GT_HUGA_MLAB_APP_ID, version=GT_HUGA_MLAB_APP_VERSION),
             # batchmodels.ApplicationPackageReference(application_id=GT_PLAN_APP_ID, version=GT_PLAN_APPLICATION_VERSION),
-            batchmodels.ApplicationPackageReference(application_id=RAYTHEON_APP_ID, version=RAYTHEON_VERSION),
+            # batchmodels.ApplicationPackageReference(application_id=RAYTHEON_APP_ID, version=RAYTHEON_VERSION),
+            # batchmodels.ApplicationPackageReference(application_id=CRA_APP_ID, version=CRA_VERSION),
         ]
 
         # Create User Accounts
@@ -252,7 +258,7 @@ class AzureBatchLaunchTournaments:
             cmds = self.agent_commands.get_task_commands(file, filename, self.suffix)
 
             application_package_references = [
-                # batchmodels.ApplicationPackageReference(application_id=APPLICATION_ID, version=APPLICATION_VERSION),
+                batchmodels.ApplicationPackageReference(application_id=SIFT_APPLICATION_ID, version=SIFT_APPLICATION_VERSION),
                 # batchmodels.ApplicationPackageReference(application_id=TUFT_APPLICATION_ID, version=TUFT_VERSION),
                 # batchmodels.ApplicationPackageReference(application_id=GT_APP_ID, version=GT_APPLICATION_VERSION),
                 # batchmodels.ApplicationPackageReference(application_id=SRI_APP_ID, version=SRI_VERSION),
@@ -261,7 +267,8 @@ class AzureBatchLaunchTournaments:
                 #                                         version=GT_HUGA_MLAB_APP_VERSION),
                 # batchmodels.ApplicationPackageReference(application_id=GT_PLAN_APP_ID,
                 #                                         version=GT_PLAN_APPLICATION_VERSION),
-                batchmodels.ApplicationPackageReference(application_id=RAYTHEON_APP_ID, version=RAYTHEON_VERSION),
+                # batchmodels.ApplicationPackageReference(application_id=RAYTHEON_APP_ID, version=RAYTHEON_VERSION),
+                # batchmodels.ApplicationPackageReference(application_id=CRA_APP_ID, version=CRA_VERSION),
             ]
 
             user_identity = batch.models.UserIdentity(
@@ -523,17 +530,58 @@ if __name__ == '__main__':
     #     suffix="_062622",
     #     tournament_directory="../tournaments/old/tufts_0626_launch/",
     # )
-    huga_files = "C:\\Users\\DhruvNarayanan\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\huga-6M-tournaments-zipped\\HUGA_L00_T01_S01"
+    huga_files = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\huga-6M-tournaments-zipped\\HUGA_L00_T01_S01"
+    pogo_files = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\pogo-6M-tournaments-zipped\\POGO_L00_T01_S01"
+
+    # launch_tournament_wrapper(
+    #     agent="SIFT_AGENT_TEST_V10",
+    #     agentType=AgentType.SIFT,
+    #     test_type=TestType.STAGE4,
+    #     global_config=global_config,
+    #     pool="POGO_SIFT_VIRGIN_V4",
+    #     suffix="_111211",
+    #     tournament_directory=pogo_files,
+    # )
+    #
+    # launch_tournament_wrapper(
+    #    "TUFTS_AGENT_12M_V4",
+    #    AgentType.TUFTS,
+    #    TestType.STAGE4,
+    #    global_config,
+    #    pool="POGO_TUFTS_VIRGIN_V3",
+    #    suffix="_111111",
+    #    tournament_directory=pogo_files,
+    # )
+
+    # launch_tournament_wrapper(
+    #     "RAYTHEON_AGENT_V1",
+    #     AgentType.RAYTHEON,
+    #     TestType.STAGE4,
+    #     global_config,
+    #     pool="SED_TEST4",
+    #     suffix="_110523",
+    #     tournament_directory=huga_files,
+    # )
 
     launch_tournament_wrapper(
-        "RAYTHEON_AGENT_V1",
-        AgentType.RAYTHEON,
-        TestType.STAGE5,
-        global_config,
-        pool="RAYTHEON_AGENT_TEST_X100_V1",
-        suffix="_110820",
-        tournament_directory=huga_files,
+        agent="CRA_AGENT_12M_V1",
+        agentType=AgentType.CRA,
+        test_type=TestType.STAGE4,
+        global_config=global_config,
+        pool="POGO_CRA_VIRGIN_10_V5",
+        suffix="_111110",
+        tournament_directory=pogo_files,
     )
+
+    # launch_tournament_wrapper(
+    #     agent="SRI_AGENT_12M_V4",
+    #     agentType=AgentType.SRI,
+    #     test_type=TestType.STAGE4,
+    #     global_config=global_config,
+    #     pool="HUGA_SRI_VIRGIN_10_v4",
+    #     suffix="_111110",
+    #     tournament_directory=huga_files,
+    # )
 
     # launch_tournament_wrapper("GT_AGENT_POGO_PLAN_V1",
     #                           AgentType.GT_POGO_PLAN_BASELINE,
