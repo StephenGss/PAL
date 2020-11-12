@@ -43,7 +43,7 @@ from AzureBatch.AgentBatchCommands import AgentType, AgentBatchCommands
 
 _CONTAINER_NAME = 'batch-workflow-fog-of-war'
 
-DEBUG_FLAG = True
+DEBUG_FLAG = False
 
 ### SIFT ###
 APPLICATION_ID = 'agent_sift'
@@ -83,7 +83,7 @@ SRI_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + SRI_APP_ID + '_' + SRI_VERSION
 
 ### RAYTHEON ###
 RAYTHEON_APP_ID = 'agent_raytheon'  # APP ID
-RAYTHEON_VERSION = '2'
+RAYTHEON_VERSION = '3'
 RAYTHEON_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + RAYTHEON_APP_ID + '_' + RAYTHEON_VERSION
 
 
@@ -133,13 +133,13 @@ class AzureBatchLaunchTournaments:
 
 
         application_package_references = [
-            batchmodels.ApplicationPackageReference(application_id=APPLICATION_ID, version=APPLICATION_VERSION),
-            batchmodels.ApplicationPackageReference(application_id=TUFT_APPLICATION_ID, version=TUFT_VERSION),
-            batchmodels.ApplicationPackageReference(application_id=GT_APP_ID, version=GT_APPLICATION_VERSION),
-            batchmodels.ApplicationPackageReference(application_id=SRI_APP_ID, version=SRI_VERSION),
-            batchmodels.ApplicationPackageReference(application_id=GT_HUGA_APP_ID, version=GT_HUGA_APP_VERSION),
-            batchmodels.ApplicationPackageReference(application_id=GT_HUGA_MLAB_APP_ID, version=GT_HUGA_MLAB_APP_VERSION),
-            batchmodels.ApplicationPackageReference(application_id=GT_PLAN_APP_ID, version=GT_PLAN_APPLICATION_VERSION),
+            # batchmodels.ApplicationPackageReference(application_id=APPLICATION_ID, version=APPLICATION_VERSION),
+            # batchmodels.ApplicationPackageReference(application_id=TUFT_APPLICATION_ID, version=TUFT_VERSION),
+            # batchmodels.ApplicationPackageReference(application_id=GT_APP_ID, version=GT_APPLICATION_VERSION),
+            # batchmodels.ApplicationPackageReference(application_id=SRI_APP_ID, version=SRI_VERSION),
+            # batchmodels.ApplicationPackageReference(application_id=GT_HUGA_APP_ID, version=GT_HUGA_APP_VERSION),
+            # batchmodels.ApplicationPackageReference(application_id=GT_HUGA_MLAB_APP_ID, version=GT_HUGA_MLAB_APP_VERSION),
+            # batchmodels.ApplicationPackageReference(application_id=GT_PLAN_APP_ID, version=GT_PLAN_APPLICATION_VERSION),
             batchmodels.ApplicationPackageReference(application_id=RAYTHEON_APP_ID, version=RAYTHEON_VERSION),
         ]
 
@@ -512,7 +512,7 @@ if __name__ == '__main__':
     global_config = configparser.ConfigParser()
     global_config.read(helpers._SAMPLES_CONFIG_FILE_NAME)
     #
-    global_config.set('DEFAULT', 'poolvmcount', '1')
+    global_config.set('DEFAULT', 'poolvmcount', '5')
 
     # launch_pools_per_novelty(
     #     "TUFTS_AGENT_TEST_V3",
@@ -528,10 +528,10 @@ if __name__ == '__main__':
     launch_tournament_wrapper(
         "RAYTHEON_AGENT_V1",
         AgentType.RAYTHEON,
-        TestType.STAGE4,
+        TestType.STAGE5,
         global_config,
-        pool="SED_TEST4",
-        suffix="_110523",
+        pool="RAYTHEON_AGENT_TEST_X100_V1",
+        suffix="_110820",
         tournament_directory=huga_files,
     )
 
