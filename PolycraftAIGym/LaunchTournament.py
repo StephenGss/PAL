@@ -241,10 +241,27 @@ class LaunchTournament:
 
         flag_continue = True
         while flag_continue and not pipe.stdout.closed:
-            l = pipe.stdout.readline()
-            q.put(l)
-            sys.stdout.flush()
-            pipe.stdout.flush()
+            try:
+                l = pipe.stdout.readline()
+                q.put(l)
+                sys.stdout.flush()
+                pipe.stdout.flush()
+            except UnicodeDecodeError as e:
+                print(f"Err: UnicodeDecodeError: {e}")
+                try:
+                    l = pipe.stdout.read().decode("utf-8")
+                    q.put(l)
+                    sys.stdout.flush()
+                    pipe.stdout.flush()
+                except Exception as e2:
+                    print(f"ERROR - CANT HANDLE OUTPUT ENCODING! {e2}")
+                    sys.stdout.flush()
+                    pipe.stdout.flush()
+            except Exception as e3:
+                print(f"ERROR - UNKNOWN EXCEPTION! {e3}")
+                sys.stdout.flush()
+                pipe.stdout.flush()
+
 
     def _check_queues(self):
         """
