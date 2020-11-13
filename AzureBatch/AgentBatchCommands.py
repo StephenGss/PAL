@@ -82,6 +82,8 @@ class AgentBatchCommands:
         ]
 
         launch_polycraft = [
+            'cd $HOME/polycraft/pal',
+            'find . -not -type d -exec file "{}" ";" | grep CRLF | sed -n "s/:.*//p" | xargs -I {} sed -i "s/\r$//g" {} || true',
             'cd $HOME/polycraft/pal/PolycraftAIGym',
             'mkdir Logs',
             'echo "[DN_MSG]hopefully moved into the right folder?\n"',
@@ -127,6 +129,8 @@ class AgentBatchCommands:
         ]
 
         launch_polycraft = [
+            'cd $HOME/polycraft/pal',
+            'find . -not -type d -exec file "{}" ";" | grep CRLF | sed -n "s/:.*//p" | xargs -I {} sed -i "s/\r$//g" {} || true',
             'cd $HOME/polycraft/pal/PolycraftAIGym',
             'mkdir Logs',
             'echo "[DN_MSG]hopefully moved into the right folder?\n"',
@@ -216,6 +220,8 @@ class AgentBatchCommands:
         polycraft_launch_cmd = f"./sift_tournament_agent_launcher.sh {LOG_FILE_DIR}"
 
         launch_polycraft = [
+            'cd $HOME/polycraft/pal',
+            'find . -not -type d -exec file "{}" ";" | grep CRLF | sed -n "s/:.*//p" | xargs -I {} sed -i "s/\r$//g" {} || true',
             'cd $HOME/polycraft/pal/PolycraftAIGym',
             'mkdir Logs',
             # 'sudo pkill Xvfb',
@@ -263,6 +269,8 @@ class AgentBatchCommands:
         agent_directory = "../agents/HG_sent_20200606/"
 
         launch_polycraft = [
+            'cd $HOME/polycraft/pal',
+            'find . -not -type d -exec file "{}" ";" | grep CRLF | sed -n "s/:.*//p" | xargs -I {} sed -i "s/\r$//g" {} || true',
             'cd $HOME/polycraft/pal/PolycraftAIGym',
             'mkdir Logs',
             'echo "[DN_MSG]hopefully moved into the right folder?\n"',
@@ -305,6 +313,8 @@ class AgentBatchCommands:
         agent_directory = "../agents/pogo_stick_planner_agent/"
 
         launch_polycraft = [
+            'cd $HOME/polycraft/pal',
+            'find . -not -type d -exec file "{}" ";" | grep CRLF | sed -n "s/:.*//p" | xargs -I {} sed -i "s/\r$//g" {} || true',
             'cd $HOME/polycraft/pal/PolycraftAIGym',
             'mkdir Logs',
             'echo "[DN_MSG]hopefully moved into the right folder?\n"',
@@ -349,6 +359,8 @@ class AgentBatchCommands:
         agent_directory = "../agents/pogo_agent_SENSE_RECIPES/trained_pogo_agent_2/"
 
         launch_polycraft = [
+            'cd $HOME/polycraft/pal',
+            'find . -not -type d -exec file "{}" ";" | grep CRLF | sed -n "s/:.*//p" | xargs -I {} sed -i "s/\r$//g" {} || true',
             'cd $HOME/polycraft/pal/PolycraftAIGym',
             'mkdir Logs',
             'echo "[DN_MSG]hopefully moved into the right folder?\n"',
@@ -392,6 +404,8 @@ class AgentBatchCommands:
         polycraft_launch_cmd = "./run_step_04_RL_DQN_simple_try_05_test_online_vDN_EDITS.sh /usr/local/MATLAB/MATLAB_Runtime/v98"
 
         launch_polycraft = [
+            'cd $HOME/polycraft/pal',
+            'find . -not -type d -exec file "{}" ";" | grep CRLF | sed -n "s/:.*//p" | xargs -I {} sed -i "s/\r$//g" {} || true',
             'cd $HOME/polycraft/pal/PolycraftAIGym',
             'mkdir Logs',
             'echo "[DN_MSG]hopefully moved into the right folder?\n"',
@@ -444,6 +458,8 @@ class AgentBatchCommands:
         polycraft_launch_cmd = "python -m Huga.TournamentAgent"
 
         launch_polycraft = [
+            'cd $HOME/polycraft/pal',
+            'find . -not -type d -exec file "{}" ";" | grep CRLF | sed -n "s/:.*//p" | xargs -I {} sed -i "s/\r$//g" {} || true',
             'cd $HOME/polycraft/pal/PolycraftAIGym',
             'mkdir Logs',
             'echo "[DN_MSG]hopefully moved into the right folder?\n"',
@@ -500,6 +516,8 @@ class AgentBatchCommands:
         polycraft_launch_cmd = "julia deploy.jl"
 
         launch_polycraft = [
+            'cd $HOME/polycraft/pal',
+            'find . -not -type d -exec file "{}" ";" | grep CRLF | sed -n "s/:.*//p" | xargs -I {} sed -i "s/\r$//g" {} || true',
             'cd $HOME/polycraft/pal/PolycraftAIGym',
             'mkdir Logs',
             'echo "[DN_MSG]hopefully moved into the right folder?\n"',
