@@ -136,7 +136,12 @@ class AgentBatchCommands:
             'echo "[DN_MSG]hopefully moved into the right folder?\n"',
             'export _JAVA_OPTIONS="-Xmx3G"',
             # f'python LaunchTournament.py -t "{suffix}{tname}" -g "../{tname}" -a "{self.agent_name}" -d "../agents/" -x "./play.sh" ',
-            f'python LaunchTournament.py -c 1000 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "../agents/" -x "./play.sh" -i 600 ',
+
+            #This line outputs all running processes every 5 seconds.
+            # f'python LaunchTournament.py -c 1000 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "../agents/" -x "./play.sh" -i 600 & ' + 'for i in {1..1000}; do ps -ef; date ; sleep 5; done',
+
+            f'python LaunchTournament.py -c 1000 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "../agents/" -x "./play.sh" -i 600',
+
         ]
         return setup + github + copy_files + copy_agent + launch_polycraft
 
