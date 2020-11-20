@@ -319,7 +319,7 @@ class LaunchTournament:
         self.debug_log.message("PAL Client Initiated")
 
         while self.tournament_in_progress:
-
+            time.sleep(0.005)
             # grab the console output of PAL
             next_line = self._check_queues()
 
