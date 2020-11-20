@@ -501,10 +501,10 @@ class AgentBatchCommands:
         copy_agent = [
             'cd $HOME/polycraft/pal',
             'mkdir agents/',
-            'wget https://julialang-s3.julialang.org/bin/linux/x64/1.3/julia-1.3.1-linux-x86_64.tar.gz',
-            'tar -xf julia-1.3.1-linux-x86_64.tar.gz',
+            'wget https://julialang-s3.julialang.org/bin/linux/x64/1.5/julia-1.5.3-linux-x86_64.tar.gz',
+            'tar -xf julia-1.5.3-linux-x86_64.tar.gz',
 
-            'sudo ln -s $(pwd)/julia-1.3.1/bin/julia /usr/local/bin/julia',
+            'sudo ln -s $(pwd)/julia-1.5.3/bin/julia /usr/local/bin/julia',
 
             'cp -r ' + self.application_dict['agent_cra'] + '/* ./agents/',
             f'cd agents/',
