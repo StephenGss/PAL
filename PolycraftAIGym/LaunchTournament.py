@@ -329,9 +329,11 @@ class LaunchTournament:
             if self.agent_started:
                 self.agent.poll()
                 if self.agent.returncode is not None:
+                    print(f"ERROR: Agent THREAD CRASHED WITH CODE: {self.agent.returncode}")
                     break
                 # If agent started & PAL crashes, kill the main thread.
                 if self.pal_client_process.returncode is not None:
+                    print(f"ERROR: Agent THREAD CRASHED WITH CODE: {self.pal_client_process.returncode}")
                     break
 
                 # If upload thread has stopped prematurely, then there is cause for concern.
