@@ -47,7 +47,7 @@ DEBUG_FLAG = False
 
 ### SIFT ###
 SIFT_APPLICATION_ID = 'agent_sift'
-SIFT_APPLICATION_VERSION = '13'
+SIFT_APPLICATION_VERSION = '14'
 APPLICATION_ID_FIXED = 'agent_sift'
 APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + APPLICATION_ID_FIXED + '_' + SIFT_APPLICATION_VERSION
 
@@ -83,7 +83,7 @@ SRI_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + SRI_APP_ID + '_' + SRI_VERSION
 
 ### RAYTHEON ###
 RAYTHEON_APP_ID = 'agent_raytheon'  # APP ID
-RAYTHEON_VERSION = '5'
+RAYTHEON_VERSION = '7'
 RAYTHEON_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + RAYTHEON_APP_ID + '_' + RAYTHEON_VERSION
 
 ### CRA ###
@@ -519,7 +519,7 @@ if __name__ == '__main__':
     global_config = configparser.ConfigParser()
     global_config.read(helpers._SAMPLES_CONFIG_FILE_NAME)
     #
-    global_config.set('DEFAULT', 'poolvmcount', '3')
+    global_config.set('DEFAULT', 'poolvmcount', '54')
 
     # launch_pools_per_novelty(
     #     "TUFTS_AGENT_TEST_V3",
@@ -536,15 +536,16 @@ if __name__ == '__main__':
     pogo_10_files = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\pogo-12M-tournaments-zipped\\POGO_10game_prenovelty"
     pogo_100_files = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\pogo-12M-tournaments-zipped\\POGO_100game_prenovelty"
     pogo_SN10_files = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\pogo-12M-tournaments-zipped\\POGO_10game_shared_novelties"
+    pogo_SN100_files = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\pogo-12M-tournaments-zipped\\POGO_100game_shared_novelties"
     #
     # launch_tournament_wrapper(
-    #     agent="SIFT_AGENT_12M_R1109",
+    #     agent="SIFT_AGENT_12M_R1125",
     #     agentType=AgentType.SIFT,
-    #     test_type=TestType.STAGE4,
+    #     test_type=TestType.STAGE5,
     #     global_config=global_config,
-    #     pool="POGO_SIFT_SN10_V3",
-    #     suffix="_111911",
-    #     tournament_directory=pogo_SN10_files,
+    #     pool="POGO_SIFT_SN100_V1",
+    #     suffix="_112017",
+    #     tournament_directory=pogo_SN100_files,
     # )
 
     # launch_tournament_wrapper(
@@ -559,23 +560,23 @@ if __name__ == '__main__':
 
     # global_config.set('DEFAULT', 'poolvmcount', '12')
     # launch_tournament_wrapper(
-    #     "RAYTHEON_AGENT_V2",
+    #     "RAYTHEON_AGENT_V7",
     #     AgentType.RAYTHEON,
     #     TestType.STAGE5,
     #     global_config,
-    #     pool="RAYTHEON_VIRGIN_HUGA_X100_V4",
-    #     suffix="_112015",
+    #     pool="RAYTHEON_VIRGIN_HUGA_X0100_V8",
+    #     suffix="_112316",
     #     tournament_directory=huga_100_files,
     # )
-
+    #
     launch_tournament_wrapper(
         agent="CRA_AGENT_12M_V2",
         agentType=AgentType.CRA,
-        test_type=TestType.STAGE4,
+        test_type=TestType.STAGE5,
         global_config=global_config,
-        pool="POGO_CRA_VIRGIN_10_V7",
-        suffix="_112016",
-        tournament_directory=pogo_10_files,
+        pool="POGO_CRA_SN_X0100_V2",
+        suffix="_112321",
+        tournament_directory=pogo_SN100_files,
     )
 
     # launch_tournament_wrapper(

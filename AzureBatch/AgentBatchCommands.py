@@ -527,7 +527,7 @@ class AgentBatchCommands:
             'mkdir Logs',
             'echo "[DN_MSG]hopefully moved into the right folder?\n"',
             'export _JAVA_OPTIONS="-Xmx3G"',
-            f'python LaunchTournament.py -c 1000 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "{agent_directory}" -x "{polycraft_launch_cmd}"',
+            f'python LaunchTournament.py -c 1000 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "{agent_directory}" -x "{polycraft_launch_cmd}" -i 1800 -m 480',
         ]
 
         # return github + copy_files + copy_agent
