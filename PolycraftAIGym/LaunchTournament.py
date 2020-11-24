@@ -284,10 +284,11 @@ class LaunchTournament:
 
         # write output from procedure B (if there is any)
         try:
-            l = self.q2.get(False, timeout=0.025)
-            self.agent_log.message(str(l))
-            sys.stdout.flush()
-            sys.stderr.flush()
+            while not self.q2.empty():
+                l = self.q2.get(False, timeout=0.025)
+                self.agent_log.message(str(l))
+                sys.stdout.flush()
+                sys.stderr.flush()
         except queue.Empty:
             pass
 
