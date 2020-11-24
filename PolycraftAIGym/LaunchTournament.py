@@ -263,8 +263,7 @@ class LaunchTournament:
                 sys.stdout.flush()
                 pipe.stdout.flush()
 
-
-    def _check_queues(self):
+    def _check_queues(self, check_all=False):
         """
         Check the STDOUT queues in both the PAL and Agent threads, logging the responses appropriately
         :return: next_line containing the STDOUT of the PAL process only:
@@ -284,11 +283,19 @@ class LaunchTournament:
 
         # write output from procedure B (if there is any)
         try:
-            while not self.q2.empty():
+            if check_all:
+                while not self.q2.empty():
+                    l = self.q2.get(False, timeout=0.025)
+                    if len(str(l)) > 1:
+                        self.agent_log.message(str(l))
+                    sys.stdout.flush()
+                    sys.stderr.flush()
+            else:
                 l = self.q2.get(False, timeout=0.025)
                 self.agent_log.message(str(l))
                 sys.stdout.flush()
                 sys.stderr.flush()
+
         except queue.Empty:
             pass
 
@@ -323,7 +330,7 @@ class LaunchTournament:
         while self.tournament_in_progress:
             time.sleep(0.005)
             # grab the console output of PAL
-            next_line = self._check_queues()
+            next_line = self._check_queues(check_all=True)
 
             # first check if we crashed or something... hopefully  this doesn't happen
             self.pal_client_process.poll()
@@ -592,6 +599,7 @@ class LaunchTournament:
 
         :return:
         """
+        self._check_queues(check_all=True)
         self.debug_log.message("Tournament Completed: " + str(len(self.games)) + "games run")
         sys.stdout.flush()
         # os.kill(self.agent.pid, signal.SIGTERM)
