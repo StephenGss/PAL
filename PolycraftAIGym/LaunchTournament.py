@@ -3,7 +3,7 @@ import sys, os
 import TournamentManager, PalMessenger, AzureConnectionService
 from pathlib import Path
 import queue
-import time
+import time, datetime
 from enum import Enum
 import json
 import config as CONFIG
@@ -34,6 +34,7 @@ class LaunchTournament:
         self.commands_sent = 0
         self.total_step_cost = 0
         self.start_time = time.time()
+        self.tournament_start_time = datetime.datetime.now()
         self.log_dir = log_dir + f"{PalMessenger.PalMessenger.time_now_str('_')}/"
         self.SYS_FLAG = os  # Change behavior based on SYS FLAG when executing gradlew
         self.temp_logs_path = "log_file_paths.txt"
@@ -414,7 +415,9 @@ class LaunchTournament:
 
                     next_game_idx = self.game_index + 1
                     # Check if the tournament is over
-                    if next_game_idx >= len(self.games):
+                    if next_game_idx >= len(self.games) or (self.tournament_start_time + datetime.timedelta(minutes=CONFIG.MAX_TOURN_TIME)) <= datetime.datetime.now():
+                        if (self.tournament_start_time + datetime.timedelta(minutes=CONFIG.MAX_TOURN_TIME)) <= datetime.datetime.now():
+                            self.debug_log.message("Max tournament time exceeded: " + str(CONFIG.MAX_TOURN_TIME) + " minutes")
                         # If so, end the game now (don't wait for gameover True)
                         self.debug_log.message("Game has ended.")
                         self.speed_log.message(
@@ -790,14 +793,14 @@ class State(Enum):
 if __name__ == "__main__":
     argv = sys.argv[1:]
     try:
-        opts, args = getopt.getopt(argv, "hc:t:g:a:d:x:i:",
-                                       ["game_count=","tournament=","game_folder=","agent name=", "agent directory=", "agent command=", "max time="])
+        opts, args = getopt.getopt(argv, "hc:t:g:a:d:x:i:m:",
+                                       ["game_count=","tournament=","game_folder=","agent name=", "agent directory=", "agent command=", "max time=", "max tournament time="])
     except getopt.GetoptError:
         print('LaunchTournament.py -c <game_count> -t <tournament_name> -g <game_folder> -a <agent_name> -d <agent_directory> -x <agent_command> -i <maximum time (sec)>')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print('LaunchTournament.py -c <game_count> -t <tournament_name> -g <game_folder> -a <agent_name> -d <agent_directory> -x <agent_command> -i <maximum time (sec)>')
+            print('LaunchTournament.py -c <game_count> -t <tournament_name> -g <game_folder> -a <agent_name> -d <agent_directory> -x <agent_command> -i <maximum time (sec)> -m <max tournament time (minutes)')
             sys.exit()
         elif opt in ("-c", "--count"):
             # print(f"Number of Games: {arg}")
@@ -821,6 +824,9 @@ if __name__ == "__main__":
         elif opt in ("-i", "--max-time"):
             print(f"Max Time (sec): {arg}")
             CONFIG.MAX_TIME = int(arg)
+        elif opt in ("-m", "--max-tournament-time"):
+            print(f"Max Time (minutes): {arg}")
+            CONFIG.MAX_TOURN_TIME = int(arg)
 
     pal = LaunchTournament(os='UNIX')  # TODO: Remove the os command line argument.
     pal.execute()

@@ -28,6 +28,7 @@ PAL_COMMAND_UNIX = "xvfb-run -s '-screen 0 1280x1024x24' ./gradlew --no-daemon r
 
 ## CONFIGURABLE ##################################### CLI Commands ####################################
 MAX_TIME = 300                                      # change using -i <time>
+MAX_TOURN_TIME = 2880                               # change using -m <minutes> 48 hours default
 TOURNAMENT_ID = "Nonov_Pogo_Test_6_1000g"           # change using -t <tournament_name>
 AGENT_DIRECTORY = "../agents/change/me/"            # change using -d <agent/start/script/folder/>
 AGENT_COMMAND = "py hg_agent.py"                    # change using -x <windows cmd to launch script - Windows OS only>
