@@ -550,16 +550,16 @@ if __name__ == '__main__':
     #     suffix="_112017",
     #     tournament_directory=pogo_SN100_files,
     # )
-
-    launch_tournament_wrapper(
-       "TUFTS_AGENT_12M_V4",
-       AgentType.TUFTS,
-       TestType.STAGE5,
-       global_config,
-       pool="POGO_TUFTS_VIRGIN_X0100_new1",
-       suffix="_112711",
-       tournament_directory=pogo_100_files,
-    )
+    #
+    # launch_tournament_wrapper(
+    #    "TUFTS_AGENT_12M_V4",
+    #    AgentType.TUFTS,
+    #    TestType.STAGE5,
+    #    global_config,
+    #    pool="POGO_TUFTS_VIRGIN_X0100_new1",
+    #    suffix="_112711",
+    #    tournament_directory=pogo_100_files,
+    # )
 
     # global_config.set('DEFAULT', 'poolvmcount', '12')
     # launch_tournament_wrapper(
@@ -594,15 +594,15 @@ if __name__ == '__main__':
     #
     # global_config.set('DEFAULT', 'poolvmcount', '12')
     #
-    # launch_tournament_wrapper(
-    #     agent="SRI_AGENT_12M_V4",
-    #     agentType=AgentType.SRI,
-    #     test_type=TestType.STAGE4,
-    #     global_config=global_config,
-    #     pool="HUGA_SRI_VIRGIN_10_V1",
-    #     suffix="_112711",
-    #     tournament_directory=huga_10_files,
-    # )
+    launch_tournament_wrapper(
+        agent="SRI_AGENT_12M_V4",
+        agentType=AgentType.SRI,
+        test_type=TestType.STAGE4,
+        global_config=global_config,
+        pool="HUGA_SRI_VIRGIN_10_V2",
+        suffix="_112711",
+        tournament_directory=huga_10_files,
+    )
 
     # launch_tournament_wrapper(
     #     agent="CRA_AGENT_12M_V1",

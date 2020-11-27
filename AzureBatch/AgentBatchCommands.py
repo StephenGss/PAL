@@ -55,7 +55,7 @@ class AgentBatchCommands:
 
         github = self._get_github_commands()
 
-        agent_folder_name = 'sri-m12-v1'
+        agent_folder_name = 'sri-m12-v2'
 
         copy_files = [
             'cd $HOME',
@@ -121,7 +121,7 @@ class AgentBatchCommands:
         copy_agent = [
             'cd $HOME/polycraft/pal',
             'mkdir agents/',
-            'cp -r ' + self.application_dict['agent_tufts'] + '/v2.0/* ./agents/',
+            'cp -r ' + self.application_dict['agent_tufts'] + '/v2.2/* ./agents/',
             'echo "[DN_MSG]agent moved into place\n"',
             'docker kill $(docker ps -q) || true',
             'echo "[DN_MSG]attempted to kill running dockers\n"',
