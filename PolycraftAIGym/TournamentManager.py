@@ -45,5 +45,8 @@ class TournamentThread(threading.Thread):
                     if len(part) < BUFF_SIZE:
                         # either 0 or end of data
                         break
+                if data is None or data == "":
+                    print(threading.currentThread().getName(), "ERROR: received empty string")
+                    return
                 data_dict = json.loads(data)
                 print(data_dict)
