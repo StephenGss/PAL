@@ -540,64 +540,57 @@ class AgentBatchCommands:
         return setup + github + copy_files + copy_agent + launch_polycraft
 
 ###Launch GTECH Agent###
+    def _get_gtech_agent_commands(self, tzip, tname, suffix):
+        if suffix is None:
+            suffix = ""
 
- # def _get_gtech_agent_commands(self, tzip, tname, suffix):
- #        if suffix is None:
- #            suffix = ""
- #
- #        setup = self._setup_vm()
- #
- #        github = self._get_github_commands()
- #
- #        copy_files = [
- #            'cd $HOME',
- #            'cp secret_real.ini polycraft/pal/',
- #            # f'unzip -l {tzip} | grep -q "*/"',
- #            f'if unzip -l {tzip} | grep -q "*/"; then unzip {tzip}; else unzip {tzip} -d {tname}/;fi',
- #            # f'if [ "$?" == "0"]; then unzip {tzip}; else unzip {tzip} -d {tname}/; fi',
- #            # f'unzip {tzip}',
- #            f'mv {tname}/ polycraft/pal/',
- #            'echo "[DN_MSG]files copied into pal\n"',
- #            # 'cp setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
- #            # 'mv setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
- #        ]
- #
- #        copy_agent = [
- #            'cd $HOME/polycraft/pal',
- #            'mkdir agents/',
- #            'wget https://julialang-s3.julialang.org/bin/linux/x64/1.5/julia-1.5.3-linux-x86_64.tar.gz',
- #            'tar -xf julia-1.5.3-linux-x86_64.tar.gz',
- #
- #            'sudo ln -s $(pwd)/julia-1.5.3/bin/julia /usr/local/bin/julia',
- #
- #            'cp -r ' + self.application_dict['agent_cra'] + '/* ./agents/',
- #            f'cd agents/',
- #            'julia setup.jl',
- #            # 'find . -not -type d -exec file "{}" ";" | grep CRLF | sed -n "s/:.*//p" | xargs -I {} sed -i "s/\r$//g" {}',
- #            # 'echo "[DN_MSG]CRLF endings removed"',
- #            # 'echo "[DN_MSG]attempting to insert: \\n\\        \\\'$HOME/polycraft/pal/agents/Huga/ImageProcessing/checkpoint.pth.tar\\\' into fast.py"',
- #            # "sed -i -e \"s+\\'paths\\' : \[+&\\n\\        '$HOME/polycraft/pal/agents/Huga/ImageProcessing/checkpoint.pth.tar',+\" Huga/ImageProcessing/fast.py",
- #            'echo "[DN_MSG]agent moved into place\n"',
- #        ]
- #
- #        agent_directory = "../agents/"
- #
- #        polycraft_launch_cmd = "julia deploy.jl"
- #
- #        launch_polycraft = [
- #            'cd $HOME/polycraft/pal',
- #            'find . -not -type d -exec file "{}" ";" | grep CRLF | sed -n "s/:.*//p" | xargs -I {} sed -i "s/\r$//g" {} || true',
- #            'cd $HOME/polycraft/pal/PolycraftAIGym',
- #            'mkdir Logs',
- #            'echo "[DN_MSG]hopefully moved into the right folder?\n"',
- #            'export _JAVA_OPTIONS="-Xmx3G"',
- #            f'python LaunchTournament.py -c 1000 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "{agent_directory}" -x "{polycraft_launch_cmd}" -i 1800 -m 480',
- #        ]
- #
- #        # return github + copy_files + copy_agent
- #
- #        # return setup + github + copy_files + copy_agent
- #        return setup + github + copy_files + copy_agent + launch_polycraft
+        setup = self._setup_vm()
+
+        github = self._get_github_commands()
+
+        copy_files = [
+            'cd $HOME',
+            'cp secret_real.ini polycraft/pal/',
+            # f'unzip -l {tzip} | grep -q "*/"',
+            f'if unzip -l {tzip} | grep -q "*/"; then unzip {tzip}; else unzip {tzip} -d {tname}/;fi',
+            # f'if [ "$?" == "0"]; then unzip {tzip}; else unzip {tzip} -d {tname}/; fi',
+            # f'unzip {tzip}',
+            f'mv {tname}/ polycraft/pal/',
+            'echo "[DN_MSG]files copied into pal\n"',
+            # 'cp setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
+            # 'mv setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
+        ]
+
+        copy_agent = [
+            'cd $HOME/polycraft/pal',
+            'mkdir agents/',
+            'cp -r ' + self.application_dict['agent_gtech'] + '/* ./agents/',
+            f'cd agents/',
+            'find . -not -type d -exec file "{}" ";" | grep CRLF | sed -n "s/:.*//p" | xargs -I {} sed -i "s/\r$//g" {} || true',
+            'echo "[DN_MSG]CRLF endings removed"',
+            'cd 2020-11-25-gteil-agent-handoff/',
+            './pre-init-script.sh || true',
+            'echo "[DN_MSG]agent moved into place\n"',
+        ]
+
+        agent_directory = "../agents/2020-11-25-gteil-agent-handoff/"
+
+        polycraft_launch_cmd = "./run-gteil-docker-agent.sh"
+
+        launch_polycraft = [
+            'cd $HOME/polycraft/pal',
+            'find . -not -type d -exec file "{}" ";" | grep CRLF | sed -n "s/:.*//p" | xargs -I {} sed -i "s/\r$//g" {} || true',
+            'cd $HOME/polycraft/pal/PolycraftAIGym',
+            'mkdir Logs',
+            'echo "[DN_MSG]hopefully moved into the right folder?\n"',
+            'export _JAVA_OPTIONS="-Xmx3G"',
+            f'python LaunchTournament.py -c 1000 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "{agent_directory}" -x "{polycraft_launch_cmd}" -i 1800 -m 480',
+        ]
+
+        # return github + copy_files + copy_agent
+
+        # return setup + github + copy_files + copy_agent
+        return setup + github + copy_files + copy_agent + launch_polycraft
 
 if __name__ == '__main__':
     temp_dict = {
