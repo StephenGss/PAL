@@ -1,9 +1,5 @@
 #!/bin/bash
 ## Run on Batch using AutoUser (root) - will not be able to get the dpkg lock files to install packages otherwise.
-## Disable auto-updates that can force a node to reboot and requeue tasks
-sudo systemctl disable --now apt-daily.timer
-sudo systemctl disable --now apt-daily-upgrade.timer
-sudo systemctl daemon-reload
 
 apt-get update &&  apt-get upgrade -y
 #  apt-get install lubuntu-desktop -y
@@ -48,10 +44,23 @@ apt-get install python3-dev -y
 apt-get install python3-pip -y
 
 
-
+#mkdir polycraft && cd polycraft
+## # TODO: update to the correct branch:
+#git clone -b dev_unix_sri --single-branch https://github.com/StephenGss/pal.git
+#cd pal/
+#
+## TODO: Move private_tests/ from the zip file to the right place inside the pal folder.
+## mv where/is/private_tests/ ~/polycraft/pal/
+## chmod +x private_tests/sri_dryrun_mock/build.sh
+##  apt-get install python3.8
 ## Ignore Python 3.8 for now.
 rm /usr/bin/python
 ln -s /usr/bin/python3.6 /usr/bin/python
+#python -m pip install -U pip
+#python -m pip install -r requirements.txt
+
+# chown -R $HOME/polycraft/ azureuser:azureuser
+
 echo "setup installation complete"
 
 #Use this command for PAL
