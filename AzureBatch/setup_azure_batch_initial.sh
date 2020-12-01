@@ -1,5 +1,9 @@
 #!/bin/bash
 ## Run on Batch using AutoUser (root) - will not be able to get the dpkg lock files to install packages otherwise.
+## Disable auto-updates that can force a node to reboot and requeue tasks
+sudo systemctl disable --now apt-daily.timer
+sudo systemctl disable --now apt-daily-upgrade.timer
+sudo systemctl daemon-reload
 
 while sudo fuser /var/lib/dpkg/lock /var/lib/apt/lists/lock /var/cache/apt/archives/lock /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do echo "Waiting for release of apt locks"; sleep 2; done; apt-get update &&  apt-get upgrade -y
 #  apt-get install lubuntu-desktop -y
