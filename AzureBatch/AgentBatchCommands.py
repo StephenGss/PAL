@@ -162,7 +162,8 @@ class AgentBatchCommands:
 
     def _setup_vm(self):
         return [
-            'dpkg --configure -a',
+            'find . -not -type d -exec file "{}" ";" | grep CRLF | sed -n "s/:.*//p" | xargs -I {} sed -i "s/\r$//g" {} || true',
+            'while sudo fuser /var/lib/dpkg/lock /var/lib/apt/lists/lock /var/cache/apt/archives/lock /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do echo "Waiting for release of apt locks"; sleep 2; done; dpkg --configure -a',
             'echo "[DN_MSG]dpkg configure re-run\n"',
             './setup/setup_azure_batch_initial.sh',
             'echo "[DN_MSG]azure vm setup complete\n"',
