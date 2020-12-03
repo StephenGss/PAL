@@ -20,11 +20,11 @@ dhruv@polycraftworld.com for additional clarification.
 MAX_STEP_COST = 1000000
 
 # For Windows - (YMMV):
-PAL_COMMAND = "gradlew runclient"
+PAL_COMMAND = "gradlew  --stacktrace runclient"
 # For Systems with Graphics Cards, Use this instead
 # PAL_COMMAND_UNIX = "./gradlew runclient"
 # requires xvfb to be installed - see installation instructions
-PAL_COMMAND_UNIX = "xvfb-run -s '-screen 0 1280x1024x24' ./gradlew --no-daemon runclient"
+PAL_COMMAND_UNIX = "xvfb-run -s '-screen 0 1280x1024x24' ./gradlew --no-daemon --stacktrace runclient"
 
 ## CONFIGURABLE ##################################### CLI Commands ####################################
 MAX_TIME = 300                                      # change using -i <time>

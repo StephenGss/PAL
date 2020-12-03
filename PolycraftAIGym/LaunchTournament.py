@@ -342,7 +342,7 @@ class LaunchTournament:
                     break
                 # If agent started & PAL crashes, kill the main thread.
                 if self.pal_client_process.returncode is not None:
-                    self.debug_log.message(f"ERROR: Agent THREAD CRASHED WITH CODE: {self.pal_client_process.returncode}")
+                    self.debug_log.message(f"ERROR: PAL THREAD CRASHED WITH CODE: {self.pal_client_process.returncode}")
                     break
 
                 # If upload thread has stopped prematurely, then there is cause for concern.
