@@ -53,8 +53,9 @@ APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + APPLICATION_ID_FIXED + '_' + SIFT_A
 
 ### TUFTS ###
 TUFT_APPLICATION_ID = 'agent_tufts'
-TUFT_VERSION = '5'
+TUFT_VERSION = '6'
 TUFT_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + TUFT_APPLICATION_ID + '_' + TUFT_VERSION
+
 ### GT ###
 GT_APP_ID = 'agent_gt_pogo'
 GT_APPLICATION_VERSION = '6'
@@ -62,7 +63,7 @@ GT_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + GT_APP_ID + '_' + GT_APPLICATION
 
 ### GT Plan ###
 GT_PLAN_APP_ID = 'agent_gt_pogo_planner'
-GT_PLAN_APPLICATION_VERSION = '1'
+GT_PLAN_APPLICATION_VERSION = '2'
 GT_PLAN_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + GT_PLAN_APP_ID + '_' + GT_PLAN_APPLICATION_VERSION
 
 
@@ -78,17 +79,17 @@ GT_HUGA_MLAB_APP_DIR = '$AZ_BATCH_APP_PACKAGE_' + GT_HUGA_MLAB_APP_ID + '_' + GT
 
 ### SRI ###
 SRI_APP_ID = 'agent_sri'
-SRI_VERSION = '5'
+SRI_VERSION = '7'
 SRI_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + SRI_APP_ID + '_' + SRI_VERSION
 
 ### RAYTHEON ###
 RAYTHEON_APP_ID = 'agent_raytheon'  # APP ID
-RAYTHEON_VERSION = '12'
+RAYTHEON_VERSION = '16'
 RAYTHEON_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + RAYTHEON_APP_ID + '_' + RAYTHEON_VERSION
 
 ### CRA ###
 CRA_APP_ID = 'agent_cra'  # APP ID
-CRA_VERSION = '4'
+CRA_VERSION = '7'
 CRA_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + CRA_APP_ID + '_' + CRA_VERSION
 
 ### GTECH ###
@@ -321,7 +322,11 @@ class AzureBatchLaunchTournaments:
                 datetime.datetime.utcnow() + datetime.timedelta(weeks=2))
 
             constraint = batchmodels.TaskConstraints(
-                retention_time=datetime.timedelta(minutes=30),
+                ##Reduce this from 1440 to 30 minutes for big evaluation##
+                # retention_time=datetime.timedelta(minutes=1440),
+
+                # # ##Reduced this for Tufts SN100##
+                retention_time=datetime.timedelta(seconds=1),
             )
 
             task = batchmodels.TaskAddParameter(
@@ -526,7 +531,7 @@ if __name__ == '__main__':
     global_config = configparser.ConfigParser()
     global_config.read(helpers._SAMPLES_CONFIG_FILE_NAME)
     #
-    global_config.set('DEFAULT', 'poolvmcount', '3')
+    global_config.set('DEFAULT', 'poolvmcount', '50')
 
     # launch_pools_per_novelty(
     #     "TUFTS_AGENT_TEST_V3",
@@ -542,44 +547,87 @@ if __name__ == '__main__':
     huga_100_files = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\huga-12M-tournaments-zipped\\HUGA_100game_prenovelty"
     huga_SN10_files = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\huga-12M-tournaments-zipped\\HUGA_10game_shared_novelty"
     huga_SN100_files = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\huga-12M-tournaments-zipped\\HUGA_100game_shared_novelty"
+    huga_SNKM10_files = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\huga-12M-tournaments-zipped\\HUGA_10game_shared_novelty_known_mode"
+    huga_FEKM100_files = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\huga-12M-tournaments-zipped\\HUGA_100game_full_eval_known_mode"
+    huga_FEUM100_files = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\huga-12M-tournaments-zipped\\HUGA_100game_full_eval_unknown_mode"
+
     pogo_files = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\pogo-6M-tournaments-zipped\\POGO_L00_T01_S01"
     pogo_10_files = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\pogo-12M-tournaments-zipped\\POGO_10game_prenovelty"
     pogo_100_files = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\pogo-12M-tournaments-zipped\\POGO_100game_prenovelty"
     pogo_SN10_files = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\pogo-12M-tournaments-zipped\\POGO_10game_shared_novelties"
     pogo_SN100_files = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\pogo-12M-tournaments-zipped\\POGO_100game_shared_novelties"
+    pogo_FE100_files = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\pogo-12M-tournaments-zipped\\POGO_100game_12M_full_evaluation_unknown_mode"
+    pogo_NN10_files = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\pogo-12M-tournaments-zipped\\POGO_10game_12M_new_novelties"
+    pogo_NNL3_10_files = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\pogo-12M-tournaments-zipped\\POGO_10game_LVL3_12M_nn"
+    pogo_NN100_files = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\pogo-12M-tournaments-zipped\\POGO_100game_12M_new_novelties"
+    pogo_SNKM100_files = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\pogo-12M-tournaments-zipped\\POGO_100game_12M_shared_novelties_known_mode"
+
     #
     #
+    #
+    #
+
+    # launch_tournament_wrapper(
+    #     agent="BASELINE_POGOPLAN_12M",
+    #     agentType=AgentType.GT_POGO_PLAN_BASELINE,
+    #     test_type=TestType.STAGE5,
+    #     global_config=global_config,
+    #     pool="POGO_GTPLAN_FE_X0100_V1",
+    #     suffix="_120322",
+    #     tournament_directory=pogo_FE100_files,
+    # )
+
+
     # launch_tournament_wrapper(
     #     agent="GTECH_AGENT_12M_V1",
     #     agentType=AgentType.GTECH,
     #     test_type=TestType.STAGE4,
     #     global_config=global_config,
     #     pool="POGO_GTECH_VIRGIN_X0010_V1",
-    #     suffix="_112723",
+    #     suffix="_113018",
     #     tournament_directory=pogo_10_files,
     # )
     # launch_tournament_wrapper(
-    #     agent="SIFT_AGENT_12M_R1125",
+    #     agent="SIFT_12M_E1",
     #     agentType=AgentType.SIFT,
     #     test_type=TestType.STAGE5,
     #     global_config=global_config,
-    #     pool="POGO_SIFT_SN100_V1",
-    #     suffix="_112017",
-    #     tournament_directory=pogo_SN100_files,
+    #     pool="POGO_SIFT_FE_X0100_V1",
+    #     suffix="_120222",
+    #     tournament_directory=pogo_FE100_files,
     # )
-    #
+
+    launch_tournament_wrapper(
+       "TUFTS_12M_E1",
+       AgentType.TUFTS,
+       TestType.STAGE5,
+       global_config,
+       pool="POGO_TUFTS_FE_X0100_V1",
+       suffix="_120522",
+       tournament_directory=pogo_FE100_files,
+    )
+
     # launch_tournament_wrapper(
     #    "TUFTS_AGENT_12M_V4",
     #    AgentType.TUFTS,
-    #    TestType.STAGE4,
+    #    TestType.STAGE5,
     #    global_config,
-    #    pool="POGO_TUFTS_SN_X0010_v2",
-    #    suffix="_112722",
-    #    tournament_directory=pogo_SN10_files,
+    #    pool="POGO_TUFTS_VIRGIN_X0010_4G",
+    #    suffix="_120317",
+    #    tournament_directory=pogo_10_files,
     # )
 
     # global_config.set('DEFAULT', 'poolvmcount', '12')
 
+    # launch_tournament_wrapper(
+    #     "RAYTHEON_AGENT_V7",
+    #     AgentType.RAYTHEON,
+    #     TestType.STAGE5,
+    #     global_config,
+    #     pool="RAYTHEON_SN_X0100_v16_1",
+    #     suffix="_120317",
+    #     tournament_directory=huga_SN100_files,
+    # )
     launch_tournament_wrapper(
         "BASELINE_HUGA_12M_V3",
         AgentType.GT_HG_BASELINE_MATLAB,
@@ -595,9 +643,9 @@ if __name__ == '__main__':
     #     agentType=AgentType.CRA,
     #     test_type=TestType.STAGE5,
     #     global_config=global_config,
-    #     pool="POGO_CRA_SN_X0100_v4",
-    #     suffix="_112510",
-    #     tournament_directory=pogo_SN100_files,
+    #     pool="POGO_CRA_SNKM_X0100_v7_2",
+    #     suffix="_120522",
+    #     tournament_directory=pogo_SNKM100_files,
     # )
 
     # launch_tournament_wrapper(
@@ -613,13 +661,13 @@ if __name__ == '__main__':
     # global_config.set('DEFAULT', 'poolvmcount', '12')
     #
     # launch_tournament_wrapper(
-    #     agent="SRI_AGENT_12M_V4",
+    #     agent="SRI_12M_E1",
     #     agentType=AgentType.SRI,
     #     test_type=TestType.STAGE5,
     #     global_config=global_config,
-    #     pool="HUGA_SRI_VIRGIN_100_V1",
-    #     suffix="_112713",
-    #     tournament_directory=huga_100_files,
+    #     pool="HUGA_SRI_FE_X0100_1",
+    #     suffix="_120500",
+    #     tournament_directory=huga_FEUM100_files,
     # )
 
     # launch_tournament_wrapper(

@@ -58,7 +58,7 @@ class AgentBatchCommands:
 
         github = self._get_github_commands()
 
-        agent_folder_name = 'sri-m12-v2'
+        agent_folder_name = 'sri-m12-v4'
 
         copy_files = [
             'cd $HOME',
@@ -76,8 +76,8 @@ class AgentBatchCommands:
         copy_agent = [
             'cd $HOME/polycraft/pal',
             'mkdir agents/',
-            'cp -r ' + '$AZ_BATCH_APP_PACKAGE_agent_sri_5/* ./agents/',
-            # 'cp -r ' + self.application_dict['agent_sri'] + '/* ./agents/',
+            # 'cp -r ' + '$AZ_BATCH_APP_PACKAGE_agent_sri_6/* ./agents/',
+            'cp -r ' + self.application_dict['agent_sri'] + '/* ./agents/',
             'echo "[DN_MSG]agent moved into place\n"',
             f'cd $HOME/polycraft/pal/agents/{agent_folder_name}/',
             'chmod +x *.sh',
@@ -125,7 +125,7 @@ class AgentBatchCommands:
         copy_agent = [
             'cd $HOME/polycraft/pal',
             'mkdir agents/',
-            'cp -r ' + self.application_dict['agent_tufts'] + '/v2.2/* ./agents/',
+            'cp -r ' + self.application_dict['agent_tufts'] + '/v2.2.1/* ./agents/',
             'echo "[DN_MSG]agent moved into place\n"',
             'docker kill $(docker ps -q) || true',
             'echo "[DN_MSG]attempted to kill running dockers\n"',
@@ -138,7 +138,7 @@ class AgentBatchCommands:
             'cd $HOME/polycraft/pal/PolycraftAIGym',
             'mkdir Logs',
             'echo "[DN_MSG]hopefully moved into the right folder?\n"',
-            'export _JAVA_OPTIONS="-Xmx3G"',
+            'export _JAVA_OPTIONS="-Xmx4G"',
             # f'python LaunchTournament.py -t "{suffix}{tname}" -g "../{tname}" -a "{self.agent_name}" -d "../agents/" -x "./play.sh" ',
 
             #This line outputs all running processes every 5 seconds.
