@@ -93,7 +93,7 @@ CRA_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + CRA_APP_ID + '_' + CRA_VERSION
 
 ### GTECH ###
 GTECH_APP_ID = 'agent_gtech'  # APP ID
-GTECH_VERSION = '2'
+GTECH_VERSION = '3'
 GTECH_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + GTECH_APP_ID + '_' + GTECH_VERSION
 
 APP_DICT = {'agent_sift': APPLICATION_DIR,
@@ -149,11 +149,11 @@ class AzureBatchLaunchTournaments:
             # batchmodels.ApplicationPackageReference(application_id=GT_APP_ID, version=GT_APPLICATION_VERSION),
             # batchmodels.ApplicationPackageReference(application_id=SRI_APP_ID, version=SRI_VERSION),
             # batchmodels.ApplicationPackageReference(application_id=GT_HUGA_APP_ID, version=GT_HUGA_APP_VERSION),
-            batchmodels.ApplicationPackageReference(application_id=GT_HUGA_MLAB_APP_ID, version=GT_HUGA_MLAB_APP_VERSION),
+            # batchmodels.ApplicationPackageReference(application_id=GT_HUGA_MLAB_APP_ID, version=GT_HUGA_MLAB_APP_VERSION),
             # batchmodels.ApplicationPackageReference(application_id=GT_PLAN_APP_ID, version=GT_PLAN_APPLICATION_VERSION),
             # batchmodels.ApplicationPackageReference(application_id=RAYTHEON_APP_ID, version=RAYTHEON_VERSION),
             # batchmodels.ApplicationPackageReference(application_id=CRA_APP_ID, version=CRA_VERSION),
-            # batchmodels.ApplicationPackageReference(application_id=GTECH_APP_ID, version=GTECH_VERSION),
+            batchmodels.ApplicationPackageReference(application_id=GTECH_APP_ID, version=GTECH_VERSION),
         ]
 
         # Create User Accounts
@@ -270,12 +270,12 @@ class AzureBatchLaunchTournaments:
                 # batchmodels.ApplicationPackageReference(application_id=GT_APP_ID, version=GT_APPLICATION_VERSION),
                 # batchmodels.ApplicationPackageReference(application_id=SRI_APP_ID, version=SRI_VERSION),
                 # batchmodels.ApplicationPackageReference(application_id=GT_HUGA_APP_ID, version=GT_HUGA_APP_VERSION),
-                batchmodels.ApplicationPackageReference(application_id=GT_HUGA_MLAB_APP_ID, version=GT_HUGA_MLAB_APP_VERSION),
+                # batchmodels.ApplicationPackageReference(application_id=GT_HUGA_MLAB_APP_ID, version=GT_HUGA_MLAB_APP_VERSION),
                 # batchmodels.ApplicationPackageReference(application_id=GT_PLAN_APP_ID,
                 #                                         version=GT_PLAN_APPLICATION_VERSION),
                 # batchmodels.ApplicationPackageReference(application_id=RAYTHEON_APP_ID, version=RAYTHEON_VERSION),
                 # batchmodels.ApplicationPackageReference(application_id=CRA_APP_ID, version=CRA_VERSION),
-                # batchmodels.ApplicationPackageReference(application_id=GTECH_APP_ID, version=GTECH_VERSION),
+                batchmodels.ApplicationPackageReference(application_id=GTECH_APP_ID, version=GTECH_VERSION),
             ]
 
             user_identity = batch.models.UserIdentity(
@@ -549,15 +549,15 @@ if __name__ == '__main__':
     pogo_SN100_files = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\pogo-12M-tournaments-zipped\\POGO_100game_shared_novelties"
     #
     #
-    # launch_tournament_wrapper(
-    #     agent="GTECH_AGENT_12M_V1",
-    #     agentType=AgentType.GTECH,
-    #     test_type=TestType.STAGE4,
-    #     global_config=global_config,
-    #     pool="POGO_GTECH_VIRGIN_X0010_V1",
-    #     suffix="_112723",
-    #     tournament_directory=pogo_10_files,
-    # )
+    launch_tournament_wrapper(
+        agent="GTECH_AGENT_12M_V1",
+        agentType=AgentType.GTECH,
+        test_type=TestType.STAGE4,
+        global_config=global_config,
+        pool="POGO_GTECH_VIRGIN_X0010_V2",
+        suffix="_120523",
+        tournament_directory=pogo_10_files,
+    )
     # launch_tournament_wrapper(
     #     agent="SIFT_AGENT_12M_R1125",
     #     agentType=AgentType.SIFT,
@@ -580,15 +580,15 @@ if __name__ == '__main__':
 
     # global_config.set('DEFAULT', 'poolvmcount', '12')
 
-    launch_tournament_wrapper(
-        "BASELINE_HUGA_12M_V3",
-        AgentType.GT_HG_BASELINE_MATLAB,
-        TestType.STAGE5,
-        global_config,
-        pool="BASELINE_HUGA_TEST_X100_V1",
-        suffix="_120523",
-        tournament_directory=huga_100_files,
-    )
+    # launch_tournament_wrapper(
+    #     "BASELINE_HUGA_12M_V3",
+    #     AgentType.GT_HG_BASELINE_MATLAB,
+    #     TestType.STAGE5,
+    #     global_config,
+    #     pool="BASELINE_HUGA_TEST_X100_V1",
+    #     suffix="_120523",
+    #     tournament_directory=huga_100_files,
+    # )
     #
     # launch_tournament_wrapper(
     #     agent="CRA_AGENT_12M_V2",
