@@ -409,7 +409,7 @@ class AgentBatchCommands:
             'export LD_LIBRARY_PATH=/usr/local/MATLAB/MATLAB_Runtime/v98/runtime/glnxa64:/usr/local/MATLAB/MATLAB_Runtime/v98/bin/glnxa64:/usr/local/MATLAB/MATLAB_Runtime/v98/sys/os/glnxa64:/usr/local/MATLAB/MATLAB_Runtime/v98/extern/bin/glnxa64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}',
         ]
 
-        agent_directory = "../agents/HUGA_Baseline_12M_Agent/"
+        agent_directory = "../agents/HUGA_Baseline_12M_Agent_Frankenstein/"
 
         polycraft_launch_cmd = "./run_update_and_retrain_agent_04_test_online_final_vDN_EDITS.sh /usr/local/MATLAB/MATLAB_Runtime/v98"
 

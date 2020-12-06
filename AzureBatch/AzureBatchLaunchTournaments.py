@@ -583,11 +583,11 @@ if __name__ == '__main__':
     launch_tournament_wrapper(
         "BASELINE_HUGA_12M_V3",
         AgentType.GT_HG_BASELINE_MATLAB,
-        TestType.STAGE4,
+        TestType.STAGE5,
         global_config,
-        pool="BASELINE_HUGA_TEST_X10_4",
+        pool="BASELINE_HUGA_TEST_X100_V1",
         suffix="_120523",
-        tournament_directory=huga_10_files,
+        tournament_directory=huga_100_files,
     )
     #
     # launch_tournament_wrapper(
