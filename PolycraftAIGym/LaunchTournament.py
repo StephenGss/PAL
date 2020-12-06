@@ -197,8 +197,8 @@ class LaunchTournament:
             self.score_dict[self.game_index]['success_detail'] = msg
             return True
 
-        if line.find('{') != -1 and line.find(line_end_str) != -1:
-            json_text = line[line.find('{'):line.find(line_end_str)]
+        if line.find('{') != -1 and line.find(line_end_str) != -1 and line.rfind('}') != -1:
+            json_text = line[line.find('{'):line.rfind('}')+1]
             # TODO: Potentially remove this?
             json_text = re.sub(r'\\\\\"', '\'', json_text)
             json_text = re.sub(r'\\+\'', '\'', json_text)
@@ -687,9 +687,10 @@ class LaunchTournament:
             line_end_str = '\n'
 
         # Case 1: Record a Response from PAL to an Agent Command
-        if line.find('[CLIENT]{') != -1 and line.find(line_end_str) != -1:
+        if line.find('[CLIENT]{') != -1 and line.find(line_end_str) != -1 and line.rfind('}') != -1:
             # Get timestamp:
-            json_text = line[line.find('{'):line.find(line_end_str)]
+            json_text = line[line.find('{'):line.rfind('}')+1]
+            # json_text = line[line.find('{'):line.find(line_end_str)]
 
             json_text = re.sub(r'\\\\\"', '\'', json_text)
             json_text = re.sub(r'\\+\'', '\'', json_text)
@@ -758,9 +759,10 @@ class LaunchTournament:
         if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
             line_end_str = '\n'
 
-        if line.find('{') != -1 and line.find(line_end_str) != -1:
-            json_text = line[line.find('{'):line.find(line_end_str)]  # Make this system agnostic - previously \\r\\n
-            # TODO: Potentially remove this?
+        if line.find('{') != -1 and line.find(line_end_str) != -1 and line.rfind('}') != -1:
+            json_text = line[line.find('{'):line.rfind('}')+1]
+            # json_text = line[line.find('{'):line.find(line_end_str)]  # Make this system agnostic - previously \\r\\n
+            # noTODO: Potentially remove this?
             json_text = re.sub(r'\\\\\"', '\'', json_text)
             json_text = re.sub(r'\\+\'', '\'', json_text)
             # Load response into dictionary
