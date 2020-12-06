@@ -94,7 +94,7 @@ CRA_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + CRA_APP_ID + '_' + CRA_VERSION
 
 ### GTECH ###
 GTECH_APP_ID = 'agent_gtech'  # APP ID
-GTECH_VERSION = '2'
+GTECH_VERSION = '3'
 GTECH_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + GTECH_APP_ID + '_' + GTECH_VERSION
 
 APP_DICT = {'agent_sift': APPLICATION_DIR,
@@ -323,10 +323,10 @@ class AzureBatchLaunchTournaments:
 
             constraint = batchmodels.TaskConstraints(
                 ##Reduce this from 1440 to 30 minutes for big evaluation##
-                # retention_time=datetime.timedelta(minutes=1440),
+                retention_time=datetime.timedelta(minutes=30),
 
                 # # ##Reduced this for Tufts SN100##
-                retention_time=datetime.timedelta(seconds=1),
+                # retention_time=datetime.timedelta(seconds=1),
             )
 
             task = batchmodels.TaskAddParameter(
@@ -577,14 +577,13 @@ if __name__ == '__main__':
     #     tournament_directory=pogo_FE100_files,
     # )
 
-
     # launch_tournament_wrapper(
     #     agent="GTECH_AGENT_12M_V1",
     #     agentType=AgentType.GTECH,
     #     test_type=TestType.STAGE4,
     #     global_config=global_config,
-    #     pool="POGO_GTECH_VIRGIN_X0010_V1",
-    #     suffix="_113018",
+    #     pool="POGO_GTECH_VIRGIN_X0010_V2",
+    #     suffix="_120523",
     #     tournament_directory=pogo_10_files,
     # )
     # launch_tournament_wrapper(
@@ -597,15 +596,15 @@ if __name__ == '__main__':
     #     tournament_directory=pogo_FE100_files,
     # )
 
-    launch_tournament_wrapper(
-       "TUFTS_12M_E1",
-       AgentType.TUFTS,
-       TestType.STAGE5,
-       global_config,
-       pool="POGO_TUFTS_FE_X0100_V1",
-       suffix="_120522",
-       tournament_directory=pogo_FE100_files,
-    )
+    # launch_tournament_wrapper(
+    #    "TUFTS_12M_E1",
+    #    AgentType.TUFTS,
+    #    TestType.STAGE5,
+    #    global_config,
+    #    pool="POGO_TUFTS_FE_X0100_V1",
+    #    suffix="_120522",
+    #    tournament_directory=pogo_FE100_files,
+    # )
 
     # launch_tournament_wrapper(
     #    "TUFTS_AGENT_12M_V4",
@@ -620,6 +619,15 @@ if __name__ == '__main__':
     # global_config.set('DEFAULT', 'poolvmcount', '12')
 
     # launch_tournament_wrapper(
+    #     "BASELINE_HUGA_12M_V3",
+    #     AgentType.GT_HG_BASELINE_MATLAB,
+    #     TestType.STAGE5,
+    #     global_config,
+    #     pool="BASELINE_HUGA_TEST_X100_V1",
+    #     suffix="_120523",
+    #     tournament_directory=huga_100_files,
+    # )
+    # launch_tournament_wrapper(
     #     "RAYTHEON_AGENT_V7",
     #     AgentType.RAYTHEON,
     #     TestType.STAGE5,
@@ -628,15 +636,15 @@ if __name__ == '__main__':
     #     suffix="_120317",
     #     tournament_directory=huga_SN100_files,
     # )
-    launch_tournament_wrapper(
-        "BASELINE_HUGA_12M_V3",
-        AgentType.GT_HG_BASELINE_MATLAB,
-        TestType.STAGE5,
-        global_config,
-        pool="BASELINE_HUGA_TEST_X100_V1",
-        suffix="_120523",
-        tournament_directory=huga_100_files,
-    )
+    # launch_tournament_wrapper(
+    #     "BASELINE_HUGA_12M_V3",
+    #     AgentType.GT_HG_BASELINE_MATLAB,
+    #     TestType.STAGE5,
+    #     global_config,
+    #     pool="BASELINE_HUGA_TEST_X100_V1",
+    #     suffix="_120523",
+    #     tournament_directory=huga_100_files,
+    # )
     #
     # launch_tournament_wrapper(
     #     agent="CRA_AGENT_12M_V2",
