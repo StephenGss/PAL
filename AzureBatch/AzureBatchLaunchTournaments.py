@@ -73,7 +73,7 @@ GT_HUGA_APP_DIR = '$AZ_BATCH_APP_PACKAGE_' + GT_HUGA_APP_ID + '_' + GT_HUGA_APP_
 
 ### GT HG MATLAB ###
 GT_HUGA_MLAB_APP_ID = 'agent_gt_huga_matlab'
-GT_HUGA_MLAB_APP_VERSION = '3'
+GT_HUGA_MLAB_APP_VERSION = '7'
 GT_HUGA_MLAB_APP_DIR = '$AZ_BATCH_APP_PACKAGE_' + GT_HUGA_MLAB_APP_ID + '_' + GT_HUGA_MLAB_APP_VERSION
 
 ### SRI ###
@@ -149,9 +149,9 @@ class AzureBatchLaunchTournaments:
             # batchmodels.ApplicationPackageReference(application_id=GT_APP_ID, version=GT_APPLICATION_VERSION),
             # batchmodels.ApplicationPackageReference(application_id=SRI_APP_ID, version=SRI_VERSION),
             # batchmodels.ApplicationPackageReference(application_id=GT_HUGA_APP_ID, version=GT_HUGA_APP_VERSION),
-            # batchmodels.ApplicationPackageReference(application_id=GT_HUGA_MLAB_APP_ID, version=GT_HUGA_MLAB_APP_VERSION),
+            batchmodels.ApplicationPackageReference(application_id=GT_HUGA_MLAB_APP_ID, version=GT_HUGA_MLAB_APP_VERSION),
             # batchmodels.ApplicationPackageReference(application_id=GT_PLAN_APP_ID, version=GT_PLAN_APPLICATION_VERSION),
-            batchmodels.ApplicationPackageReference(application_id=RAYTHEON_APP_ID, version=RAYTHEON_VERSION),
+            # batchmodels.ApplicationPackageReference(application_id=RAYTHEON_APP_ID, version=RAYTHEON_VERSION),
             # batchmodels.ApplicationPackageReference(application_id=CRA_APP_ID, version=CRA_VERSION),
             # batchmodels.ApplicationPackageReference(application_id=GTECH_APP_ID, version=GTECH_VERSION),
         ]
@@ -270,11 +270,10 @@ class AzureBatchLaunchTournaments:
                 # batchmodels.ApplicationPackageReference(application_id=GT_APP_ID, version=GT_APPLICATION_VERSION),
                 # batchmodels.ApplicationPackageReference(application_id=SRI_APP_ID, version=SRI_VERSION),
                 # batchmodels.ApplicationPackageReference(application_id=GT_HUGA_APP_ID, version=GT_HUGA_APP_VERSION),
-                # batchmodels.ApplicationPackageReference(application_id=GT_HUGA_MLAB_APP_ID,
-                #                                         version=GT_HUGA_MLAB_APP_VERSION),
+                batchmodels.ApplicationPackageReference(application_id=GT_HUGA_MLAB_APP_ID, version=GT_HUGA_MLAB_APP_VERSION),
                 # batchmodels.ApplicationPackageReference(application_id=GT_PLAN_APP_ID,
                 #                                         version=GT_PLAN_APPLICATION_VERSION),
-                batchmodels.ApplicationPackageReference(application_id=RAYTHEON_APP_ID, version=RAYTHEON_VERSION),
+                # batchmodels.ApplicationPackageReference(application_id=RAYTHEON_APP_ID, version=RAYTHEON_VERSION),
                 # batchmodels.ApplicationPackageReference(application_id=CRA_APP_ID, version=CRA_VERSION),
                 # batchmodels.ApplicationPackageReference(application_id=GTECH_APP_ID, version=GTECH_VERSION),
             ]
@@ -322,7 +321,7 @@ class AzureBatchLaunchTournaments:
                 datetime.datetime.utcnow() + datetime.timedelta(weeks=2))
 
             constraint = batchmodels.TaskConstraints(
-                retention_time=datetime.timedelta(minutes=1440),
+                retention_time=datetime.timedelta(minutes=30),
             )
 
             task = batchmodels.TaskAddParameter(
@@ -582,12 +581,12 @@ if __name__ == '__main__':
     # global_config.set('DEFAULT', 'poolvmcount', '12')
 
     launch_tournament_wrapper(
-        "RAYTHEON_AGENT_V7",
-        AgentType.RAYTHEON,
+        "BASELINE_HUGA_12M_V3",
+        AgentType.GT_HG_BASELINE_MATLAB,
         TestType.STAGE4,
         global_config,
-        pool="RAYTHEON_VIRGIN_X0010_V2",
-        suffix="_112722",
+        pool="BASELINE_HUGA_TEST_X10_4",
+        suffix="_120523",
         tournament_directory=huga_10_files,
     )
     #
