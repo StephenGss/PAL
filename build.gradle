@@ -80,3 +80,7 @@ processResources
         exclude 'mcmod.info'
     }
 }
+
+// And add to the jvm args so that it is also loaded when running using gradle runClient:
+// JavaExec exec = project.getTasks().getByName("runClient")
+// exec.jvmArgs(["-Dfml.coreMods.load=edu.utd.minecraft.mod.polycraft.util.OverclockingPlugin"])
