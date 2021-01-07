@@ -329,6 +329,7 @@ class AgentBatchCommands:
             'mkdir Logs',
             'echo "[DN_MSG]hopefully moved into the right folder?\n"',
             'export _JAVA_OPTIONS="-Xmx3G"',
+            # 'export PAL_FPS="200"',
             f'python LaunchTournament.py -c 1000 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "{agent_directory}" -x "{polycraft_launch_cmd}"',
         ]
 
