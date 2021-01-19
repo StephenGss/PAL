@@ -186,6 +186,7 @@ class LaunchTournament:
         # NoTODO: Track end condition flag to call reset -- completed
 
         line_end_str = '\r\n'
+        line_end_str = '\n'
         if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
             line_end_str = '\n'
 
@@ -328,7 +329,7 @@ class LaunchTournament:
         self.debug_log.message("PAL Client Initiated")
 
         while self.tournament_in_progress:
-            time.sleep(0.005)
+            # time.sleep(0.0001)
             # grab the console output of PAL
             next_line = self._check_queues(check_all=True)
 
@@ -664,6 +665,7 @@ class LaunchTournament:
         :param line: Current Line in STDOUT
         """
         line_end_str = '\r\n'
+        line_end_str = '\n'
         if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
             line_end_str = '\n'
         if line.find('REPORT_NOVELTY') != -1 and line.find(line_end_str) != -1:
@@ -683,6 +685,7 @@ class LaunchTournament:
         "gameOver":false}\n'
         """
         line_end_str = '\r\n'
+        line_end_str = '\n'
         if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
             line_end_str = '\n'
 
@@ -756,6 +759,7 @@ class LaunchTournament:
         """
 
         line_end_str = '\r\n'
+        line_end_str = '\n'
         if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
             line_end_str = '\n'
 
@@ -839,5 +843,5 @@ if __name__ == "__main__":
             print(f"Max Time (minutes): {arg}")
             CONFIG.MAX_TOURN_TIME = int(arg)
 
-    pal = LaunchTournament(os='UNIX')  # TODO: Remove the os command line argument.
+    pal = LaunchTournament(os='WIN')  # TODO: Remove the os command line argument.
     pal.execute()
