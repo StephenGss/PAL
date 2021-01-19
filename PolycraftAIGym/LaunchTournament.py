@@ -328,7 +328,7 @@ class LaunchTournament:
         self.debug_log.message("PAL Client Initiated")
 
         while self.tournament_in_progress:
-            time.sleep(0.005)
+            # time.sleep(0.005) This slows down this script quite a bit
             # grab the console output of PAL
             next_line = self._check_queues(check_all=True)
 
