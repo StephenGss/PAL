@@ -207,7 +207,7 @@ class TAD:
         #     self.cq.put(lambda: self.move_towards(None))
 
     def plan_speed(self):
-        for x in range(100):
+        for x in range(300):
             self.cq.put(lambda: self.send_command(F"move w"))
             self.cq.put(lambda: self.send_command(F"move x"))
         if once:
