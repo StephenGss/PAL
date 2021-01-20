@@ -9,6 +9,8 @@ Our test bench uses a few hundred cores on Azure Batch running Ubuntu 18.04 LTS 
 Your mileage will vary if using Windows. 
 
 ## Key Updates
+### Release 1.3
+* New Environment variable PAL_FPS to set game speed frames per second. This can increase your agent's actions per second and greatly decrease training time. By default, this is set to 20 and the maximum is 1000. However, depending on the machine, you may not get the expected frames per second. The frames per second will also depend on what commands you are using. Some commands take 1 frame to perform and others take 2.
 ### Release 1.2
 * New Environment variable SENSE_SCREEN_FORMAT to set default image compression format. This can directly affect performance on different systems when the agent calls SENSE_SCREEN. Default is PNG, but on many systems PNG compression can take many ms to process. When this process takes more than 50ms it can slow down game performance if called on every action.  It is recommended to test different options to increase performance. Options include: {"PNG", "BMP", "JPEG", "JPG", "WBMP", "GIF"}.
 * New HUGA lvl 0 novelties
