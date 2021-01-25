@@ -5,6 +5,7 @@ Desc: TAD is a rule-based agent designed for testing purposes of PAL tasks
 """
 import datetime
 import getopt
+import os
 import socket
 import queue
 import json
@@ -34,6 +35,9 @@ class TAD:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.tournament_over = False
         self.reset_all()
+        if 'PAL_AGENT_PORT' in os.environ:
+            self.pal_port = int(os.environ['PAL_AGENT_PORT'])
+            print('Using Port: ' + os.environ['PAL_AGENT_PORT'])
 
     def reset_all(self):
         self.obs = {}
@@ -77,13 +81,22 @@ class TAD:
         return data_dict
 
     def sense_all(self):
-        return self.send_command("SENSE_ALL NONAV");
+        self.action_count += 1
+        return self.send_command("SENSE_ALL NONAV")
+
+    def sense_screen(self):
+        self.action_count += 1
+        return self.send_command("SENSE_SCREEN")
 
     def update_obs(self):
         self.inventory_by_item.clear()
         self.inventory_by_slot.clear()
         self.trees.clear()
         self.crafting_tables.clear()
+
+        # sense_screen for speed testing
+        if screen:
+            self.sense_screen()
 
         self.obs = self.sense_all()
         for slot in self.obs['inventory']:
@@ -207,7 +220,9 @@ class TAD:
         #     self.cq.put(lambda: self.move_towards(None))
 
     def plan_speed(self):
-        for x in range(300):
+        for x in range(100):
+            if screen:
+                self.cq.put(lambda: self.sense_screen())
             self.cq.put(lambda: self.send_command(F"move w"))
             self.cq.put(lambda: self.send_command(F"move x"))
         if once:
@@ -242,11 +257,12 @@ class TAD:
 if __name__ == "__main__":
     mode = 'normal'
     once = False
+    screen = False
 
     argv = sys.argv[1:]
     try:
-        opts, args = getopt.getopt(argv, "hm:o:",
-                                   ["mode=", "once="])
+        opts, args = getopt.getopt(argv, "hm:o:s:",
+                                   ["mode=", "once=", "screen="])
     except getopt.GetoptError:
         print('TAD.py -m <mode> -o <run_once:True/False>')
         sys.exit(2)
@@ -259,6 +275,8 @@ if __name__ == "__main__":
             mode = str(arg)
         elif opt in ("-o", "--once"):
             once = bool(arg)
+        elif opt in ("-s", "--screen"):
+            screen = bool(arg)
 
     startTime = datetime.datetime.now()
 
