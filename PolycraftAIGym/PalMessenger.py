@@ -4,7 +4,7 @@ import time, re
 
 class PalMessenger:
     """ Isolates message handling and allows easy piping into the console or a log file"""
-    def __init__(self, print_log_info, write_log_info, log_file=None, log_note="", give_time=True):
+    def __init__(self, print_log_info, write_log_info, log_file=None, log_note="", give_time=True, batch_size=20):
         # Flag for sending messages to the console
         self.print_log_info = print_log_info
         # Flag for writing messages to a log file
@@ -16,7 +16,10 @@ class PalMessenger:
         self.log_note = log_note
         # If give_time is true, a time stamp will automatically be appended to all messages
         self.give_time = give_time
-        if write_log_info is True:
+        # when the batch size is reached, write to file if writing is enabled
+        self.batch_size = batch_size
+        self.msg_counter = 0
+        if write_log_info:
             Path(log_file).parent.mkdir(parents=True, exist_ok=True)
 
     def __copy__(self):

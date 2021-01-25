@@ -14,6 +14,7 @@ from copy import copy, deepcopy
 import getopt
 import psutil
 from filelock import Timeout, FileLock
+import statistics
 
 
 
@@ -73,6 +74,7 @@ class LaunchTournament:
         self.score_dict = {}
         self.game_score_dict = defaultdict(lambda: defaultdict(lambda: 0))
         self.threads = None
+        self.fps_list = []
 
         ##Logging
         self._create_logs()
@@ -153,15 +155,16 @@ class LaunchTournament:
         log_debug_file = Path(log_dir) / f"Debug_log_game_{self.game_index}_{PalMessenger.PalMessenger.time_now_str('_')}.txt"
         log_speed_file = Path(log_dir) / f"speed_log_game_{self.game_index}_{PalMessenger.PalMessenger.time_now_str('_')}.txt"
 
+        write_logs = False
         # To see logs written to STDOUT of the Main Thread, change *_print to True.
         should_agent_print = False      # should Agent STDOUT print to main thread STDOUT (default: False)
-        should_agent_write_log = True   # should Agent STDOUT write to an Agent Log? (Default: True)
+        should_agent_write_log = write_logs   # should Agent STDOUT write to an Agent Log? (Default: True)
         should_PAL_print = False        # should PAL STDOUT print to main thread STDOUT (default: False)
-        should_PAL_write_log = True     # should PAL STDOUT write to a PAL log? (default: True)
-        should_debug_print = True       # send useful progress updates to main thread STDOUT (default: True)
-        should_debug_write_log = True   # write useful debug log updates to a Debug log (default: True)
+        should_PAL_write_log = write_logs     # should PAL STDOUT write to a PAL log? (default: True)
+        should_debug_print = False       # send useful progress updates to main thread STDOUT (default: True)
+        should_debug_write_log = write_logs   # write useful debug log updates to a Debug log (default: True)
         speed_print_bool = True         # Speed Log outputs Steps Per Second to log
-        speed_log_write_bool = True     # Speed Log writes Steps per second to File
+        speed_log_write_bool = write_logs     # Speed Log writes Steps per second to File
 
         # # I recognize that some utility like logging may be better, but whatever:
         self.agent_log = PalMessenger.PalMessenger(should_agent_print, should_agent_write_log, agent_port_file,
@@ -431,6 +434,7 @@ class LaunchTournament:
                         self.debug_log.message("Game has ended.")
                         self.speed_log.message(
                             str(self.game_index) + ": " + str(self.commands_sent / (time.time() - self.start_time)))
+                        self.fps_list.append(round(self.commands_sent / (time.time() - self.start_time), 2))
                         self._game_over()
                         self._tournament_completed()
                         break
@@ -455,6 +459,7 @@ class LaunchTournament:
                     self.debug_log.message("Game has ended.")
                     self.speed_log.message(
                         str(self.game_index) + ": " + str(self.commands_sent / (time.time() - self.start_time)))
+                    self.fps_list.append(round(self.commands_sent / (time.time() - self.start_time), 2))
                     self._game_over()
 
                     # # Check if the tournament is over
@@ -602,6 +607,11 @@ class LaunchTournament:
         """
         self._check_queues(check_all=True)
         self.debug_log.message("Tournament Completed: " + str(len(self.games)) + "games run")
+        print(self.fps_list)
+        print('Min:' + str(round(min(self.fps_list), 2)))
+        print('Max:' + str(round(max(self.fps_list), 2)))
+        print('Mean:' + str(round(statistics.mean(self.fps_list), 2)))
+        print('Median:' + str(round(statistics.mode(self.fps_list), 2)))
         sys.stdout.flush()
         # os.kill(self.agent.pid, signal.SIGTERM)
         # os.kill(self.pal_client_process.pid, signal.SIGTERM)
