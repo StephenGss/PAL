@@ -329,8 +329,9 @@ class AgentBatchCommands:
             'mkdir Logs',
             'echo "[DN_MSG]hopefully moved into the right folder?\n"',
             'export _JAVA_OPTIONS="-Xmx3G"',
-            # 'export PAL_FPS="200"',
-            f'python LaunchTournament.py -c 1000 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "{agent_directory}" -x "{polycraft_launch_cmd}"',
+            'export PAL_FPS="200"',
+            # f'python LaunchTournament.py -c 1000 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "{agent_directory}" -x "{polycraft_launch_cmd}"',
+            f'python LaunchTournament.py -c 50 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "{agent_directory}" -x "{polycraft_launch_cmd}"',
         ]
 
         return setup + github + copy_files + copy_agent + launch_polycraft
@@ -533,7 +534,8 @@ class AgentBatchCommands:
             'mkdir Logs',
             'echo "[DN_MSG]hopefully moved into the right folder?\n"',
             'export _JAVA_OPTIONS="-Xmx3G"',
-            f'python LaunchTournament.py -c 1000 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "{agent_directory}" -x "{polycraft_launch_cmd}" -i 1800 -m 480',
+            f'python LaunchTournament.py -c 50 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "{agent_directory}" -x "{polycraft_launch_cmd}" -i 1800 -m 480',
+            # f'python LaunchTournament.py -c 1000 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "{agent_directory}" -x "{polycraft_launch_cmd}" -i 1800 -m 480',
         ]
 
         # return github + copy_files + copy_agent
@@ -570,14 +572,20 @@ class AgentBatchCommands:
             f'cd agents/',
             'find . -not -type d -exec file "{}" ";" | grep CRLF | sed -n "s/:.*//p" | xargs -I {} sed -i "s/\r$//g" {} || true',
             'echo "[DN_MSG]CRLF endings removed"',
-            'cd 2020-11-25-gteil-agent-handoff/',
-            './pre-init-script.sh || true',
+            # 'cd 2020-11-25-gteil-agent-handoff/',
+            'cd gt-eil/',
+            'python setup.py develop',
+            'python -m pip install -e .',
+            # './pre-init-script.sh || true',
             'echo "[DN_MSG]agent moved into place\n"',
         ]
 
-        agent_directory = "../agents/2020-11-25-gteil-agent-handoff/"
+        # agent_directory = "../agents/2020-11-25-gteil-agent-handoff/"
+        agent_directory = "../agents/gt-eil/"
 
-        polycraft_launch_cmd = "./run-gteil-docker-agent.sh"
+        # polycraft_launch_cmd = "./run-gteil-docker-agent.sh"
+        polycraft_launch_cmd = "./run-gt-agent-native.sh"
+
 
         launch_polycraft = [
             'cd $HOME/polycraft/pal',
@@ -586,7 +594,7 @@ class AgentBatchCommands:
             'mkdir Logs',
             'echo "[DN_MSG]hopefully moved into the right folder?\n"',
             'export _JAVA_OPTIONS="-Xmx3G"',
-            f'python LaunchTournament.py -c 1000 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "{agent_directory}" -x "{polycraft_launch_cmd}" -i 300',
+            f'python LaunchTournament.py -c 1000 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "{agent_directory}" -x "{polycraft_launch_cmd}" -i 120',
         ]
 
         # return github + copy_files + copy_agent
