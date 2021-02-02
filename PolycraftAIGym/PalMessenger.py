@@ -16,6 +16,7 @@ class PalMessenger:
         self.log_note = log_note
         # If give_time is true, a time stamp will automatically be appended to all messages
         self.give_time = give_time
+        self.messages = []
         # when the batch size is reached, write to file if writing is enabled
         self.batch_size = batch_size
         self.msg_counter = 0
@@ -42,8 +43,10 @@ class PalMessenger:
             print(message)
         message = message + "\n"
         if self.write_log_info:
-            with open(self.log_file, "a") as write_file:
-                write_file.write(message)
+            self.messages.append(message)
+            self.msg_counter += 1
+        if self.msg_counter >= self.batch_size:
+            self.flush_all()
 
     def message(self, message_to_handle):
         message = ""
@@ -55,8 +58,18 @@ class PalMessenger:
         if not message.endswith("\\n"):
             message = message + "\n"
         if self.write_log_info:
+            self.messages.append(message)
+            self.msg_counter += 1
+        if self.msg_counter >= self.batch_size:
+            self.flush_all()
+
+    def flush_all(self):
+        if self.write_log_info:
             with open(self.log_file, "a") as write_file:
-                write_file.write(message)
+                for message in self.messages:
+                    write_file.write(message)
+        self.messages.clear()
+
 
     @staticmethod
     def time_now_str(sep=":"):

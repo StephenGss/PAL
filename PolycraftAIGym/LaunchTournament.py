@@ -31,7 +31,7 @@ class LaunchTournament:
 
     All messages in stdout for the AI Agent, PAL client, and Debugging are written to log files (see logging below)
     """
-    def __init__(self, os='Unix', log_dir='Logs/', args=(), kwargs=None):
+    def __init__(self, os='Unix', log_dir='D:/PALTEST/Logs/', args=(), kwargs=None):
         self.commands_sent = 0
         self.total_step_cost = 0
         self.start_time = time.time()
@@ -77,6 +77,8 @@ class LaunchTournament:
         self.fps_list = []
 
         ##Logging
+        self.write_logs = True
+        self.log_batch_size = 20
         self._create_logs()
 
         ## Monitoring
@@ -155,26 +157,26 @@ class LaunchTournament:
         log_debug_file = Path(log_dir) / f"Debug_log_game_{self.game_index}_{PalMessenger.PalMessenger.time_now_str('_')}.txt"
         log_speed_file = Path(log_dir) / f"speed_log_game_{self.game_index}_{PalMessenger.PalMessenger.time_now_str('_')}.txt"
 
-        write_logs = False
         # To see logs written to STDOUT of the Main Thread, change *_print to True.
         should_agent_print = False      # should Agent STDOUT print to main thread STDOUT (default: False)
-        should_agent_write_log = write_logs   # should Agent STDOUT write to an Agent Log? (Default: True)
+        should_agent_write_log = self.write_logs   # should Agent STDOUT write to an Agent Log? (Default: True)
         should_PAL_print = False        # should PAL STDOUT print to main thread STDOUT (default: False)
-        should_PAL_write_log = write_logs     # should PAL STDOUT write to a PAL log? (default: True)
+        should_PAL_write_log = self.write_logs     # should PAL STDOUT write to a PAL log? (default: True)
         should_debug_print = False       # send useful progress updates to main thread STDOUT (default: True)
-        should_debug_write_log = write_logs   # write useful debug log updates to a Debug log (default: True)
+        should_debug_write_log = self.write_logs   # write useful debug log updates to a Debug log (default: True)
         speed_print_bool = True         # Speed Log outputs Steps Per Second to log
-        speed_log_write_bool = write_logs     # Speed Log writes Steps per second to File
+        speed_log_write_bool = self.write_logs     # Speed Log writes Steps per second to File
 
         # # I recognize that some utility like logging may be better, but whatever:
         self.agent_log = PalMessenger.PalMessenger(should_agent_print, should_agent_write_log, agent_port_file,
-                                                   log_note="AGENT: ")
-        self.PAL_log = PalMessenger.PalMessenger(should_PAL_print, should_PAL_write_log, log_port_file, log_note="PAL: ")
+                                                   log_note="AGENT: ", batch_size=self.log_batch_size)
+        self.PAL_log = PalMessenger.PalMessenger(should_PAL_print, should_PAL_write_log, log_port_file,
+                                                 log_note="PAL: ", batch_size=self.log_batch_size)
 
         self.debug_log = PalMessenger.PalMessenger(should_debug_print, should_debug_write_log, log_debug_file,
-                                                   log_note="DEBUG: ")
+                                                   log_note="DEBUG: ", batch_size=self.log_batch_size)
         self.speed_log = PalMessenger.PalMessenger(speed_print_bool, speed_log_write_bool, log_speed_file,
-                                                   log_note="FPS: ")
+                                                   log_note="FPS: ", batch_size=self.log_batch_size)
 
     def _check_ended(self, line):
         """
@@ -561,6 +563,12 @@ class LaunchTournament:
         self.debug_log.message("Completed game " + str(self.game_index))
         self.debug_log.message(f"Final Score: {str(self.score_dict)}")
         sys.stdout.flush()
+        # flush all logs
+        self.agent_log.flush_all()
+        self.debug_log.flush_all()
+        self.PAL_log.flush_all()
+        self.speed_log.flush_all()
+
         self.score_dict[self.game_index]['endTime'] = PalMessenger.PalMessenger.time_now_str()
 
         # self.threads = self._update_azure(self.game_index)
