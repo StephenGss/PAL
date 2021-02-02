@@ -23,7 +23,7 @@ class AMOC_Calculations:
         # self.level_dict = DefaultOrderedDict(lambda: DefaultOrderedDict(lambda: DefaultOrderedDict(lambda: DefaultOrderedDict(lambda: dict()))))
         self.level_dict = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: dict()))))
         self.granular_auc = []
-        self.output_dir = Path(f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\00. 12M Evaluation\\01. AMOC Graphs\\{self.title}\\")
+        self.output_dir = Path(f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\00. 12M Evaluation AMOC Curves\\01. AMOC Graphs\\{self.title}\\")
         self.output_dir.mkdir(parents=True, exist_ok=True)
         # If KWARGS is not none, update the variables:
         for key in ('in_file', 'agent_name', 'tournament_likeness', 'debug'):
@@ -291,83 +291,80 @@ class AMOC_Calculations:
                 print(f"diff: {diff}")
                 for d in self.level_dict[lvl][diff].keys():
                     print(f"d: {d}")
-                    F = 0
-                    S = 0
-                    R = list()
+                    # F = 0
+                    # S = 0
+                    # R = list()
                     for k in self.level_dict[lvl][diff][d].keys():
-                        # F = 0
-                        # S = 0
-                        # R = list()
+                        F = 0
+                        S = 0
+                        R = list()
                         print(f"k: {k}")
                         count += 1
-                        # actual_ind = self.level_dict[lvl][diff][d][k]['actual_novelty_index']
-                        # detected_ind = self.level_dict[lvl][diff][d][k]['output_novelty_index']
-                        # if actual_ind is None or detected_ind is None:
-                        #     continue
-                        # if detected_ind == -1:  # no detection
-                        #     R.append([F, S])
-                        # elif detected_ind < actual_ind:  # FP>0 and TP>0
-                        #     for i in range(detected_ind, actual_ind):
-                        #         F += 1
-                        #         R.append([F, S])
-                        #     S += (20 - actual_ind)
-                        #     R.append([F, S])
-                        # elif detected_ind >= actual_ind:  # no FP
-                        #     S += (20 - detected_ind)
-                        #     R.append([F, S])
+
                         actual_ind = self.level_dict[lvl][diff][d][k]['actual_novelty_index']
                         detected_ind = self.level_dict[lvl][diff][d][k]['output_novelty_index']
                         instances = self.level_dict[lvl][diff][d][k]['games_in_tournament']
-                        if actual_ind is None or detected_ind is None:
-                            continue
-                        if detected_ind == -1:  # no detection
-                            self.R.append([self.F, self.S])
-                            R.append([F, S])
-                        elif detected_ind < actual_ind:  # FP>0 and TP>0
-                            for i in range(detected_ind, actual_ind):
-                                self.F += 1
-                                F += 1
+                        # Iterate through all played games in the tournament and apply the appropriate penalty for the earliest FP
+                        # ASSUMPTION:
+                        #   - Agent is expected to report novelty ONLY ONCE per tournament and the earliest report
+                        #   - is counted for it
+                        #   - TODO: if agents improve their detection/reporting, then we need to revise AMOC calculation
+                        for game_id in range(0, instances):
+                            if actual_ind is None or detected_ind is None:
+                                continue
+                            if detected_ind == -1 or detected_ind < game_id:  # no detection
                                 self.R.append([self.F, self.S])
                                 R.append([F, S])
-                            self.S += (instances - actual_ind)
-                            S += (instances - actual_ind)
-                            self.R.append([self.F, self.S])
-                            R.append([F, S])
-                        elif detected_ind >= actual_ind:  # no FP
-                            self.S += (instances - detected_ind)
-                            S += (instances - detected_ind)
-                            self.R.append([self.F, self.S])
-                            R.append([F, S])
+                            elif detected_ind < actual_ind:  # FP>0 and TP>0
+                                for i in range(game_id, actual_ind):
+                                    self.F += 1
+                                    F += 1
+                                    self.R.append([self.F, self.S])
+                                    R.append([F, S])
+                                self.S += (instances - actual_ind)
+                                S += (instances - actual_ind)
+                                self.R.append([self.F, self.S])
+                                R.append([F, S])
+                            elif detected_ind >= actual_ind:  # no FP
+                                self.S += (instances - detected_ind)
+                                S += (instances - detected_ind)
+                                self.R.append([self.F, self.S])
+                                R.append([F, S])
 
-                    F_total = F
-                    if F == 0:
-                        F_total = 1
-                    S_total = S
-                    if S==0:
-                        S_total = 1
-                    F_list = list()
-                    S_list = list()
+                        F_total = F
+                        # if F == 0:
+                        #     F_total = 1
+                        S_total = S
+                        # if S==0:
+                        #     S_total = 1
+                        F_list = list()
+                        S_list = list()
+                        auc_val = -1
+                        if S_total == 0:
+                            auc_val = 0
+                        elif F_total == 0:
+                            auc_val = 1
+                        else:
+                            for i in range(len(R)):
+                                R[i][0] = R[i][0] / F_total
+                                F_list.append(R[i][0])
+                                R[i][1] = R[i][1] / S_total
+                                S_list.append(R[i][1])
 
-                    for i in range(len(R)):
-                        R[i][0] = R[i][0] / F_total
-                        F_list.append(R[i][0])
-                        R[i][1] = R[i][1] / S_total
-                        S_list.append(R[i][1])
+                            F_list = sorted(F_list)
+                            S_list = sorted(S_list)
 
-                    F_list = sorted(F_list)
-                    S_list = sorted(S_list)
-
-                    plt.plot(S_list, F_list)
-                    plt.xlabel('False alarm rate')
-                    plt.ylabel('Average Score')
-                    try:
-                        auc_val = auc(S_list, F_list)
-                    except ValueError:
-                        auc_val = 1
-                    plt.title(f'AMOC {self.title}_{lvl}_{diff}, AUC = {str(auc_val)}')
-                    plt.savefig(self.output_dir / f"AMOC {self.title}_{lvl}_{diff}.png", format='png')
-                    plt.close()
-                    self.granular_auc.append({"novelty": lvl, "difficulty": diff, "type": d, "auc": auc_val})
+                            plt.plot(S_list, F_list)
+                            plt.xlabel('False alarm rate')
+                            plt.ylabel('Average Score')
+                            # try:
+                            auc_val = auc(S_list, F_list)
+                            # except ValueError:
+                            #     auc_val = 1
+                            plt.title(f'AMOC {self.title}_{lvl}_{diff}_{k}, AUC = {str(auc_val)}')
+                            plt.savefig(self.output_dir / f"AMOC {self.title}_{lvl}_{diff}_{k}.png", format='png')
+                            plt.close()
+                        self.granular_auc.append({"novelty": lvl, "difficulty": diff, "type": d, "instance": k, "auc": auc_val})
                 # self.level_dict[lvl][diff]['auc'] = auc(S_list, F_list)
         self.__save_tournament_to_csv()
 
@@ -534,11 +531,11 @@ if __name__ == '__main__':
 
 
     # amoc.display()
-    # amoc = AMOC_Calculations('SIFT2', agent_name='SIFT_12M_E1', tournament_likeness="120222", outfile='sift_aggregate_v2', debug=False)
+    # amoc = AMOC_Calculations('SIFT_T3', agent_name='SIFT_12M_E1', tournament_likeness="120222", outfile='sift_aggregate_v3', debug=False)
     # amoc.calculate_by_tournament()
     # amoc.display()
-    #
-    # amoc = AMOC_Calculations('SRI_2', agent_name='SRI_12M_E1', tournament_likeness="U%120500", outfile='sri_aggregate_v2',
+
+    # amoc = AMOC_Calculations('SRI_T3', agent_name='SRI_12M_E1', tournament_likeness="U%120500", outfile='sri_aggregate_12M_FINAL',
     #                          debug=False)
     # # amoc.alternate_calculate()
     # amoc.calculate_by_tournament()
@@ -549,18 +546,20 @@ if __name__ == '__main__':
     # amoc.calculate_by_tournament()
     # amoc.display()
 
-    amoc = AMOC_Calculations('CRA_E2', agent_name='CRA_12M_E2', tournament_likeness="U%121016",
-                             outfile='cra_aggregate_e2',
-                             debug=False)
-    # amoc.alternate_calculate()
-    amoc.calculate_by_tournament()
-    amoc.display()
-    #
-    # amoc = AMOC_Calculations('TUFTS_2', agent_name='TUFTS_12M_E1', tournament_likeness="U%120522", outfile='tufts_aggregate_v2',
+    # amoc = AMOC_Calculations('CRA_KNOWN_T4', agent_name='CRA_12M_E2', tournament_likeness="K%121511",
+    #                          outfile='cra_aggregate_known_12M_FINAL',
     #                          debug=False)
+    # # amoc.alternate_calculate()
     # amoc.calculate_by_tournament()
     # amoc.display()
-    # amoc = AMOC_Calculations('RAYTHEON_2', agent_name='RAYTHEON_12M_E1', tournament_likeness="U%120810", outfile='raytheon_aggregate_v2',
+    #
+    # amoc = AMOC_Calculations('TUFTS_T3', agent_name='TUFTS_12M_E1', tournament_likeness="U%120522", outfile='tufts_aggregate_12M_FINAL',
+    #                          debug=False)
+    amoc = AMOC_Calculations('GTECH_12M_V2', agent_name='GTECH_AGENT_12M_V2', tournament_likeness="U%020111", outfile='gtech_aggregate_12M_v2_FINAL',
+                             debug=False)
+    amoc.calculate_by_tournament()
+    amoc.display()
+    # amoc = AMOC_Calculations('RAYTHEON_T3', agent_name='RAYTHEON_12M_E1', tournament_likeness="U%120810", outfile='raytheon_aggregate_12M_FINAL',
     #                          debug=False)
     # amoc.calculate_by_tournament()
     # amoc.display()
