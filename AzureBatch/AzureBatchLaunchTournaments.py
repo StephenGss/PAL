@@ -47,7 +47,7 @@ DEBUG_FLAG = False
 
 ### SIFT ###
 SIFT_APPLICATION_ID = 'agent_sift'
-SIFT_APPLICATION_VERSION = '14'
+SIFT_APPLICATION_VERSION = '14_NODELAYWFIX'
 APPLICATION_ID_FIXED = 'agent_sift'
 APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + APPLICATION_ID_FIXED + '_' + SIFT_APPLICATION_VERSION
 
@@ -63,9 +63,13 @@ GT_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + GT_APP_ID + '_' + GT_APPLICATION
 
 ### GT Plan ###
 GT_PLAN_APP_ID = 'agent_gt_pogo_planner'
-GT_PLAN_APPLICATION_VERSION = '2'
+GT_PLAN_APPLICATION_VERSION = '3'
 GT_PLAN_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + GT_PLAN_APP_ID + '_' + GT_PLAN_APPLICATION_VERSION
 
+### TAD ###
+TAD_APP_ID = 'agent_tad'
+TAD_APPLICATION_VERSION = '2'
+TAD_APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + TAD_APP_ID + '_' + TAD_APPLICATION_VERSION
 
 ### GT HG ###
 GT_HUGA_APP_ID = 'agent_gt_huga_1'
@@ -107,6 +111,7 @@ APP_DICT = {'agent_sift': APPLICATION_DIR,
             'agent_raytheon': RAYTHEON_APPLICATION_DIR,
             'agent_cra': CRA_APPLICATION_DIR,
             'agent_gtech': GTECH_APPLICATION_DIR,
+            'agent_tad': TAD_APPLICATION_DIR,
             }
 
 # _SIMPLE_TASK_NAME = 'simple_task.py'
@@ -145,16 +150,17 @@ class AzureBatchLaunchTournaments:
 
 
         application_package_references = [
-            # batchmodels.ApplicationPackageReference(application_id=SIFT_APPLICATION_ID, version=SIFT_APPLICATION_VERSION),
+            batchmodels.ApplicationPackageReference(application_id=SIFT_APPLICATION_ID, version=SIFT_APPLICATION_VERSION),
             # batchmodels.ApplicationPackageReference(application_id=TUFT_APPLICATION_ID, version=TUFT_VERSION),
             # batchmodels.ApplicationPackageReference(application_id=GT_APP_ID, version=GT_APPLICATION_VERSION),
             # batchmodels.ApplicationPackageReference(application_id=SRI_APP_ID, version=SRI_VERSION),
             # batchmodels.ApplicationPackageReference(application_id=GT_HUGA_APP_ID, version=GT_HUGA_APP_VERSION),
-            batchmodels.ApplicationPackageReference(application_id=GT_HUGA_MLAB_APP_ID, version=GT_HUGA_MLAB_APP_VERSION),
+            # batchmodels.ApplicationPackageReference(application_id=GT_HUGA_MLAB_APP_ID, version=GT_HUGA_MLAB_APP_VERSION),
             # batchmodels.ApplicationPackageReference(application_id=GT_PLAN_APP_ID, version=GT_PLAN_APPLICATION_VERSION),
             # batchmodels.ApplicationPackageReference(application_id=RAYTHEON_APP_ID, version=RAYTHEON_VERSION),
             # batchmodels.ApplicationPackageReference(application_id=CRA_APP_ID, version=CRA_VERSION),
             # batchmodels.ApplicationPackageReference(application_id=GTECH_APP_ID, version=GTECH_VERSION),
+            # batchmodels.ApplicationPackageReference(application_id=TAD_APP_ID, version=TAD_APPLICATION_VERSION),
         ]
 
         # Create User Accounts
@@ -266,17 +272,18 @@ class AzureBatchLaunchTournaments:
             cmds = self.agent_commands.get_task_commands(file, filename, self.suffix)
 
             application_package_references = [
-                # batchmodels.ApplicationPackageReference(application_id=SIFT_APPLICATION_ID, version=SIFT_APPLICATION_VERSION),
+                batchmodels.ApplicationPackageReference(application_id=SIFT_APPLICATION_ID, version=SIFT_APPLICATION_VERSION),
                 # batchmodels.ApplicationPackageReference(application_id=TUFT_APPLICATION_ID, version=TUFT_VERSION),
                 # batchmodels.ApplicationPackageReference(application_id=GT_APP_ID, version=GT_APPLICATION_VERSION),
                 # batchmodels.ApplicationPackageReference(application_id=SRI_APP_ID, version=SRI_VERSION),
                 # batchmodels.ApplicationPackageReference(application_id=GT_HUGA_APP_ID, version=GT_HUGA_APP_VERSION),
-                batchmodels.ApplicationPackageReference(application_id=GT_HUGA_MLAB_APP_ID, version=GT_HUGA_MLAB_APP_VERSION),
+                # batchmodels.ApplicationPackageReference(application_id=GT_HUGA_MLAB_APP_ID, version=GT_HUGA_MLAB_APP_VERSION),
                 # batchmodels.ApplicationPackageReference(application_id=GT_PLAN_APP_ID,
                 #                                         version=GT_PLAN_APPLICATION_VERSION),
                 # batchmodels.ApplicationPackageReference(application_id=RAYTHEON_APP_ID, version=RAYTHEON_VERSION),
                 # batchmodels.ApplicationPackageReference(application_id=CRA_APP_ID, version=CRA_VERSION),
                 # batchmodels.ApplicationPackageReference(application_id=GTECH_APP_ID, version=GTECH_VERSION),
+                # batchmodels.ApplicationPackageReference(application_id=TAD_APP_ID, version=TAD_APPLICATION_VERSION),
             ]
 
             user_identity = batch.models.UserIdentity(
@@ -323,7 +330,7 @@ class AzureBatchLaunchTournaments:
 
             constraint = batchmodels.TaskConstraints(
                 ##Reduce this from 1440 to 30 minutes for big evaluation##
-                retention_time=datetime.timedelta(minutes=30),
+                retention_time=datetime.timedelta(minutes=1440),
 
                 # # ##Reduced this for Tufts SN100##
                 # retention_time=datetime.timedelta(seconds=1),
@@ -531,7 +538,7 @@ if __name__ == '__main__':
     global_config = configparser.ConfigParser()
     global_config.read(helpers._SAMPLES_CONFIG_FILE_NAME)
     #
-    global_config.set('DEFAULT', 'poolvmcount', '50')
+    global_config.set('DEFAULT', 'poolvmcount', '3')
 
     # launch_pools_per_novelty(
     #     "TUFTS_AGENT_TEST_V3",
@@ -568,13 +575,23 @@ if __name__ == '__main__':
     #
 
     # launch_tournament_wrapper(
-    #     agent="BASELINE_POGOPLAN_12M",
+    #     agent="TAD_SPEEDTEST",
+    #     agentType=AgentType.TAD,
+    #     test_type=TestType.STAGE5,
+    #     global_config=global_config,
+    #     pool="POGO_TAD_200FPS_v1",
+    #     suffix="200FPS_2021011510",
+    #     tournament_directory=pogo_100_files,
+    # )
+
+    # launch_tournament_wrapper(
+    #     agent="BASELINE_POGOPLAN_SPEEDTEST",
     #     agentType=AgentType.GT_POGO_PLAN_BASELINE,
     #     test_type=TestType.STAGE5,
     #     global_config=global_config,
-    #     pool="POGO_GTPLAN_FE_X0100_V1",
-    #     suffix="_120322",
-    #     tournament_directory=pogo_FE100_files,
+    #     pool="POGO_GTPLAN_200FPS_v4",
+    #     suffix="200FPS_011022",
+    #     tournament_directory=pogo_100_files,
     # )
 
     # launch_tournament_wrapper(
@@ -586,15 +603,15 @@ if __name__ == '__main__':
     #     suffix="_120523",
     #     tournament_directory=pogo_10_files,
     # )
-    # launch_tournament_wrapper(
-    #     agent="SIFT_12M_E1",
-    #     agentType=AgentType.SIFT,
-    #     test_type=TestType.STAGE5,
-    #     global_config=global_config,
-    #     pool="POGO_SIFT_FE_X0100_V1",
-    #     suffix="_120222",
-    #     tournament_directory=pogo_FE100_files,
-    # )
+    launch_tournament_wrapper(
+        agent="SIFT_NODELAYWFIX_V7",
+        agentType=AgentType.SIFT,
+        test_type=TestType.STAGE5,
+        global_config=global_config,
+        pool="POGO_SIFT_NODELAYWFIX_V1",
+        suffix="_2021020215",
+        tournament_directory=pogo_100_files,
+    )
 
     # launch_tournament_wrapper(
     #    "TUFTS_12M_E1",

@@ -13,6 +13,7 @@ class AgentType(Enum):
     RAYTHEON = 8
     CRA = 9
     GTECH = 10
+    TAD = 11
 
 class AgentBatchCommands:
 
@@ -35,6 +36,8 @@ class AgentBatchCommands:
             return self._get_gt_pogo_agent_commands(tournament_zip, tournament_name, suffix)
         elif self.agent_type == AgentType.GT_HG_BASELINE:
             return self._get_gt_huga_1_agent_commands(tournament_zip, tournament_name, suffix)
+        elif self.agent_type == AgentType.TAD:
+            return self._get_tad_agent_commands(tournament_zip, tournament_name, suffix)
         elif self.agent_type == AgentType.GT_HG_BASELINE_MATLAB:
             return self._get_gt_huga_2_agent_commands(tournament_zip, tournament_name, suffix)
         elif self.agent_type == AgentType.GT_POGO_PLAN_BASELINE:
@@ -118,8 +121,6 @@ class AgentBatchCommands:
             # f'unzip {tzip}',
             f'mv {tname}/ polycraft/pal/',
             'echo "[DN_MSG]files copied into pal\n"',
-            # 'cp setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
-            # 'mv setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
         ]
 
         copy_agent = [
@@ -329,12 +330,55 @@ class AgentBatchCommands:
             'mkdir Logs',
             'echo "[DN_MSG]hopefully moved into the right folder?\n"',
             'export _JAVA_OPTIONS="-Xmx3G"',
-            # 'export PAL_FPS="200"',
+            'export PAL_FPS="200"',
             f'python LaunchTournament.py -c 1000 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "{agent_directory}" -x "{polycraft_launch_cmd}"',
         ]
 
         return setup + github + copy_files + copy_agent + launch_polycraft
 
+    def _get_tad_agent_commands(self, tzip, tname, suffix):
+        if suffix is None:
+            suffix = ""
+
+        setup = self._setup_vm()
+
+        github = self._get_github_commands()
+
+        copy_files = [
+            'cd $HOME',
+            'cp secret_real.ini polycraft/pal/',
+            f'if unzip -l {tzip} | grep -q "*/"; then unzip {tzip}; else unzip {tzip} -d {tname}/;fi',
+            # f'unzip -l {tzip} | grep -q "*/"',
+            # f'if [ "$?" == "0"]; then unzip {tzip}; else unzip {tzip} -d {tname}/; fi',
+            # f'unzip {tzip}',
+            f'mv {tname}/ polycraft/pal/',
+            'echo "[DN_MSG]files copied into pal\n"',
+            # 'cp setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
+            # 'mv setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
+        ]
+
+        copy_agent = [
+            'cd $HOME/polycraft/pal',
+            'mkdir agents/',
+            'cp -r ' + self.application_dict['agent_tad'] + '/* ./agents/',
+            'echo "[DN_MSG]agent moved into place\n"',
+        ]
+
+        polycraft_launch_cmd = "python TAD.py -m speed"
+        agent_directory = "../agents/"
+
+        launch_polycraft = [
+            'cd $HOME/polycraft/pal',
+            'find . -not -type d -exec file "{}" ";" | grep CRLF | sed -n "s/:.*//p" | xargs -I {} sed -i "s/\r$//g" {} || true',
+            'cd $HOME/polycraft/pal/PolycraftAIGym',
+            'mkdir Logs',
+            'echo "[DN_MSG]hopefully moved into the right folder?\n"',
+            'export _JAVA_OPTIONS="-Xmx3G"',
+            'export PAL_FPS="200"',
+            f'python LaunchTournament.py -c 1000 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "{agent_directory}" -x "{polycraft_launch_cmd}"',
+        ]
+
+        return setup + github + copy_files + copy_agent + launch_polycraft
 
     def _get_gt_pogo_agent_commands(self, tzip, tname, suffix):
 
@@ -398,8 +442,6 @@ class AgentBatchCommands:
             # f'unzip {tzip}',
             f'mv {tname}/ polycraft/pal/',
             'echo "[DN_MSG]files copied into pal\n"',
-            # 'cp setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
-            # 'mv setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
         ]
 
         copy_agent = [
@@ -444,8 +486,6 @@ class AgentBatchCommands:
             # f'unzip {tzip}',
             f'mv {tname}/ polycraft/pal/',
             'echo "[DN_MSG]files copied into pal\n"',
-            # 'cp setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
-            # 'mv setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
         ]
 
         copy_agent = [
@@ -500,8 +540,6 @@ class AgentBatchCommands:
             # f'unzip {tzip}',
             f'mv {tname}/ polycraft/pal/',
             'echo "[DN_MSG]files copied into pal\n"',
-            # 'cp setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
-            # 'mv setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
         ]
 
         copy_agent = [
@@ -559,8 +597,6 @@ class AgentBatchCommands:
             # f'unzip {tzip}',
             f'mv {tname}/ polycraft/pal/',
             'echo "[DN_MSG]files copied into pal\n"',
-            # 'cp setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
-            # 'mv setup/sift_tournament_agent_launcher.sh polycraft/pal/agents/SIFT_SVN/code/test/',
         ]
 
         copy_agent = [
