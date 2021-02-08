@@ -74,7 +74,7 @@ while run:  # main loop
         while True:
             part = sock.recv(BUFF_SIZE)
             data += part
-            if len(part) < BUFF_SIZE:
+            if len(part) < BUFF_SIZE or part[-1] == 10:
                 # either 0 or end of data
                 break
         print(data)
