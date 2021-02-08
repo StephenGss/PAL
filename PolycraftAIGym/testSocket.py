@@ -4,6 +4,7 @@ import socket, random, time, json, os, datetime
 
 HOST = "127.0.0.1"
 PORT = 9000
+packet_sizes = []
 
 movement = ['movenorth', 'movesouth', 'moveeast', 'movewest']
 
@@ -68,16 +69,21 @@ while run:  # main loop
     # 	data_dict = json.loads(data)
     # 	print (data_dict)
     # if not userInput.startswith('START'):
+    packet_sizes = []
     if True:
         BUFF_SIZE = 4096  # 4 KiB
         data = b''
         while True:
             part = sock.recv(BUFF_SIZE)
             data += part
-            if len(part) < BUFF_SIZE:
+            packet_sizes.append(len(part))
+            print(part[-1])
+            if len(part) < BUFF_SIZE or part[-1] == 10:
                 # either 0 or end of data
                 break
         print(data)
+        print('packets: ' + str(packet_sizes))
+        print('message size: ' + str(len(data)))
 # data_dict = json.loads(data)
 # print(data_dict)
 sock.close()
