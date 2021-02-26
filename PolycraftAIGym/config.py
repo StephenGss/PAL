@@ -26,14 +26,15 @@ PAL_COMMAND = "gradlew  --stacktrace runclient"
 # requires xvfb to be installed - see installation instructions
 PAL_COMMAND_UNIX = "xvfb-run -s '-screen 0 1280x1024x24' ./gradlew --no-daemon --stacktrace runclient"
 
+# -c 1000 -t "POGO_L00_T01_S01_X0100_A_U9999_V0200FPS_011022" -g "../pogo_100_PN" -a "BASELINE_POGOPLAN_SPEEDTEST" -d "agents/pogo_stick_planner_agent/" -x "python 1_python_miner_PLANNER_FF_1_vDN_EDITS.py"
 ## CONFIGURABLE ##################################### CLI Commands ####################################
 MAX_TIME = 300                                      # change using -i <time>
 MAX_TOURN_TIME = 2880                               # change using -m <minutes> 48 hours default
-TOURNAMENT_ID = "Nonov_Pogo_Test_6_1000g"           # change using -t <tournament_name>
-AGENT_DIRECTORY = "../agents/change/me/"            # change using -d <agent/start/script/folder/>
-AGENT_COMMAND = "py hg_agent.py"                    # change using -x <windows cmd to launch script - Windows OS only>
-AGENT_COMMAND_UNIX = "python hg_agent.py"           # change using -x <bash cmd to launch script - x changes both vars>
+TOURNAMENT_ID = "POGO_L00_T01_S01_X0100_A_U9999"    # change using -t <tournament_name>
+AGENT_DIRECTORY = ""                                # change using -d <agent/start/script/folder/>
+AGENT_COMMAND = "python pogo_agent.py"              # change using -x <windows cmd to launch script - Windows OS only>
+AGENT_COMMAND_UNIX = "python pogo_agent.py"         # change using -x <bash cmd to launch script - x changes both vars>
 AGENT_ID = f"MY_AGENT_ID"                           # change using -a <agent_name>
-GAME_COUNT = 25                                     # change using -c <count>
-GAMES_FOLDER = "../change/me/please/"               # change using -g <rel_path/to/games/folder>
+GAME_COUNT = 100                                    # change using -c <count>
+GAMES_FOLDER = "../pogo_100_PN"                     # change using -g <rel_path/to/games/folder>
 SPEED = 20                                          # change using -s <ticks_per_second>
