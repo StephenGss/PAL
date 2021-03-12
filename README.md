@@ -31,7 +31,7 @@ Your mileage will vary if using Windows.
 # Installation:
 ## 1. Ubuntu
 1. If you haven't already, pull this branch of the repository to your work directory:
-    `git clone -b release_1.2 --single-branch https://github.com/StephenGss/pal.git`
+    `git clone -b release_1.3 --single-branch https://github.com/StephenGss/pal.git`
 1. For a fresh install:
     * navigate to polycraft/pal/setup/ and execute `./setup_linux_shortened.sh` (user will need sudo permissions to wget JAVA).
     * We have also provided our current setup scripts in that folder (they include a few additional packages enabling us to upload tournament results to SQL) for your reference.
