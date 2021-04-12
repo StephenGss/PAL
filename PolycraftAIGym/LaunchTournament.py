@@ -13,7 +13,6 @@ from collections import defaultdict
 from copy import copy, deepcopy
 import getopt
 # import psutil
-from filelock import Timeout, FileLock
 
 
 
@@ -38,7 +37,8 @@ class LaunchTournament:
         self.log_dir = log_dir + f"{PalMessenger.PalMessenger.time_now_str('_')}/"
         self.SYS_FLAG = os  # Change behavior based on SYS FLAG when executing gradlew
         self.temp_logs_path = "log_file_paths.txt"
-        self.lock = FileLock(f"{self.temp_logs_path}.lock")  # Lock file for all log files
+        # TODO: do we need this? removed for Europa
+        # self.lock = FileLock(f"{self.temp_logs_path}.lock")  # Lock file for all log files
 
         # TODO: use os library to detect this vs. passing in as a command line argument.
         if 'MACOS' in self.SYS_FLAG.upper() or 'UNIX' in self.SYS_FLAG.upper():
