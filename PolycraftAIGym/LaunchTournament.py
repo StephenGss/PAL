@@ -31,7 +31,7 @@ class LaunchTournament:
 
     All messages in stdout for the AI Agent, PAL client, and Debugging are written to log files (see logging below)
     """
-    def __init__(self, os='Unix', log_dir='D:/PALTEST/Logs/', args=(), kwargs=None):
+    def __init__(self, os='Unix', log_dir='Logs/', args=(), kwargs=None):
         self.commands_sent = 0
         self.total_step_cost = 0
         self.start_time = time.time()
@@ -77,8 +77,8 @@ class LaunchTournament:
         self.fps_list = []
 
         ##Logging
-        self.write_logs = True
-        self.log_batch_size = 20
+        self.write_logs = False
+        self.log_batch_size = 1
         self._create_logs()
 
         ## Monitoring
@@ -162,21 +162,21 @@ class LaunchTournament:
         should_agent_write_log = self.write_logs   # should Agent STDOUT write to an Agent Log? (Default: True)
         should_PAL_print = False        # should PAL STDOUT print to main thread STDOUT (default: False)
         should_PAL_write_log = self.write_logs     # should PAL STDOUT write to a PAL log? (default: True)
-        should_debug_print = False       # send useful progress updates to main thread STDOUT (default: True)
+        should_debug_print = True       # send useful progress updates to main thread STDOUT (default: True)
         should_debug_write_log = self.write_logs   # write useful debug log updates to a Debug log (default: True)
         speed_print_bool = True         # Speed Log outputs Steps Per Second to log
         speed_log_write_bool = self.write_logs     # Speed Log writes Steps per second to File
 
         # # I recognize that some utility like logging may be better, but whatever:
         self.agent_log = PalMessenger.PalMessenger(should_agent_print, should_agent_write_log, agent_port_file,
-                                                   log_note="AGENT: ", batch_size=self.log_batch_size)
+                                                   log_note="AGENT: ", batch_size=self.log_batch_size, add_nl=False)
         self.PAL_log = PalMessenger.PalMessenger(should_PAL_print, should_PAL_write_log, log_port_file,
-                                                 log_note="PAL: ", batch_size=self.log_batch_size)
+                                                 log_note="PAL: ", batch_size=self.log_batch_size, add_nl=False)
 
         self.debug_log = PalMessenger.PalMessenger(should_debug_print, should_debug_write_log, log_debug_file,
-                                                   log_note="DEBUG: ", batch_size=self.log_batch_size)
+                                                   log_note="DEBUG: ", batch_size=self.log_batch_size, add_nl=False)
         self.speed_log = PalMessenger.PalMessenger(speed_print_bool, speed_log_write_bool, log_speed_file,
-                                                   log_note="FPS: ", batch_size=self.log_batch_size)
+                                                   log_note="FPS: ", batch_size=self.log_batch_size, add_nl=False)
 
     def _check_ended(self, line):
         """
@@ -833,7 +833,7 @@ if __name__ == "__main__":
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print('LaunchTournament.py -c <game_count> -t <tournament_name> -g <game_folder> -a <agent_name> -d <agent_directory> -x <agent_command> -i <maximum time (sec)> -m <max tournament time (minutes)')
+            print('LaunchTournament.py -c <game_count> -t <tournament_name> -g <game_folder> -a <agent_name> -d <agent_directory> -x <agent_command> -i <maximum time (sec)> -m <max tournament time (minutes)>')
             sys.exit()
         elif opt in ("-c", "--count"):
             # print(f"Number of Games: {arg}")

@@ -67,7 +67,7 @@ class TAD:
         while True:
             part = self.sock.recv(BUFF_SIZE)
             data += part
-            if len(part) < BUFF_SIZE:
+            if len(part) < BUFF_SIZE or part[-1] == 10:
                 # either 0 or end of data
                 break
         # print(data)
@@ -125,6 +125,23 @@ class TAD:
         if 'command_result' in response and 'result' in response['command_result'] and str(response['command_result']['result']).startswith('SUCCESS'):
             self.cq.put(lambda: self.move_towards(pos=pos))
 
+    def check_for_drop(self, pos, item):
+        self.update_obs()
+
+        # cases: item not found, item not in correct location, item found in expected location
+        entities = []
+        entities = self.obs['entities']
+        if len(entities) < 1:
+            print(str(item) + ' not found')
+        item_found = False
+        for entity in entities:
+            if str(entities[entity]['name']).startswith(str(item)):
+                print('Player: ' + str(self.obs['player']['pos']) + ' || Entity: ' + str(entities[entity]['Pos']))
+                item_found = True
+        if not item_found:
+            print(str(item) + ' not found')
+
+
     def plan(self):
         self.update_obs()
 
@@ -174,6 +191,7 @@ class TAD:
                     if not str(self.obs['blockInFront']['name']).startswith('minecraft:log'):
                         return
                     self.cq.put(lambda: self.send_command(F"BREAK_BLOCK"))
+                    self.cq.put(lambda: self.check_for_drop(pos=self.obs['player']['pos'], item='item.tile.log.oak'))
                     self.cq.put(lambda: self.send_command("MOVE w"))
                     self.state_data['broke_block'] = True
                     self.state_data.setdefault('time_out_counter', 5)

@@ -4,7 +4,7 @@ import time, re
 
 class PalMessenger:
     """ Isolates message handling and allows easy piping into the console or a log file"""
-    def __init__(self, print_log_info, write_log_info, log_file=None, log_note="", give_time=True, batch_size=20):
+    def __init__(self, print_log_info, write_log_info, log_file=None, log_note="", give_time=True, batch_size=1, add_nl=True):
         # Flag for sending messages to the console
         self.print_log_info = print_log_info
         # Flag for writing messages to a log file
@@ -20,6 +20,7 @@ class PalMessenger:
         # when the batch size is reached, write to file if writing is enabled
         self.batch_size = batch_size
         self.msg_counter = 0
+        self.add_nl = add_nl
         if write_log_info:
             Path(log_file).parent.mkdir(parents=True, exist_ok=True)
 
@@ -41,7 +42,10 @@ class PalMessenger:
         message = message + self.log_note + msg_stripped
         if self.print_log_info:
             print(message)
-        message = message + "\n"
+        if self.add_nl:
+            message = message + "\n"
+        else:
+            message = message
         if self.write_log_info:
             self.messages.append(message)
             self.msg_counter += 1
@@ -56,7 +60,10 @@ class PalMessenger:
         if self.print_log_info:
             print(message)
         if not message.endswith("\\n"):
-            message = message + "\n"
+            if self.add_nl:
+                message = message + "\n"
+            else:
+                message = message
         if self.write_log_info:
             self.messages.append(message)
             self.msg_counter += 1
@@ -69,6 +76,7 @@ class PalMessenger:
                 for message in self.messages:
                     write_file.write(message)
         self.messages.clear()
+        self.msg_counter = 0
 
 
     @staticmethod

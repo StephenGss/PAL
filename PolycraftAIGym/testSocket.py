@@ -77,7 +77,7 @@ while run:  # main loop
             part = sock.recv(BUFF_SIZE)
             data += part
             packet_sizes.append(len(part))
-            print(part[-1])
+            # print(part[-1])
             if len(part) < BUFF_SIZE or part[-1] == 10:
                 # either 0 or end of data
                 break
