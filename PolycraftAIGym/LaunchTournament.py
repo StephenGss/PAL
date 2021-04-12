@@ -12,7 +12,7 @@ import re
 from collections import defaultdict
 from copy import copy, deepcopy
 import getopt
-import psutil
+# import psutil
 from filelock import Timeout, FileLock
 
 
@@ -632,18 +632,19 @@ class LaunchTournament:
         :return:
         """
         # Kill the client process first to stop it from sending messages to the server
-        procs = list(psutil.Process(os.getpid()).children(recursive=True))
-        for p in procs:
-            try:
-                p.terminate()
-            except psutil.NoSuchProcess:
-                pass
-        gone, alive = psutil.wait_procs(procs, timeout=timeout)
-        for p in alive:
-            try:
-                p.kill()
-            except psutil.NoSuchProcess:
-                pass
+        # FIXME: change for Europa or get psutil on Europa
+        # procs = list(psutil.Process(os.getpid()).children(recursive=True))
+        # for p in procs:
+        #     try:
+        #         p.terminate()
+        #     except psutil.NoSuchProcess:
+        #         pass
+        # gone, alive = psutil.wait_procs(procs, timeout=timeout)
+        # for p in alive:
+        #     try:
+        #         p.kill()
+        #     except psutil.NoSuchProcess:
+        #         pass
 
     def _reset_and_flush(self):
         """
@@ -848,5 +849,5 @@ if __name__ == "__main__":
             print(f"Max Time (minutes): {arg}")
             CONFIG.MAX_TOURN_TIME = int(arg)
 
-    pal = LaunchTournament(os='WIN')  # TODO: Remove the os command line argument.
+    pal = LaunchTournament(os='UNIX')  # TODO: Remove the os command line argument.
     pal.execute()
