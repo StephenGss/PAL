@@ -13,7 +13,7 @@ from collections import defaultdict
 from copy import copy, deepcopy
 import getopt
 # import psutil
-
+from xvfbwrapper import Xvfb
 
 
 class LaunchTournament:
@@ -43,7 +43,7 @@ class LaunchTournament:
         # TODO: use os library to detect this vs. passing in as a command line argument.
         if 'MACOS' in self.SYS_FLAG.upper() or 'UNIX' in self.SYS_FLAG.upper():
             self.agent_process_cmd = CONFIG.AGENT_COMMAND_UNIX
-            self.pal_process_cmd = CONFIG.PAL_COMMAND_UNIX
+            self.pal_process_cmd = CONFIG.PAL_COMMAND_UNIX_EUROPA
         else:
             self.agent_process_cmd = CONFIG.AGENT_COMMAND
             self.pal_process_cmd = CONFIG.PAL_COMMAND
@@ -82,6 +82,9 @@ class LaunchTournament:
         self.wait_for_nextgame_init_timer = None
         self.next_game_initialized_flag = False
         self.restart_PAL_counter = 0
+
+        ## Screen
+        self.vdisplay = None
 
         #Load Games
         self.games = self._build_game_list(CONFIG.GAME_COUNT)
@@ -315,6 +318,8 @@ class LaunchTournament:
         """
         # Launch Minecraft Client
         self.debug_log.message("PAL command: " + self.pal_process_cmd)
+        self.vdisplay = Xvfb(width=1280, height=740)
+        self.vdisplay.start()
 
         self.pal_client_process = subprocess.Popen(self.pal_process_cmd, shell=True, cwd='../', stdout=subprocess.PIPE,
                                                    # stdin=subprocess.PIPE,  # DN: 0606 Removed for perforamnce
@@ -624,6 +629,9 @@ class LaunchTournament:
 
 
         self.tournament_in_progress = False
+
+        if self.vdisplay is not None:
+            self.vdisplay.stop()
 
     def _kill_process_children(self, timeout):
         """
