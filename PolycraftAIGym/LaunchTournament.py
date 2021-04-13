@@ -43,7 +43,7 @@ class LaunchTournament:
         # TODO: use os library to detect this vs. passing in as a command line argument.
         if 'MACOS' in self.SYS_FLAG.upper() or 'UNIX' in self.SYS_FLAG.upper():
             self.agent_process_cmd = CONFIG.AGENT_COMMAND_UNIX
-            self.pal_process_cmd = CONFIG.PAL_COMMAND_UNIX_EUROPA
+            self.pal_process_cmd = CONFIG.PAL_COMMAND_UNIX
         else:
             self.agent_process_cmd = CONFIG.AGENT_COMMAND
             self.pal_process_cmd = CONFIG.PAL_COMMAND
@@ -318,8 +318,8 @@ class LaunchTournament:
         """
         # Launch Minecraft Client
         self.debug_log.message("PAL command: " + self.pal_process_cmd)
-        self.vdisplay = Xvfb(width=1280, height=740)
-        self.vdisplay.start()
+        # self.vdisplay = Xvfb(width=1280, height=740)
+        # self.vdisplay.start()
 
         self.pal_client_process = subprocess.Popen(self.pal_process_cmd, shell=True, cwd='../', stdout=subprocess.PIPE,
                                                    # stdin=subprocess.PIPE,  # DN: 0606 Removed for perforamnce

@@ -25,7 +25,7 @@ PAL_COMMAND = "gradlew  --stacktrace runclient"
 # PAL_COMMAND_UNIX = "./gradlew runclient"
 # requires xvfb to be installed - see installation instructions
 PAL_COMMAND_UNIX = "xvfb-run -s '-screen 0 1280x1024x24' ./gradlew --no-daemon --stacktrace runclient"
-PAL_COMMAND_UNIX_EUROPA = "./gradlew --no-daemon --stacktrace runclient"
+# PAL_COMMAND_UNIX_EUROPA = "./gradlew --no-daemon --stacktrace runclient"
 
 ## CONFIGURABLE ##################################### CLI Commands ####################################
 MAX_TIME = 300                                      # change using -i <time>
