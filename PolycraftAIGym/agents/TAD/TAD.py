@@ -63,7 +63,7 @@ class TAD:
         while True:
             part = self.sock.recv(BUFF_SIZE)
             data += part
-            if len(part) < BUFF_SIZE:
+            if part[-1] == 10:
                 # either 0 or end of data
                 break
         # print(data)
