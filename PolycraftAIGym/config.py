@@ -24,8 +24,16 @@ PAL_COMMAND = "gradlew  --stacktrace runclient"
 # For Systems with Graphics Cards, Use this instead
 # PAL_COMMAND_UNIX = "./gradlew runclient"
 # requires xvfb to be installed - see installation instructions
-PAL_COMMAND_UNIX = "xvfb-run -s '-screen 0 1280x1024x24' ./gradlew --no-daemon --stacktrace runclient"
-# PAL_COMMAND_UNIX_EUROPA = "./gradlew --no-daemon --stacktrace runclient"
+# PAL_COMMAND_UNIX = "xvfb-run -s '-screen 0 1280x1024x24' ./gradlew --no-daemon --stacktrace runclient"
+
+PAL_DOCKER_CONTAINER = "pal-9000"
+PAL_DOCKER_LABEL = "pal"
+PAL_DOCKER_TAG = "latest"
+PAL_DOCKER_AGENT_PORT = 9000
+PAL_DOCKER_TM_PORT = 9005
+PAL_COMMAND_DOCKER = "docker run --name pal-test-9000 -d -w /PAL -p 9000:9000 pal:latest sudo xvfb-run -a ./gradlew --no-daemon --stacktrace runclient"
+PAL_COMMAND_SING = "singularity run --pwd /PAL pal_latest-2021-04-16-78889fd4123b.simg sudo xvfb-run -a ./gradlew --no-daemon --stacktrace runclient"
+# PAL_COMMAND_DOCKER = "docker run --name pal-test-9000 -d -w /PAL -p 9000:9000 pal:latest sudo xvfb-run -a ./gradlew --no-daemon --stacktrace runclient"
 
 ## CONFIGURABLE ##################################### CLI Commands ####################################
 MAX_TIME = 300                                      # change using -i <time>
