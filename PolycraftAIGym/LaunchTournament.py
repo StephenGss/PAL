@@ -1,6 +1,6 @@
 import subprocess, threading
 import sys, os
-import TournamentManager, PalMessenger
+import TournamentManager, PalMessenger, AzureConnectionService
 from pathlib import Path
 import queue
 import time, datetime
@@ -13,7 +13,6 @@ from collections import defaultdict
 from copy import copy, deepcopy
 import getopt
 # import psutil
-from xvfbwrapper import Xvfb
 
 
 class LaunchTournament:
@@ -105,7 +104,7 @@ class LaunchTournament:
         rootdir = CONFIG.GAMES_FOLDER  # Set this either in config.py or by passing in the -g CLI parameter.
         for subdir, dirs, files in os.walk(rootdir):
             for file in files:
-                filepath = subdir + os.sep + file
+                filepath = subdir + '/' + file
                 if filepath.endswith(file_type):
                     file_list.append(filepath)
 
@@ -182,11 +181,7 @@ class LaunchTournament:
         :param line: Current Line in the STDOUT of either PAL or AGENT threads
         :return: True if the game has ended.
         """
-        # NoTODO: Track step cost to call reset -- completed
         # TODO: Track total reward to call reset. Not for dry-run
-        # NoTODO: Track total run time to call reset -- completed
-        # noTODO: Track agent giveup to call reset -- completed
-        # NoTODO: Track end condition flag to call reset -- completed
 
         line_end_str = '\r\n'
         line_end_str = '\n'
@@ -413,10 +408,10 @@ class LaunchTournament:
 
                     # Initialize Uploading Thread
                     # FIXME: Change how we do this for Europa
-                    # self.upload_thread = threading.Thread(name="update_logs_thread",
-                    #                                       target=self._launch_interval_update_results_table)
-                    # self.upload_thread.daemon = True
-                    # self.upload_thread.start()
+                    self.upload_thread = threading.Thread(name="update_logs_thread",
+                                                          target=self._launch_interval_update_results_table)
+                    self.upload_thread.daemon = True
+                    self.upload_thread.start()
 
             # Begin the Game Loop
             elif self.current_state == State.GAME_LOOP:
@@ -542,17 +537,15 @@ class LaunchTournament:
         self.debug_log.message("Launched AI Agent")
 
     def _launch_interval_update_results_table(self):
-        self.debug_log.message("SKIPPING DATA UPLOAD ON EUROPA. FIX FOR EVAL")
-        # FIXME: change for Europa
-        # self.debug_log.message("Initializing Interval Upload Thread")
-        # upload_file = Path(self.log_dir) / f"{CONFIG.TOURNAMENT_ID}.txt"
-        # upload_log = PalMessenger.PalMessenger(True, True, upload_file, log_note="UPLOAD: ")
-        # azure = AzureConnectionService.AzureConnectionService(upload_log)
-        # if azure.is_connected():
-        #     self.upload_thread_running = True
-        #     azure.threaded_update_logs()
-        # else:
-        #     self.debug_log.message("Azure Connection Error - cannot connect to SQL database")
+        self.debug_log.message("Initializing Interval Upload Thread")
+        upload_file = Path(self.log_dir) / f"{CONFIG.TOURNAMENT_ID}.txt"
+        upload_log = PalMessenger.PalMessenger(True, True, upload_file, log_note="UPLOAD: ")
+        azure = AzureConnectionService.AzureConnectionService(upload_log)
+        if azure.is_connected():
+            self.upload_thread_running = True
+            azure.threaded_update_logs()
+        else:
+            self.debug_log.message("Azure Connection Error - cannot connect to SQL database")
             # raise ConnectionError("Error - cannot update results table")
 
     def _game_over(self):
@@ -569,17 +562,16 @@ class LaunchTournament:
         # self.threads = self._update_azure(self.game_index)
         # azure = AzureConnectionService.AzureConnectionService(self.debug_log)
         # Pass a copy of all necessary variables to the separate thread to prevent SIGBUS faults.
-        # FIXME: Change how we do this for Europa
-        # self.threads = threading.Thread(name="azure_cxn", target=self._update_azure,
-        #                                 args=(int(self.game_index),
-        #                                       deepcopy(self.score_dict),
-        #                                       deepcopy(self.game_score_dict),
-        #                                       copy(self.debug_log),
-        #                                       copy(self.agent_log),
-        #                                       copy(self.PAL_log),
-        #                                       copy(self.speed_log),
-        #                                       ))
-        # self.threads.start()
+        self.threads = threading.Thread(name="azure_cxn", target=self._update_azure,
+                                        args=(int(self.game_index),
+                                              deepcopy(self.score_dict),
+                                              deepcopy(self.game_score_dict),
+                                              copy(self.debug_log),
+                                              copy(self.agent_log),
+                                              copy(self.PAL_log),
+                                              copy(self.speed_log),
+                                              ))
+        self.threads.start()
         self.game_index += 1
         self._create_logs()
 
@@ -591,15 +583,14 @@ class LaunchTournament:
         Any errors will not cause mainThread hangups.
         """
         # self.pb_t = threading.Thread(target=self.read_output, args=(self.agent, self.q2))
-        # FIXME: change how we do this for Europa
-        # azure = AzureConnectionService.AzureConnectionService(debug_log)
-        #
-        # if azure.is_connected():
-        #     azure.send_summary_to_azure(score_dict=score_dict, game_id=game_index)
-        #     azure.send_game_details_to_azure(game_dict=game_dict, game_id=game_index)
-        #     azure.upload_pal_messenger_logs(palMessenger=agent_log, log_type="agent", game_id=game_index)
-        #     azure.upload_pal_messenger_logs(palMessenger=PAL_log, log_type="pal", game_id=game_index)
-        #     azure.upload_pal_messenger_logs(palMessenger=debug_log, log_type="debug", game_id=game_index)
+        azure = AzureConnectionService.AzureConnectionService(debug_log)
+
+        if azure.is_connected():
+            azure.send_summary_to_azure(score_dict=score_dict, game_id=game_index)
+            azure.send_game_details_to_azure(game_dict=game_dict, game_id=game_index)
+            azure.upload_pal_messenger_logs(palMessenger=agent_log, log_type="agent", game_id=game_index)
+            azure.upload_pal_messenger_logs(palMessenger=PAL_log, log_type="pal", game_id=game_index)
+            azure.upload_pal_messenger_logs(palMessenger=debug_log, log_type="debug", game_id=game_index)
             # azure.upload_pal_messenger_logs(palMessenger=speed_log, log_type='speed', game_id=game_index)
 
 

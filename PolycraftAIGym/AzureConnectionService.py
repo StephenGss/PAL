@@ -1,15 +1,12 @@
-from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
-from azure.cosmosdb.table.tableservice import TableService
-from azure.cosmosdb.table.models import Entity
+from azure.storage.blob import BlobServiceClient
 import os, time
 from os import path
-import re
 import pyodbc
 import config as CONFIG
 from collections import OrderedDict
 import distutils, distutils.util
 from PalMessenger import PalMessenger
-from azure.core.exceptions import ServiceRequestError, ServiceRequestTimeoutError, ServiceResponseError
+from azure.core.exceptions import ServiceRequestError
 import configparser
 import gzip
 from filelock import Timeout, FileLock
