@@ -632,18 +632,18 @@ class LaunchTournament:
         """
         # Kill the client process first to stop it from sending messages to the server
         # FIXME: change for Europa or get psutil on Europa
-        # procs = list(psutil.Process(os.getpid()).children(recursive=True))
-        # for p in procs:
-        #     try:
-        #         p.terminate()
-        #     except psutil.NoSuchProcess:
-        #         pass
-        # gone, alive = psutil.wait_procs(procs, timeout=timeout)
-        # for p in alive:
-        #     try:
-        #         p.kill()
-        #     except psutil.NoSuchProcess:
-        #         pass
+        procs = list(psutil.Process(os.getpid()).children(recursive=True))
+        for p in procs:
+            try:
+                p.terminate()
+            except psutil.NoSuchProcess:
+                pass
+        gone, alive = psutil.wait_procs(procs, timeout=timeout)
+        for p in alive:
+            try:
+                p.kill()
+            except psutil.NoSuchProcess:
+                pass
 
     def _reset_and_flush(self):
         """
