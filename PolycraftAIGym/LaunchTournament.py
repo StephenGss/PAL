@@ -311,6 +311,15 @@ class LaunchTournament:
         Tracks the Current State of the tournament, launching Threads and Passing Commands to the Tournament Manager.
         :return:
         """
+
+        # override launch command for Europa
+        if 'SINGULARITYENV_PAL_TM_PORT' in os.environ:
+            agent_port = os.environ['SINGULARITYENV_PAL_PORT']
+            tm_port = os.environ['SINGULARITYENV_PAL_TM_PORT']
+            self.pal_process_cmd = str(self.pal_process_cmd).replace('9000:9000/tcp', agent_port + ':' + agent_port + '/tcp')
+            self.pal_process_cmd = str(self.pal_process_cmd).replace('9005:9005/tcp', tm_port + ':' + tm_port + '/tcp')
+            print('Using Ports: Agent:' + os.environ['SINGULARITYENV_PAL_PORT'] + '|| TM:' + os.environ['SINGULARITYENV_PAL_TM_PORT'])
+
         # Launch Minecraft Client
         self.debug_log.message("PAL command: " + self.pal_process_cmd)
         # self.vdisplay = Xvfb(width=1280, height=740)
