@@ -12,7 +12,7 @@ import re
 from collections import defaultdict
 from copy import copy, deepcopy
 import getopt
-# import psutil
+import psutil
 
 
 class LaunchTournament:
