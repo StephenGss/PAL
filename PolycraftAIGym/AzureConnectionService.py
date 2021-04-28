@@ -75,15 +75,20 @@ class AzureConnectionService:
         """
         if self.configs is None:
             return None
-        Driver = "{ODBC Driver 17 for SQL Server}"
-        Server = "tcp:polycraft.database.windows.net,1433"
+        #Driver = "{ODBC Driver 17 for SQL Server}"
+        #Driver = "{FreeTDS}"
+        Driver = os.environ['CONDA_PREFIX'] + "/lib/libtdsodbc.so"
+        #Server = "tcp:polycraft.database.windows.net,1433"
+        Server = "polycraft.database.windows.net"
+        Port = 1433
         Database = "tournament_database"
         Uid = self.configs['azure']['SQL_USERNAME']
         Pwd = self.configs['azure']['SQL_PASSWORD']
         Encrypt = "yes"
         TrustServerCertificate = "yes"
         ConnectionTimeout = 30
-        cxn = f'Driver={Driver};Server={Server};Database={Database};Uid={Uid};Pwd={Pwd};Encrypt={Encrypt};TrustServerCertificate={TrustServerCertificate};Connection Timeout={ConnectionTimeout};'
+        #cxn = f'Driver={Driver};Server={Server};Database={Database};Uid={Uid};Pwd={Pwd};Encrypt={Encrypt};TrustServerCertificate={TrustServerCertificate};Connection Timeout={ConnectionTimeout};'
+        cxn = f'DRIVER={Driver};SERVER={Server};PORT=1433;DATABASE={Database};UID={Uid};PWD={Pwd};TDS_Version8.0;Encrypt={Encrypt};TrustServerCertificate={TrustServerCertificate};Connection Timeout={ConnectionTimeout};'
         try:
             db = pyodbc.connect(cxn, autocommit=True)
             self.valid_connection = AzureConnectionService._validate_db_connection(db)
