@@ -316,8 +316,8 @@ class LaunchTournament:
         if 'SINGULARITYENV_PAL_TM_PORT' in os.environ:
             agent_port = os.environ['SINGULARITYENV_PAL_PORT']
             tm_port = os.environ['SINGULARITYENV_PAL_TM_PORT']
-            self.pal_process_cmd = str(self.pal_process_cmd).replace('9000:9000/tcp', agent_port + ':' + agent_port + '/tcp')
-            self.pal_process_cmd = str(self.pal_process_cmd).replace('9005:9005/tcp', tm_port + ':' + tm_port + '/tcp')
+            self.pal_process_cmd = str(self.pal_process_cmd).replace('9000:9000/tcp', agent_port + ':9000/tcp')
+            self.pal_process_cmd = str(self.pal_process_cmd).replace('9005:9005/tcp', tm_port + ':9005/tcp')
             print('Using Ports: Agent:' + os.environ['SINGULARITYENV_PAL_PORT'] + '|| TM:' + os.environ['SINGULARITYENV_PAL_TM_PORT'])
 
         # Launch Minecraft Client
