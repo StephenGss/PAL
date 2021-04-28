@@ -5,6 +5,7 @@ Desc: TAD is a rule-based agent designed for testing purposes of PAL tasks
 """
 import datetime
 import getopt
+import os
 import socket
 import queue
 import json
@@ -30,7 +31,11 @@ class TAD:
     def __init__(self, log_dir='Logs/', args=(), kwargs=None):
         self.games = 1000
         self.pal_host = '127.0.0.1'
-        self.pal_port = 9000
+        if 'PAL_PORT' in os.environ:
+            self.pal_port = int(os.environ['PAL_PORT'])
+        else:
+            self.pal_port = 9000
+        print('Using Port: ' + str(self.pal_port))
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.tournament_over = False
         self.reset_all()
