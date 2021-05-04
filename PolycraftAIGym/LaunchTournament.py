@@ -622,9 +622,10 @@ class LaunchTournament:
             # for i in self.threads:
             #     i.join()
         self._kill_process_children(5)
-
-        self.tm_thread.join(5)
-
+        self.debug_log.message("Tournament Ending. Join tm_thread")
+        if self.tm_thread is not None:
+            self.tm_thread.join(timeout=5)
+        self.debug_log.message("Tournament Ending. Join upload_thread")
         if self.upload_thread is not None:
             self.upload_thread.join()
 
