@@ -630,6 +630,7 @@ class LaunchTournament:
 
         self.tournament_in_progress = False
 
+        self.debug_log.message("Tournament Ending. Closing vDisplay if exists")
         if self.vdisplay is not None:
             self.vdisplay.stop()
 
@@ -644,14 +645,20 @@ class LaunchTournament:
         procs = list(psutil.Process(os.getpid()).children(recursive=True))
         for p in procs:
             try:
+                self.debug_log.message("Attempting to terminate Process: " + str(p.pid))
                 p.terminate()
+                self.debug_log.message("terminated Process: " + str(p.pid))
             except psutil.NoSuchProcess:
+                self.debug_log.message("Failed to find Process: " + str(p.pid))
                 pass
         gone, alive = psutil.wait_procs(procs, timeout=timeout)
         for p in alive:
             try:
+                self.debug_log.message("Attempting to kill Process: " + str(p.pid))
                 p.kill()
+                self.debug_log.message("Killed Process: " + str(p.pid))
             except psutil.NoSuchProcess:
+                self.debug_log.message("Failed to find Process: " + str(p.pid))
                 pass
 
     def _reset_and_flush(self):
