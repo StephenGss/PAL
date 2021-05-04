@@ -359,6 +359,7 @@ class LaunchTournament:
                 if self.upload_thread_running and self.upload_thread is not None and not self.upload_thread.is_alive():
                     self.debug_log.message(f"Alert: Upload Thread has ended. Tournament Complete or Agent thread has hung")
                     self._tournament_completed()
+                    self.tournament_in_progress = False  # force this because it seems to not be happening on Europa??
                     continue
             # If agent hasn't started yet but PAL crashes, re-start PAL.
             elif self.pal_client_process.returncode is not None:
@@ -626,7 +627,6 @@ class LaunchTournament:
 
         if self.upload_thread is not None:
             self.upload_thread.join()
-
 
         self.tournament_in_progress = False
 
