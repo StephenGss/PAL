@@ -510,12 +510,12 @@ class LaunchTournament:
             print("Tournament Completed -ExitCode 0")
             return
         elif exitCode is None:
-            self._kill_process_children(5)  # FixMe: is this needed?
+            self._tournament_completed() # FixMe: is this needed?
             print("ERROR: tournament incomplete - critical thread failure during execution. Agent Hung?")
             return self.agent.returncode
         else:
             print(f"ERROR: ExitCode: {exitCode}")
-            self._kill_process_children(5)  # FixMe: is this needed?
+            self._tournament_completed() # FixMe: is this needed?
             raise subprocess.CalledProcessError(exitCode, "")
 
     def _launch_tournament_manager(self):
