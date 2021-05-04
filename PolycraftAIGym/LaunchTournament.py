@@ -359,7 +359,7 @@ class LaunchTournament:
                 if self.upload_thread_running and self.upload_thread is not None and not self.upload_thread.is_alive():
                     self.debug_log.message(f"Alert: Upload Thread has ended. Tournament Complete or Agent thread has hung")
                     self._tournament_completed()
-                    break
+                    continue
             # If agent hasn't started yet but PAL crashes, re-start PAL.
             elif self.pal_client_process.returncode is not None:
                 if self.current_state == State.INIT_PAL and self.restart_PAL_counter < 10:
@@ -511,7 +511,7 @@ class LaunchTournament:
         elif exitCode is None:
             self._kill_process_children(5)  # FixMe: is this needed?
             print("ERROR: tournament incomplete - critical thread failure during execution. Agent Hung?")
-            return
+            return self.agent.returncode
         else:
             print(f"ERROR: ExitCode: {exitCode}")
             self._kill_process_children(5)  # FixMe: is this needed?
