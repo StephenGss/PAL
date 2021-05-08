@@ -612,7 +612,7 @@ class LaunchTournament:
         :return:
         """
         self._check_queues(check_all=True)
-        self.debug_log.message("Tournament Completed: " + str(len(self.games)) + "games run")
+        self.debug_log.message("Tournament Completed: " + str(self.game_index) + "games run")
         sys.stdout.flush()
         # os.kill(self.agent.pid, signal.SIGTERM)
         # os.kill(self.pal_client_process.pid, signal.SIGTERM)
