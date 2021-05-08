@@ -33,7 +33,7 @@ class LaunchTournament:
         self.total_step_cost = 0
         self.start_time = time.time()
         self.tournament_start_time = datetime.datetime.now()
-        self.log_dir = log_dir + f"{PalMessenger.PalMessenger.time_now_str('_')}/"
+        self.log_dir = CONFIG.LOG_DIR + f"{PalMessenger.PalMessenger.time_now_str('_')}/"
         self.SYS_FLAG = os  # Change behavior based on SYS FLAG when executing gradlew
         self.temp_logs_path = "log_file_paths.txt"
         # TODO: do we need this? removed for Europa
@@ -881,6 +881,9 @@ if __name__ == "__main__":
         elif opt in ("-m", "--max-tournament-time"):
             print(f"Max Time (minutes): {arg}")
             CONFIG.MAX_TOURN_TIME = int(arg)
+        elif opt in ("-l", "--log-dir"):
+            print(f"Log Directory: {arg}")
+            CONFIG.LOG_DIR = arg
     # test if windows or unix
     if os.name == 'nt':
         pos = 'WIN'
