@@ -833,11 +833,28 @@ if __name__ == "__main__":
         opts, args = getopt.getopt(argv, "hc:t:g:a:d:x:i:m:",
                                        ["game_count=","tournament=","game_folder=","agent name=", "agent directory=", "agent command=", "max time=", "max tournament time="])
     except getopt.GetoptError:
-        print('LaunchTournament.py -c <game_count> -t <tournament_name> -g <game_folder> -a <agent_name> -d <agent_directory> -x <agent_command> -i <maximum time (sec)>')
+        print('LaunchTournament.py '
+              '-c <game_count> '
+              '-t <tournament_name> '
+              '-g <game_folder> '
+              '-a <agent_name> '
+              '-d <agent_directory> '
+              '-x <agent_command> '
+              '-i <maximum time (sec)> '
+              '-l <log_path>')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print('LaunchTournament.py -c <game_count> -t <tournament_name> -g <game_folder> -a <agent_name> -d <agent_directory> -x <agent_command> -i <maximum time (sec)> -m <max tournament time (minutes)')
+            print('LaunchTournament.py -h '
+                  '-c <game_count> '
+                  '-t <tournament_name> '
+                  '-g <game_folder> '
+                  '-a <agent_name> '
+                  '-d <agent_directory> '
+                  '-x <agent_command> '
+                  '-i <maximum time (sec)> '
+                  '-m <max tournament time (minutes)'
+                  '-l <log_path>')
             sys.exit()
         elif opt in ("-c", "--count"):
             # print(f"Number of Games: {arg}")
@@ -864,6 +881,10 @@ if __name__ == "__main__":
         elif opt in ("-m", "--max-tournament-time"):
             print(f"Max Time (minutes): {arg}")
             CONFIG.MAX_TOURN_TIME = int(arg)
-
-    pal = LaunchTournament(os='UNIX')  # TODO: Remove the os command line argument.
+    # test if windows or unix
+    if os.name == 'nt':
+        pos = 'WIN'
+    else:
+        pos = 'UNIX'
+    pal = LaunchTournament(os=pos)  # TODO: Remove the os command line argument.
     pal.execute()
