@@ -19,7 +19,7 @@ class AzureConnectionService:
         self.debug_log = debug_log
         self.container_name = container_name
         self.blob_service_client = self._read_secret_key()
-        self.temp_logs_path = "upload_logs_scripts.sql"
+        self.temp_logs_path = "/tmp/upload_logs_scripts.sql"
         self.lock = FileLock(f"{self.temp_logs_path}.lock")
         self.valid_connection = False
         self.sql_connection = self._get_sql_connection()
