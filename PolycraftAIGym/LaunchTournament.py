@@ -13,6 +13,7 @@ from collections import defaultdict
 from copy import copy, deepcopy
 import getopt
 import psutil
+from spython.main import Client as sClient
 
 
 class LaunchTournament:
@@ -616,6 +617,12 @@ class LaunchTournament:
         sys.stdout.flush()
         # os.kill(self.agent.pid, signal.SIGTERM)
         # os.kill(self.pal_client_process.pid, signal.SIGTERM)
+
+        self.debug_log.message("List all singularity instances: ")
+        print(str(sClient.instances()))
+        self.debug_log.message("Kill all singularity instances")
+        sClient.instance_stopall()
+
         self.tm_thread.kill()
         if self.threads is not None:
             self.threads.join()
