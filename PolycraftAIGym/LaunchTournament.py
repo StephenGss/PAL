@@ -655,7 +655,7 @@ class LaunchTournament:
         print(str(sClient.instances()))
         self.debug_log.message("Kill all singularity instances")
         sClient.instance_stopall()
-        
+
         procs = list(psutil.Process(os.getpid()).children(recursive=True))
         for p in procs:
             try:
@@ -843,8 +843,8 @@ class State(Enum):
 if __name__ == "__main__":
     argv = sys.argv[1:]
     try:
-        opts, args = getopt.getopt(argv, "hc:t:g:a:d:x:i:m:",
-                                       ["game_count=","tournament=","game_folder=","agent name=", "agent directory=", "agent command=", "max time=", "max tournament time="])
+        opts, args = getopt.getopt(argv, "hc:t:g:a:d:x:i:m:l:",
+                                       ["game_count=","tournament=","game_folder=","agent name=", "agent directory=", "agent command=", "max time=", "max tournament time=", "log_dir="])
     except getopt.GetoptError:
         print('LaunchTournament.py '
               '-c <game_count> '
