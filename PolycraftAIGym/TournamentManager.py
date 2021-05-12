@@ -19,6 +19,7 @@ class TournamentThread(threading.Thread):
 
     def kill(self):
         self.queue.put(None)
+        self.tm_lock.release()
 
     def run(self):
         print(threading.currentThread().getName(), self.receive_messages)
