@@ -24,7 +24,8 @@ PAL_COMMAND = "gradlew  --stacktrace runclient"
 # For Systems with Graphics Cards, Use this instead
 # PAL_COMMAND_UNIX = "./gradlew runclient"
 # requires xvfb to be installed - see installation instructions
-PAL_COMMAND_UNIX = "singularity run --fakeroot --writable-tmpfs --pwd /PAL --net --network-args \"portmap=9000:9000/tcp\" --network-args \"portmap=9005:9005/tcp\" pal-test.simg sudo bash -c 'rm -f /root/.gradle/caches/modules-2/modules-2.lock && xvfb-run -a ./gradlew --no-daemon --stacktrace runclient'"
+PAL_COMMAND_UNIX = "singularity run --fakeroot --writable-tmpfs --pwd /PAL  $SCRATCH/pal-test.simg sudo bash -c 'rm -f /root/.gradle/caches/modules-2/modules-2.lock && xvfb-run -a ./gradlew --no-daemon --stacktrace runclient'"
+# PAL_COMMAND_UNIX = "singularity run --fakeroot --writable-tmpfs --pwd /PAL --net --network-args \"portmap=9000:9000/tcp\" --network-args \"portmap=9005:9005/tcp\" $SCRATCH/pal-test.simg sudo bash -c 'rm -f /root/.gradle/caches/modules-2/modules-2.lock && xvfb-run -a ./gradlew --no-daemon --stacktrace runclient'"
 # PAL_COMMAND_UNIX = "xvfb-run -s '-screen 0 1280x1024x24' ./gradlew --no-daemon --stacktrace runclient"
 
 PAL_DOCKER_CONTAINER = "pal-9000"
