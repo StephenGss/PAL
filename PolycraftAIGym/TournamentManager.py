@@ -11,21 +11,23 @@ class TournamentThread(threading.Thread):
         self.receive_messages = True
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         if 'PAL_TM_PORT' in os.environ:
+            print('Attempting to connect: ' + os.environ['PAL_TM_PORT'])
             self.sock.connect((HOST, int(os.environ['PAL_TM_PORT'])))
             print('Using Port: ' + os.environ['PAL_TM_PORT'])
         else:
+            print('Attempting to connect: ' + str(TM_PORT))
             self.sock.connect((HOST, TM_PORT))
             print('Using Port: ' + str(TM_PORT))
 
     def kill(self):
         self.queue.put(None)
-        self.tm_lock.release()
+        self.receive_messages = False
 
     def run(self):
         print(threading.currentThread().getName(), self.receive_messages)
         print("Initializing TM Thread")
 
-        while True:
+        while self.receive_messages:
             val = self.queue.get()
             if val is None:  # If you send `None`, the thread will exit.
                 return

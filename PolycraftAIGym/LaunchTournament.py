@@ -58,7 +58,6 @@ class LaunchTournament:
         self.pb_t = None
         self.tm_thread = None
         self.tm_lock = threading.Lock()
-        self.tm_lock.release()
         self.game_index = 0
 
         # stdout, stderr = pal_client_process.communicate()
