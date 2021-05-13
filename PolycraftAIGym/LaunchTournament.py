@@ -57,6 +57,7 @@ class LaunchTournament:
         self.pa_t = None
         self.pb_t = None
         self.tm_thread = None
+        self.end_event = threading.Event()
         self.tm_lock = threading.Lock()
         self.game_index = 0
 
@@ -555,7 +556,7 @@ class LaunchTournament:
         azure = AzureConnectionService.AzureConnectionService(upload_log)
         if azure.is_connected():
             self.upload_thread_running = True
-            azure.threaded_update_logs()
+            azure.threaded_update_logs(self.end_event)
         else:
             self.debug_log.message("Azure Connection Error - cannot connect to SQL database")
             # raise ConnectionError("Error - cannot update results table")
@@ -618,12 +619,9 @@ class LaunchTournament:
         sys.stdout.flush()
         # os.kill(self.agent.pid, signal.SIGTERM)
         # os.kill(self.pal_client_process.pid, signal.SIGTERM)
-
-        self.debug_log.message("List all singularity instances: ")
-        print(str(sClient.instances()))
-        self.debug_log.message("Kill all singularity instances")
-        sClient.instance_stopall()
-
+        # set end_event so we don't wait for the upload thread to restart
+        self.end_event.set()
+        
         self.tm_thread.kill()
         if self.threads is not None:
             self.threads.join()

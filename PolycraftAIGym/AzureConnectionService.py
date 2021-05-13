@@ -291,7 +291,7 @@ class AzureConnectionService:
         if count >= self.max_retries:
             self.debug_log.message(f"ERROR: Unable to Update TOURNAMENT_AGGREGATE. Offending Game: {game_id}, Tournament: {CONFIG.TOURNAMENT_ID}")
 
-    def threaded_update_logs(self):
+    def threaded_update_logs(self, end_event):
         """
         Theaded Function to update TOURNAMENT_AGGREGATE with location of log files in a periodic manner
 
@@ -311,7 +311,7 @@ class AzureConnectionService:
         global_upload_count = 0
         self.debug_log.message("Thread Initialized.")
         while should_continue:
-            time.sleep(CONFIG.MAX_TIME*2.5)  # Run every 1.5 max-time game cycles (TODO: increase this?)
+            end_event.wait(CONFIG.MAX_TIME*2.5)  # Run every 1.5 max-time game cycles (TODO: increase this?)
             upload_count = 0
             self.debug_log.message("Attempting Upload...")
             with self.lock.acquire():
