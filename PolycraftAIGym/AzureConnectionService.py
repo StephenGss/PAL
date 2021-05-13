@@ -311,7 +311,7 @@ class AzureConnectionService:
         global_upload_count = 0
         self.debug_log.message("Thread Initialized.")
         while should_continue:
-            end_event.wait(CONFIG.MAX_TIME*2.5)  # Run every 1.5 max-time game cycles (TODO: increase this?)
+            end_event.wait(timeout=CONFIG.MAX_TIME*2.5)  # Run every 1.5 max-time game cycles (TODO: increase this?)
             upload_count = 0
             self.debug_log.message("Attempting Upload...")
             with self.lock.acquire():
