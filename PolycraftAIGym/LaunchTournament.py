@@ -844,8 +844,8 @@ class State(Enum):
 if __name__ == "__main__":
     argv = sys.argv[1:]
     try:
-        opts, args = getopt.getopt(argv, "hc:t:g:a:d:x:i:m:l:",
-                                       ["game_count=","tournament=","game_folder=","agent name=", "agent directory=", "agent command=", "max time=", "max tournament time=", "log_dir="])
+        opts, args = getopt.getopt(argv, "hc:t:g:a:d:x:i:m:l:p:",
+                                       ["game_count=","tournament=","game_folder=","agent name=", "agent directory=", "agent command=", "max time=", "max tournament time=", "log_dir=", "pal_command="])
     except getopt.GetoptError:
         print('LaunchTournament.py '
               '-c <game_count> '
@@ -855,7 +855,8 @@ if __name__ == "__main__":
               '-d <agent_directory> '
               '-x <agent_command> '
               '-i <maximum time (sec)> '
-              '-l <log_path>')
+              '-l <log_path>'
+              '-p <pal_command>')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
@@ -868,7 +869,8 @@ if __name__ == "__main__":
                   '-x <agent_command> '
                   '-i <maximum time (sec)> '
                   '-m <max tournament time (minutes)'
-                  '-l <log_path>')
+                  '-l <log_path>'
+                  '-p <pal_command>')
             sys.exit()
         elif opt in ("-c", "--count"):
             # print(f"Number of Games: {arg}")
@@ -889,6 +891,10 @@ if __name__ == "__main__":
             print(f"Agent Command: {arg}")
             CONFIG.AGENT_COMMAND_UNIX = arg
             CONFIG.AGENT_COMMAND = arg
+        elif opt in ("-p", "--pal-exec"):
+            print(f"PAL Command: {arg}")
+            CONFIG.PAL_COMMAND_UNIX = arg
+            CONFIG.PAL_COMMAND = arg
         elif opt in ("-i", "--max-time"):
             print(f"Max Time (sec): {arg}")
             CONFIG.MAX_TIME = int(arg)
