@@ -10,6 +10,7 @@ movement = ['movenorth', 'movesouth', 'moveeast', 'movewest']
 run = True
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.settimeout(10)
 if 'PAL_PORT' in os.environ:
 	sock.connect((HOST, int(os.environ['PAL_PORT'])))
 	print('Using Port: ' + os.environ['PAL_PORT'])
