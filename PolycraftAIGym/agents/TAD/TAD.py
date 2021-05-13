@@ -36,7 +36,7 @@ class TAD:
         else:
             self.pal_port = 9000
         print('Using Port: ' + str(self.pal_port))
-        self.sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.tournament_over = False
         self.reset_all()
 
