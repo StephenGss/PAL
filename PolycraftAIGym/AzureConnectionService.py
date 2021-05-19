@@ -335,6 +335,7 @@ class AzureConnectionService:
                     with open(self.temp_logs_path, 'r') as rf, open(f"{self.temp_logs_path}.err", 'a') as wf:
                         wf.write(rf.read())
                     self.debug_log.message(f"ERROR: Cannot Upload! Temp saving file and moving on. PLease re-run manually: {self.temp_logs_path}.err\n {str(e)}")
+                    try_counter += 1
 
             global_upload_count += upload_count
             self.debug_log.message(f"Uploaded {upload_count} Logs for {(upload_count/3)} games. Running total: {global_upload_count}")
