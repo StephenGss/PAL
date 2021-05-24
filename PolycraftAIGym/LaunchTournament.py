@@ -605,6 +605,9 @@ class LaunchTournament:
         sys.stdout.flush()
         # os.kill(self.agent.pid, signal.SIGTERM)
         # os.kill(self.pal_client_process.pid, signal.SIGTERM)
+        # set end_event so we don't wait for the upload thread to restart
+        self.end_event.set()
+        
         self.tm_thread.kill()
         if self.threads is not None:
             self.threads.join()
