@@ -289,7 +289,7 @@ class AzureConnectionService:
         if count >= self.max_retries:
             self.debug_log.message(f"ERROR: Unable to Update TOURNAMENT_AGGREGATE. Offending Game: {game_id}, Tournament: {CONFIG.TOURNAMENT_ID}")
 
-    def threaded_update_logs(self):
+    def threaded_update_logs(self, end_event):
         """
         Theaded Function to update TOURNAMENT_AGGREGATE with location of log files in a periodic manner
 
@@ -304,12 +304,12 @@ class AzureConnectionService:
             self.debug_log.message("File already exists? Strange...")
 
         should_continue = True
-        max_retries = 3
+        max_retries = 10
         try_counter = 0
         global_upload_count = 0
         self.debug_log.message("Thread Initialized.")
         while should_continue:
-            time.sleep(CONFIG.MAX_TIME*2.5)  # Run every 1.5 max-time game cycles (TODO: increase this?)
+            end_event.wait(timeout=CONFIG.MAX_TIME * 2.5)  # Run every 1.5 max-time game cycles (TODO: increase this?)
             upload_count = 0
             self.debug_log.message("Attempting Upload...")
             with self.lock.acquire():
@@ -325,17 +325,29 @@ class AzureConnectionService:
                             with self.sql_connection.cursor() as cursor:
                                 cursor.execute(f"""{item}""")
                             self.sql_connection.commit()
-                    os.remove(self.temp_logs_path)          # File deleted in this thread
+                    os.remove(self.temp_logs_path)  # File deleted in this thread
                 except FileNotFoundError as e:
                     self.debug_log.message("ALERT: File not found. Main Thread over. (Double-incrementing try_counter)")
                     try_counter += 2
                 except Exception as e:
-                    with open(self.temp_logs_path, 'r') as rf, open(f"{self.temp_logs_path}.err", 'a') as wf:
-                        wf.write(rf.read())
-                    self.debug_log.message(f"ERROR: Cannot Upload! Temp saving file and moving on. PLease re-run manually: {self.temp_logs_path}.err\n {str(e)}")
+                    try_counter += 1
+                    time.sleep(1)
+                    self.sql_connection = self._get_sql_connection()
+                    self.blob_service_client = self._read_secret_key()
+                    if self.is_connected():
+                        self.cursor = self.sql_connection.cursor()
+                        self.debug_log.message("SQL Connection re-established")
+                    else:
+                        self.debug_log.message("SQL Connection NOT re-established. Something is wrong with connection")
+                    if (try_counter >= max_retries):
+                        with open(self.temp_logs_path, 'r') as rf, open(f"{self.temp_logs_path}.err", 'a') as wf:
+                            wf.write(rf.read())
+                        self.debug_log.message(
+                            f"ERROR: Cannot Upload! Temp saving file and moving on. PLease re-run manually: {self.temp_logs_path}.err\n {str(e)}")
 
             global_upload_count += upload_count
-            self.debug_log.message(f"Uploaded {upload_count} Logs for {(upload_count/3)} games. Running total: {global_upload_count}")
+            self.debug_log.message(
+                f"Uploaded {upload_count} Logs for {(upload_count / 3)} games. Running total: {global_upload_count}")
             if upload_count == 0:
                 try_counter += 1
             if try_counter >= max_retries:
