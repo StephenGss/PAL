@@ -306,7 +306,7 @@ class AzureConnectionService:
             self.debug_log.message("File already exists? Strange...")
 
         should_continue = True
-        max_retries = 3
+        max_retries = 10
         try_counter = 0
         global_upload_count = 0
         self.debug_log.message("Thread Initialized.")
@@ -332,10 +332,20 @@ class AzureConnectionService:
                     self.debug_log.message("ALERT: File not found. Main Thread over. (Double-incrementing try_counter)")
                     try_counter += 2
                 except Exception as e:
-                    with open(self.temp_logs_path, 'r') as rf, open(f"{self.temp_logs_path}.err", 'a') as wf:
-                        wf.write(rf.read())
-                    self.debug_log.message(f"ERROR: Cannot Upload! Temp saving file and moving on. PLease re-run manually: {self.temp_logs_path}.err\n {str(e)}")
                     try_counter += 1
+                    time.sleep(1)
+                    self.sql_connection = self._get_sql_connection()
+                    self.blob_service_client = self._read_secret_key()
+                    if self.is_connected():
+                        self.cursor = self.sql_connection.cursor()
+                        self.debug_log.message("SQL Connection re-established")
+                    else:
+                        self.debug_log.message("SQL Connection NOT re-established. Something is wrong with connection")
+                    if(try_counter >= max_retries):
+                        with open(self.temp_logs_path, 'r') as rf, open(f"{self.temp_logs_path}.err", 'a') as wf:
+                            wf.write(rf.read())
+                        self.debug_log.message(
+                            f"ERROR: Cannot Upload! Temp saving file and moving on. PLease re-run manually: {self.temp_logs_path}.err\n {str(e)}")
 
             global_upload_count += upload_count
             self.debug_log.message(f"Uploaded {upload_count} Logs for {(upload_count/3)} games. Running total: {global_upload_count}")

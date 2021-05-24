@@ -650,10 +650,10 @@ class LaunchTournament:
         # Kill the client process first to stop it from sending messages to the server
         # FIXME: change for Europa or get psutil on Europa
         # check for loaded singularity instances and kill them
-        self.debug_log.message("List all singularity instances: ")
-        print(str(sClient.instances()))
-        self.debug_log.message("Kill all singularity instances")
-        sClient.instance_stopall()
+        # self.debug_log.message("List all singularity instances: ")
+        # print(str(sClient.instances()))
+        # self.debug_log.message("Kill all singularity instances")
+        # sClient.instance_stopall()
 
         procs = list(psutil.Process(os.getpid()).children(recursive=True))
         for p in procs:
