@@ -12,7 +12,7 @@ movement = ['movenorth', 'movesouth', 'moveeast', 'movewest']
 
 run = True
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
 if 'PAL_PORT' in os.environ:
     sock.connect((HOST, int(os.environ['PAL_PORT'])))
     print('Using Port: ' + os.environ['PAL_PORT'])
@@ -20,6 +20,7 @@ else:
     sock.connect((HOST, PORT))
     print('Using Port: ' + str(PORT))
 
+print('Special commands: "start_sample", "show_screen" (after a sense_screen)')
 while run:  # main loop
     userInput = input()
     if userInput == 'exit':  # wait for user input commands
