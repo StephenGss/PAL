@@ -316,7 +316,7 @@ class AzureConnectionService:
             self.debug_log.message("Attempting Upload...")
             with self.lock.acquire():
                 try:
-                    with open(self.temp_logs_path, 'r') as rf:  # This file is "touched" above
+                    with open(self.temp_logs_path, 'r', encoding='utf-8') as rf:  # This file is "touched" above
                         a = rf.read()
                         e = a.split(';')
                         for item in e:
