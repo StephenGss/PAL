@@ -354,7 +354,7 @@ class AzureConnectionService:
 
             global_upload_count += upload_count
             self.debug_log.message(f"Uploaded {upload_count} Logs for {(upload_count/3)} games. Running total: {global_upload_count}")
-            if upload_count == 0:
+            if upload_count == 0 or end_event.is_set():
                 try_counter += 1
             if try_counter >= max_retries:
                 should_continue = False
