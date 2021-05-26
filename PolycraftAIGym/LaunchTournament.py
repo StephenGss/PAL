@@ -37,6 +37,7 @@ class LaunchTournament:
         self.log_dir = CONFIG.LOG_DIR + f"{PalMessenger.PalMessenger.time_now_str('_')}/"
         self.SYS_FLAG = os  # Change behavior based on SYS FLAG when executing gradlew
         self.temp_logs_path = "log_file_paths.txt"
+        self.sql_err_log_path = CONFIG.SQL_ERR_LOG_DIR
         # TODO: do we need this? removed for Europa
         # self.lock = FileLock(f"{self.temp_logs_path}.lock")  # Lock file for all log files
 
@@ -553,7 +554,7 @@ class LaunchTournament:
         self.debug_log.message("Initializing Interval Upload Thread")
         upload_file = Path(self.log_dir) / f"{CONFIG.TOURNAMENT_ID}.txt"
         upload_log = PalMessenger.PalMessenger(True, True, upload_file, log_note="UPLOAD: ")
-        azure = AzureConnectionService.AzureConnectionService(upload_log)
+        azure = AzureConnectionService.AzureConnectionService(upload_log, temp_logs_err_path=self.sql_err_log_path)
         if azure.is_connected():
             self.upload_thread_running = True
             azure.threaded_update_logs(self.end_event)
