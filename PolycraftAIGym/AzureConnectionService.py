@@ -14,12 +14,16 @@ from filelock import Timeout, FileLock
 
 class AzureConnectionService:
 
-    def __init__(self, debug_log, container_name='round2-logs'):
+    def __init__(self, debug_log, container_name='round2-logs', temp_logs_err_path=None):
         self.configs = self._check_for_configs()
         self.debug_log = debug_log
         self.container_name = container_name
         self.blob_service_client = self._read_secret_key()
         self.temp_logs_path = "/tmp/upload_logs_scripts.sql"
+        if temp_logs_err_path is None:
+            self.temp_logs_err_path = self.temp_logs_path
+        else:
+            self.temp_logs_err_path = temp_logs_err_path
         self.lock = FileLock(f"{self.temp_logs_path}.lock")
         self.valid_connection = False
         self.sql_connection = self._get_sql_connection()
@@ -332,20 +336,21 @@ class AzureConnectionService:
                     self.debug_log.message("ALERT: File not found. Main Thread over. (Double-incrementing try_counter)")
                     try_counter += 2
                 except Exception as e:
-                    try_counter += 1
+                    self.debug_log.message(f"ERROR: Cannot Upload!: {str(e)}")
+                    # try_counter += 1
                     time.sleep(1)
-                    self.sql_connection = self._get_sql_connection()
-                    self.blob_service_client = self._read_secret_key()
-                    if self.is_connected():
-                        self.cursor = self.sql_connection.cursor()
-                        self.debug_log.message("SQL Connection re-established")
-                    else:
-                        self.debug_log.message("SQL Connection NOT re-established. Something is wrong with connection")
+                    # self.sql_connection = self._get_sql_connection()
+                    # self.blob_service_client = self._read_secret_key()
+                    # if self.is_connected():
+                    #     self.cursor = self.sql_connection.cursor()
+                    #     self.debug_log.message("SQL Connection re-established")
+                    # else:
+                    #     self.debug_log.message("SQL Connection NOT re-established. Something is wrong with connection")
                     if(try_counter >= max_retries):
-                        with open(self.temp_logs_path, 'r') as rf, open(f"{self.temp_logs_path}.err", 'a') as wf:
+                        with open(self.temp_logs_path, 'r') as rf, open(f"{self.temp_logs_err_path}.err", 'a') as wf:
                             wf.write(rf.read())
                         self.debug_log.message(
-                            f"ERROR: Cannot Upload! Temp saving file and moving on. PLease re-run manually: {self.temp_logs_path}.err\n {str(e)}")
+                            f"ERROR: Cannot Upload! Temp saving file and moving on. PLease re-run manually: {self.temp_logs_err_path}.err\n {str(e)}")
 
             global_upload_count += upload_count
             self.debug_log.message(f"Uploaded {upload_count} Logs for {(upload_count/3)} games. Running total: {global_upload_count}")
@@ -353,8 +358,13 @@ class AzureConnectionService:
                 try_counter += 1
             if try_counter >= max_retries:
                 should_continue = False
+                with open(self.temp_logs_path, 'r') as rf, open(f"{self.temp_logs_err_path}.err", 'a') as wf:
+                    wf.write(rf.read())
+                self.debug_log.message(
+                    f"ERROR: Cannot Upload! Temp saving file and moving on. PLease re-run manually: {self.temp_logs_err_path}.err\n {str(e)}")
+                self.debug_log.message(f"Upload Thread exceeded upload attempts. Ending thread")
 
-        self.debug_log.message(f"Update Thread completed. Total updates: {global_upload_count}")
+        self.debug_log.message(f"Upload Thread completed. Total updates: {global_upload_count}")
 
     def _update_log_entry(self, game_id, logType, path):
         """
@@ -379,6 +389,7 @@ class AzureConnectionService:
         # update the file containing who all should be uploaded
         with self.lock.acquire():
             with open(f"{self.temp_logs_path}", 'a') as file:
+                self.debug_log.message(f"Writing upload log entry: {var_to_adjust}::{path}")
                 upload_stmt = f"""
                     UPDATE TOURNAMENT_AGGREGATE
                     SET {var_to_adjust} = '{path}'

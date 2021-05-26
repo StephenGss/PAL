@@ -842,8 +842,8 @@ class State(Enum):
 if __name__ == "__main__":
     argv = sys.argv[1:]
     try:
-        opts, args = getopt.getopt(argv, "hc:t:g:a:d:x:i:m:l:p:",
-                                       ["game_count=","tournament=","game_folder=","agent name=", "agent directory=", "agent command=", "max time=", "max tournament time=", "log_dir=", "pal_command="])
+        opts, args = getopt.getopt(argv, "hc:t:g:a:d:x:i:m:l:p:e:",
+                                       ["game_count=","tournament=","game_folder=","agent name=", "agent directory=", "agent command=", "max time=", "max tournament time=", "log_dir=", "pal_command=", "sql_err_dir="])
     except getopt.GetoptError:
         print('LaunchTournament.py '
               '-c <game_count> '
@@ -854,7 +854,8 @@ if __name__ == "__main__":
               '-x <agent_command> '
               '-i <maximum time (sec)> '
               '-l <log_path>'
-              '-p <pal_command>')
+              '-p <pal_command>'
+              '-e <sql_err_dir>')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
@@ -868,7 +869,8 @@ if __name__ == "__main__":
                   '-i <maximum time (sec)> '
                   '-m <max tournament time (minutes)'
                   '-l <log_path>'
-                  '-p <pal_command>')
+                  '-p <pal_command>'
+                  '-e <sql_err_dir>')
             sys.exit()
         elif opt in ("-c", "--count"):
             # print(f"Number of Games: {arg}")
@@ -902,6 +904,9 @@ if __name__ == "__main__":
         elif opt in ("-l", "--log-dir"):
             print(f"Log Directory: {arg}")
             CONFIG.LOG_DIR = arg
+        elif opt in ("-e", "--sql-err-dir"):
+            print(f"SQL Error Log Directory: {arg}")
+            CONFIG.SQL_ERR_LOG_DIR = arg
     # test if windows or unix
     if os.name == 'nt':
         pos = 'WIN'
