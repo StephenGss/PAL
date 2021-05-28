@@ -220,6 +220,12 @@ class LaunchTournament:
                 self.score_dict[self.game_index]['success'] = 'False'
                 self.score_dict[self.game_index]['success_detail'] = msg
                 return True
+            if self.commands_sent > CONFIG.MAX_STEP_COUNT:
+                msg = "total step COUNT exceeded limit"
+                self.debug_log.message(f"Game Over: {msg}")
+                self.score_dict[self.game_index]['success'] = 'False'
+                self.score_dict[self.game_index]['success_detail'] = msg
+                return True
 
         # Check If Game Timed out.
         self.score_dict[self.game_index].update({'elapsed_time': time.time() - self.start_time})
@@ -843,8 +849,8 @@ class State(Enum):
 if __name__ == "__main__":
     argv = sys.argv[1:]
     try:
-        opts, args = getopt.getopt(argv, "hc:t:g:a:d:x:i:m:l:p:e:",
-                                       ["game_count=","tournament=","game_folder=","agent name=", "agent directory=", "agent command=", "max time=", "max tournament time=", "log_dir=", "pal_command=", "sql_err_dir="])
+        opts, args = getopt.getopt(argv, "hc:t:g:a:d:x:i:m:l:p:e:q:",
+                                       ["game_count=","tournament=","game_folder=","agent name=", "agent directory=", "agent command=", "max time=", "max tournament time=", "log_dir=", "pal_command=", "sql_err_dir=", "max_step_count="])
     except getopt.GetoptError:
         print('LaunchTournament.py '
               '-c <game_count> '
@@ -856,7 +862,8 @@ if __name__ == "__main__":
               '-i <maximum time (sec)> '
               '-l <log_path>'
               '-p <pal_command>'
-              '-e <sql_err_dir>')
+              '-e <sql_err_dir>'
+              '-q <max_step_count>')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
@@ -871,7 +878,8 @@ if __name__ == "__main__":
                   '-m <max tournament time (minutes)'
                   '-l <log_path>'
                   '-p <pal_command>'
-                  '-e <sql_err_dir>')
+                  '-e <sql_err_dir>'
+                  '-q <max_step_count>')
             sys.exit()
         elif opt in ("-c", "--count"):
             # print(f"Number of Games: {arg}")
@@ -908,6 +916,9 @@ if __name__ == "__main__":
         elif opt in ("-e", "--sql-err-dir"):
             print(f"SQL Error Log Directory: {arg}")
             CONFIG.SQL_ERR_LOG_DIR = arg
+        elif opt in ("-q", "--max-step-count"):
+            print(f"Max step count: {arg}")
+            CONFIG.MAX_STEP_COUNT = int(arg)
     # test if windows or unix
     if os.name == 'nt':
         pos = 'WIN'

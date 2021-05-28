@@ -50,3 +50,4 @@ GAMES_FOLDER = "../change/me/please/"               # change using -g <rel_path/
 SPEED = 20                                          # change using -s <ticks_per_second>
 LOG_DIR = 'Logs/'                                   # change using -l <log_dir>
 SQL_ERR_LOG_DIR = None                              # change using -e <sql_err_dir>
+MAX_STEP_COUNT = 10000                              # change using -q <max_step_count>
