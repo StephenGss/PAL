@@ -339,13 +339,13 @@ class AzureConnectionService:
                     self.debug_log.message(f"ERROR: Cannot Upload!: {str(e)}")
                     # try_counter += 1
                     time.sleep(1)
-                    # self.sql_connection = self._get_sql_connection()
-                    # self.blob_service_client = self._read_secret_key()
-                    # if self.is_connected():
-                    #     self.cursor = self.sql_connection.cursor()
-                    #     self.debug_log.message("SQL Connection re-established")
-                    # else:
-                    #     self.debug_log.message("SQL Connection NOT re-established. Something is wrong with connection")
+                    self.sql_connection = self._get_sql_connection()
+                    self.blob_service_client = self._read_secret_key()
+                    if self.is_connected():
+                        self.cursor = self.sql_connection.cursor()
+                        self.debug_log.message("SQL Connection re-established")
+                    else:
+                        self.debug_log.message("SQL Connection NOT re-established. Something is wrong with connection")
                     if(try_counter >= max_retries):
                         with open(self.temp_logs_path, 'r') as rf, open(f"{self.temp_logs_err_path}.err", 'a') as wf:
                             wf.write(rf.read())
