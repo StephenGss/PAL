@@ -354,6 +354,18 @@ class LaunchTournament:
             # first check if we crashed or something... hopefully  this doesn't happen
             self.pal_client_process.poll()
 
+            # check if we've exceeded max time. Must be done here or we could miss it if an agent stops sending commands
+            if (self.tournament_start_time + datetime.timedelta(minutes=CONFIG.MAX_TOURN_TIME)) <= datetime.datetime.now():
+                self.debug_log.message("Max tournament time exceeded: " + str(CONFIG.MAX_TOURN_TIME) + " minutes")
+                # If so, end the game now (don't wait for gameover True)
+                self.debug_log.message("Game has ended.")
+                self.speed_log.message(
+                    str(self.game_index) + ": " + str(self.commands_sent / (time.time() - self.start_time)))
+                self._game_over()
+                self._tournament_completed()
+                break
+
+
             if self.agent_started:
                 self.agent.poll()
                 if self.agent.returncode is not None:
