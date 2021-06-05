@@ -247,7 +247,7 @@ class PythonDatabaseHandler:
     def do_amoc_calculation(self, **kwargs):
         amc = AMOC_Calculations(title=kwargs['title'], **kwargs)
         amc.calculate()
-        amc.display()
+        amc.create_amoc_plots()
 
     def upload_to_sql(self, csv_file, tbl_name='LOOKUP_PERFORMANCE_ZONES'):
         df = pd.read_csv(csv_file)

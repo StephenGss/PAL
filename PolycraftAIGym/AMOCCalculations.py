@@ -9,6 +9,7 @@ import random
 from sklearn.metrics import auc
 from collections import defaultdict, OrderedDict
 from pathlib import Path
+from datetime import datetime
 
 class AMOC_Calculations:
 
@@ -23,7 +24,7 @@ class AMOC_Calculations:
         # self.level_dict = DefaultOrderedDict(lambda: DefaultOrderedDict(lambda: DefaultOrderedDict(lambda: DefaultOrderedDict(lambda: dict()))))
         self.level_dict = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: dict()))))
         self.granular_auc = []
-        self.output_dir = Path(f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\00. 12M Evaluation AMOC Curves\\01. AMOC Graphs\\{self.title}\\")
+        self.output_dir = Path(f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\000. Evaluations\\00. Raw Data for DARPA formatting\\01. AMOC\\{self.title}\\")
         self.output_dir.mkdir(parents=True, exist_ok=True)
         # If KWARGS is not none, update the variables:
         for key in ('in_file', 'agent_name', 'tournament_likeness', 'debug'):
@@ -372,7 +373,7 @@ class AMOC_Calculations:
         df = pd.DataFrame(self.granular_auc)
         df.to_csv(self.output_dir / f"{self.outfile}.csv")
 
-    def display(self):
+    def create_amoc_plots(self):
         if self.F == 0:
             self.F = 1
         F_total = self.F
@@ -520,55 +521,21 @@ def do_something():
     print(auc_val)
 
 
+def runAMOC(agentName, tournamentFilter, debug=False):
+    amoc = AMOC_Calculations(agentName, agent_name=agentName, tournament_likeness=tournamentFilter,
+                             outfile=f'{agentName}_data_{datetime.strftime(datetime.today(),"%Y.%m.%d_%H%M")}', debug=debug)
+    amoc.calculate_by_tournament()
+    amoc.create_amoc_plots()
+
 
 if __name__ == '__main__':
-    # amoc = AMOC_Calculations('ISI Data', '../pytest/novelty_detection_2_ip_op_mod.jsonl')
-    # d1 = amoc.level_dict
-    # d2 = do_something()
-    # pairs = zip(d1, d2)
-    #
-    # amoc.alternate_calculate()
 
+    # NOTE: If you ran a U and K tournament on the same tournament Date, then you can input: "U%052701" or "K%052701"
+    # to the tournamentFilter to down-filter to the right subset of tournaments to run AMOC for.
 
-    # amoc.display()
-    # amoc = AMOC_Calculations('SIFT_T3', agent_name='SIFT_12M_E1', tournament_likeness="120222", outfile='sift_aggregate_v3', debug=False)
-    # amoc.calculate_by_tournament()
-    # amoc.display()
+    # All Outputs are saved to:
+    # Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\000. Evaluations\\00. Raw Data for DARPA formatting\\01. AMOC\\{agentName}\\
 
-    # amoc = AMOC_Calculations('SRI_T3', agent_name='SRI_12M_E1', tournament_likeness="U%120500", outfile='sri_aggregate_12M_FINAL',
-    #                          debug=False)
-    # # amoc.alternate_calculate()
-    # amoc.calculate_by_tournament()
-    # amoc.display()
-    # amoc = AMOC_Calculations('CRA_2', agent_name='CRA_12M_E1', tournament_likeness="U%120901", outfile='cra_aggregate_v2',
-    #                          debug=False)
-    # # amoc.alternate_calculate()
-    # amoc.calculate_by_tournament()
-    # amoc.display()
-
-    # amoc = AMOC_Calculations('CRA_KNOWN_T4', agent_name='CRA_12M_E2', tournament_likeness="K%121511",
-    #                          outfile='cra_aggregate_known_12M_FINAL',
-    #                          debug=False)
-    # # amoc.alternate_calculate()
-    # amoc.calculate_by_tournament()
-    # amoc.display()
-    #
-    # amoc = AMOC_Calculations('TUFTS_T3', agent_name='TUFTS_12M_E1', tournament_likeness="U%120522", outfile='tufts_aggregate_12M_FINAL',
-    #                          debug=False)
-    amoc = AMOC_Calculations('GTECH_12M_V2', agent_name='GTECH_AGENT_12M_V2', tournament_likeness="U%020111", outfile='gtech_aggregate_12M_v2_FINAL',
-                             debug=False)
-    amoc.calculate_by_tournament()
-    amoc.display()
-    # amoc = AMOC_Calculations('RAYTHEON_T3', agent_name='RAYTHEON_12M_E1', tournament_likeness="U%120810", outfile='raytheon_aggregate_12M_FINAL',
-    #                          debug=False)
-    # amoc.calculate_by_tournament()
-    # amoc.display()
-
-    # amoc = AMOC_Calculations('TUFTS', "TUFTS_Agent_Data", None, 'TUFTS_AGENT_TEST_V3', '062622', False)
-    # amoc.calculate()
-    # amoc.display()
-    # amoc = AMOC_Calculations('SRI', "SRI_Agent_Data", None, 'SRI_AGENT_TEST_V3', 'X1000%062817', False)
-    # amoc.calculate()
-    # amoc.display()
+    runAMOC(agentName="GTECH_18M_E2", tournamentFilter="052701")
 
 
