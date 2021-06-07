@@ -267,12 +267,15 @@ class AMOC_Calculations:
         plt.savefig(self.output_dir / f"AMOC {self.title} Final.png", format='png')
         print(auc_val)
 
-def runAMOC(agentName, tournamentFilter, debug=False):
+def runAMOC(agentName, tournamentFilter, out_folder_name=None, debug=False):
     """
     Helper function that runs the AMOC calculations for a given script
+    out_folder_name defaults to the agentName unless otherwise specified
     """
-    amoc = AMOC_Calculations(agentName, agent_name=agentName, tournament_likeness=tournamentFilter,
-                             outfile=f'{agentName}_data_{datetime.strftime(datetime.today(),"%Y.%m.%d_%H%M")}', debug=debug)
+    if out_folder_name is None:
+        out_folder_name = agentName
+    amoc = AMOC_Calculations(out_folder_name, agent_name=agentName, tournament_likeness=tournamentFilter,
+                             outfile=f'{out_folder_name}_data_{datetime.strftime(datetime.today(), "%Y.%m.%d_%H%M")}', debug=debug)
     amoc.calculate_by_tournament()
     amoc.create_amoc_plots()
 
@@ -286,6 +289,22 @@ if __name__ == '__main__':
     # Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\000. Evaluations\\00. Raw Data for DARPA formatting\\01. AMOC\\{agentName}\\
 
     # Example below - please rename/comment/reuse
-    runAMOC(agentName="GTECH_18M_E2", tournamentFilter="052701")
+    # runAMOC(agentName="GTECH_18M_E2", tournamentFilter="052701")
+    runAMOC(out_folder_name="GTECH_18M_Unknown", agentName="GTECH_18M_E2", tournamentFilter="052701")  # GTECH Unknown
+    runAMOC(out_folder_name="GTECH_18M_Known", agentName="GTECH_18M_E2", tournamentFilter="052801")  # GTECH Known
+
+    runAMOC(out_folder_name="SIFT_18M_Unknown", agentName="SIFT_18M_E1", tournamentFilter="052402")  # SIFT Unknown
+
+    runAMOC(out_folder_name="TUFTS_18M_Unknown", agentName="TUFTS_18M_E1", tournamentFilter="052601")  # TUFTS Unknown
+    runAMOC(out_folder_name="TUFTS_18M_Known", agentName="TUFTS_18M_E1", tournamentFilter="052801")  # TUFTS Known
+
+    runAMOC(out_folder_name="CRA_18M_Unknown", agentName="CRA_18M_E1", tournamentFilter="060401")  # CRA Unknown
+    runAMOC(out_folder_name="CRA_18M_Known", agentName="CRA_18M_E1", tournamentFilter="060402")  # CRA Known
+
+    runAMOC(out_folder_name="RAYTHEON_18M_Unknown", agentName="RAYTHEON_18M_E1", tournamentFilter="053102")  # Raytheon Unknown
+    runAMOC(out_folder_name="RAYTHEON_18M_Known", agentName="RAYTHEON_18M_E1", tournamentFilter="060201")  # Raytheon Known
+
+    runAMOC(out_folder_name="SRI_18M_Unknown", agentName="SRI_18M_V1", tournamentFilter="060101")  # SRI Unknown
+    runAMOC(out_folder_name="SRI_18M_Known", agentName="SRI_18M_V1", tournamentFilter="060201")  # SRI Known
 
 
