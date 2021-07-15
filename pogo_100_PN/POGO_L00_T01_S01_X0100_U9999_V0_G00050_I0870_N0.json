@@ -2,9 +2,9 @@
   "features": [
     {
       "pos": [
-        56,
+        50,
         17,
-        36
+        51
       ],
       "name": "Start 0",
       "color": -16711681,
@@ -30,9 +30,9 @@
     },
     {
       "pos": [
-        57,
+        66,
         17,
-        43
+        57
       ],
       "name": "Pogoist 1",
       "color": -65281,
@@ -40,14 +40,14 @@
       "canProceed": false,
       "isDone": false,
       "completionTime": 0,
-      "uuid": "1058ab6c-7915-4dcb-b32d-5cb389543839",
+      "uuid": "bb5231d9-e0f6-486c-b6df-a17ebecd50a9",
       "addArmor": true
     },
     {
       "pos": [
-        48,
+        47,
         17,
-        41
+        48
       ],
       "name": "Trader 2",
       "color": -65281,
@@ -55,31 +55,8 @@
       "canProceed": false,
       "isDone": false,
       "completionTime": 0,
-      "uuid": "40bcbd44-1eda-4bac-a3b1-a0f7d901cd2e",
+      "uuid": "8d123bc0-1967-4293-8fd0-62c972be4b94",
       "tradeList": [
-        {
-          "inputs": [
-            {
-              "slotIndex": 0,
-              "itemStacks": [
-                {
-                  "name": "minecraft:diamond",
-                  "stackSize": 18
-                }
-              ]
-            }
-          ],
-          "outputs": [
-            {
-              "slotIndex": 5,
-              "itemStack": {
-                "name": "polycraft:block_of_platinum",
-                "stackSize": 1
-              }
-            }
-          ],
-          "containerType": "TRADING_HOUSE"
-        },
         {
           "inputs": [
             {
@@ -102,15 +79,38 @@
             }
           ],
           "containerType": "TRADING_HOUSE"
+        },
+        {
+          "inputs": [
+            {
+              "slotIndex": 0,
+              "itemStacks": [
+                {
+                  "name": "minecraft:diamond",
+                  "stackSize": 18
+                }
+              ]
+            }
+          ],
+          "outputs": [
+            {
+              "slotIndex": 5,
+              "itemStack": {
+                "name": "polycraft:block_of_platinum",
+                "stackSize": 1
+              }
+            }
+          ],
+          "containerType": "TRADING_HOUSE"
         }
       ],
       "addArmor": true
     },
     {
       "pos": [
-        45,
+        46,
         17,
-        38
+        45
       ],
       "name": "Trader 1",
       "color": -65281,
@@ -118,7 +118,7 @@
       "canProceed": false,
       "isDone": false,
       "completionTime": 0,
-      "uuid": "b4ba51d3-250f-4f6c-80cc-315d4eb5a9d2",
+      "uuid": "04e7c57f-395c-4377-9d6c-3946d23d583b",
       "tradeList": [
         {
           "inputs": [
@@ -171,9 +171,9 @@
     },
     {
       "pos": [
-        80,
+        64,
         16,
-        64
+        24
       ],
       "name": "Room_2",
       "color": -16711936,
@@ -181,11 +181,11 @@
       "canProceed": false,
       "isDone": false,
       "completionTime": 0,
-      "uuid": "8c457b91-62fc-453f-823f-58ba29e25851",
+      "uuid": "8f384871-9de6-423b-988e-644c3f130c6f",
       "pos2": [
-        95,
+        79,
         23,
-        79
+        31
       ],
       "blockFloorMeta": 0,
       "blockFloorName": "minecraft:dirt",
@@ -198,20 +198,20 @@
       "spawnRefBlocks": false,
       "recycleRefSeed": true,
       "isChunkBased": true,
-      "refSeed": 1571374040,
+      "refSeed": -744897315,
       "refSpawnChance": 0.0,
-      "intensity": 791,
+      "intensity": 870,
       "useRandomMeta": false,
-      "wallTexture": "T0",
-      "wallColor": "T2",
-      "floorTexture": "T5",
-      "floorColor": "T0",
+      "wallTexture": "T1",
+      "wallColor": "T0",
+      "floorTexture": "T7",
+      "floorColor": "T3",
       "chunks": [
         {
           "pos": [
-            10,
+            8,
             2,
-            8
+            3
           ],
           "wallConfiguration": [
             {
@@ -230,36 +230,10 @@
             {
               "face": "south",
               "config": {
-                "type": "INTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE"
-                }
-              }
-            },
-            {
-              "face": "east",
-              "config": {
-                "type": "INTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE"
-                }
-              }
-            },
-            {
-              "face": "north",
-              "config": {
                 "type": "ROOM_ADJACENT",
                 "wallConfiguration": [
                   {
-                    "slot": 2,
+                    "slot": 5,
                     "config": {
                       "type": "OPEN",
                       "reversed": false,
@@ -275,42 +249,6 @@
                   "pressurePlaceLocation": "NONE"
                 }
               }
-            }
-          ],
-          "roomID": 2
-        },
-        {
-          "pos": [
-            10,
-            2,
-            9
-          ],
-          "wallConfiguration": [
-            {
-              "face": "west",
-              "config": {
-                "type": "EXTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE"
-                }
-              }
-            },
-            {
-              "face": "south",
-              "config": {
-                "type": "EXTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE"
-                }
-              }
             },
             {
               "face": "east",
@@ -328,68 +266,6 @@
             {
               "face": "north",
               "config": {
-                "type": "INTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE"
-                }
-              }
-            }
-          ],
-          "roomID": 2
-        },
-        {
-          "pos": [
-            11,
-            2,
-            8
-          ],
-          "wallConfiguration": [
-            {
-              "face": "west",
-              "config": {
-                "type": "INTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE"
-                }
-              }
-            },
-            {
-              "face": "south",
-              "config": {
-                "type": "INTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE"
-                }
-              }
-            },
-            {
-              "face": "east",
-              "config": {
-                "type": "EXTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE"
-                }
-              }
-            },
-            {
-              "face": "north",
-              "config": {
                 "type": "EXTERNAL",
                 "wallConfiguration": [],
                 "defaultPath": {
@@ -405,9 +281,9 @@
         },
         {
           "pos": [
-            11,
+            9,
             2,
-            9
+            3
           ],
           "wallConfiguration": [
             {
@@ -452,7 +328,7 @@
             {
               "face": "north",
               "config": {
-                "type": "INTERNAL",
+                "type": "EXTERNAL",
                 "wallConfiguration": [],
                 "defaultPath": {
                   "type": "BLUEPRINT",
@@ -485,7 +361,7 @@
       "canProceed": false,
       "isDone": false,
       "completionTime": 0,
-      "uuid": "edd83aec-5f87-4bd1-818c-65ab15b4cd8a",
+      "uuid": "f3325478-b96c-46e6-be76-dcf30bb8f7a2",
       "pos2": [
         87,
         23,
@@ -502,13 +378,13 @@
       "spawnRefBlocks": false,
       "recycleRefSeed": true,
       "isChunkBased": true,
-      "refSeed": -1817986515,
+      "refSeed": -719507547,
       "refSpawnChance": 0.0,
-      "intensity": 791,
+      "intensity": 870,
       "useRandomMeta": false,
-      "wallTexture": "T1",
-      "wallColor": "T3",
-      "floorTexture": "T7",
+      "wallTexture": "T0",
+      "wallColor": "T0",
+      "floorTexture": "T6",
       "floorColor": "T3",
       "chunks": [
         {
@@ -524,7 +400,7 @@
                 "type": "ROOM_ADJACENT",
                 "wallConfiguration": [
                   {
-                    "slot": 2,
+                    "slot": 1,
                     "config": {
                       "type": "OPEN",
                       "reversed": false,
@@ -730,7 +606,7 @@
             {
               "face": "south",
               "config": {
-                "type": "ROOM_ADJACENT",
+                "type": "EXTERNAL",
                 "wallConfiguration": [],
                 "defaultPath": {
                   "type": "BLUEPRINT",
@@ -789,7 +665,7 @@
       "canProceed": false,
       "isDone": false,
       "completionTime": 0,
-      "uuid": "12b14707-412a-4436-9cf4-36abe2294de3",
+      "uuid": "c026ced0-4d70-41d4-ba51-f97520550b75",
       "pos2": [
         71,
         23,
@@ -806,13 +682,13 @@
       "spawnRefBlocks": false,
       "recycleRefSeed": true,
       "isChunkBased": true,
-      "refSeed": 32485923,
+      "refSeed": -147136068,
       "refSpawnChance": 0.0,
-      "intensity": 791,
+      "intensity": 870,
       "useRandomMeta": false,
-      "wallTexture": "T2",
+      "wallTexture": "T1",
       "wallColor": "T2",
-      "floorTexture": "T7",
+      "floorTexture": "T5",
       "floorColor": "T1",
       "chunks": [
         {
@@ -1422,8 +1298,18 @@
             {
               "face": "north",
               "config": {
-                "type": "EXTERNAL",
-                "wallConfiguration": [],
+                "type": "ROOM_ADJACENT",
+                "wallConfiguration": [
+                  {
+                    "slot": 5,
+                    "config": {
+                      "type": "DOOR",
+                      "reversed": false,
+                      "buttonLocation": "NONE",
+                      "pressurePlaceLocation": "NONE"
+                    }
+                  }
+                ],
                 "defaultPath": {
                   "type": "BLUEPRINT",
                   "reversed": false,
@@ -1722,7 +1608,7 @@
                 "type": "ROOM_ADJACENT",
                 "wallConfiguration": [
                   {
-                    "slot": 2,
+                    "slot": 1,
                     "config": {
                       "type": "DOOR",
                       "reversed": false,
@@ -1837,7 +1723,7 @@
       "canProceed": false,
       "isDone": false,
       "completionTime": 0,
-      "uuid": "6b3eab07-fc45-47d7-a047-9fcf2cec58a6",
+      "uuid": "be5b56ae-9cda-453c-8f72-4bbdf539024e",
       "stepCount": 0
     },
     {
@@ -1863,12 +1749,133 @@
       "blockList": [
         {
           "blockPos": [
-            43,
+            68,
             17,
-            38
+            46
           ],
           "blockDef": {
             "blockName": "tree",
+            "blockMeta": 0
+          }
+        },
+        {
+          "blockPos": [
+            43,
+            17,
+            48
+          ],
+          "blockDef": {
+            "blockName": "minecraft:diamond_ore",
+            "blockMeta": 0
+          }
+        },
+        {
+          "blockPos": [
+            44,
+            17,
+            48
+          ],
+          "blockDef": {
+            "blockName": "minecraft:diamond_ore",
+            "blockMeta": 0
+          }
+        },
+        {
+          "blockPos": [
+            43,
+            17,
+            49
+          ],
+          "blockDef": {
+            "blockName": "minecraft:diamond_ore",
+            "blockMeta": 0
+          }
+        },
+        {
+          "blockPos": [
+            42,
+            17,
+            51
+          ],
+          "blockDef": {
+            "blockName": "tree",
+            "blockMeta": 0
+          }
+        },
+        {
+          "blockPos": [
+            44,
+            17,
+            49
+          ],
+          "blockDef": {
+            "blockName": "minecraft:diamond_ore",
+            "blockMeta": 0
+          }
+        },
+        {
+          "blockPos": [
+            60,
+            17,
+            37
+          ],
+          "blockDef": {
+            "blockName": "polycraft:plastic_chest",
+            "blockMeta": 0
+          }
+        },
+        {
+          "blockPos": [
+            79,
+            17,
+            53
+          ],
+          "blockDef": {
+            "blockName": "polycraft:safe",
+            "blockMeta": 11
+          }
+        },
+        {
+          "blockPos": [
+            45,
+            17,
+            56
+          ],
+          "blockDef": {
+            "blockName": "tree",
+            "blockMeta": 0
+          }
+        },
+        {
+          "blockPos": [
+            48,
+            17,
+            55
+          ],
+          "blockDef": {
+            "blockName": "tree",
+            "blockMeta": 0
+          }
+        },
+        {
+          "blockPos": [
+            46,
+            17,
+            60
+          ],
+          "blockDef": {
+            "blockName": "polycraft:block_of_platinum",
+            "blockMeta": 0
+          }
+        },
+        {
+          "blockPos": [
+            46,
+            17,
+            61
+          ],
+          "blockDef": {
+            "blockName": "polycraft:block_of_platinum",
             "blockMeta": 0
           }
         },
@@ -1876,16 +1883,16 @@
           "blockPos": [
             47,
             17,
-            38
+            60
           ],
           "blockDef": {
-            "blockName": "tree",
+            "blockName": "polycraft:block_of_platinum",
             "blockMeta": 0
           }
         },
         {
           "blockPos": [
-            66,
+            50,
             17,
             58
           ],
@@ -1896,97 +1903,9 @@
         },
         {
           "blockPos": [
-            48,
+            47,
             17,
-            50
-          ],
-          "blockDef": {
-            "blockName": "minecraft:diamond_ore",
-            "blockMeta": 0
-          }
-        },
-        {
-          "blockPos": [
-            51,
-            17,
-            48
-          ],
-          "blockDef": {
-            "blockName": "polycraft:plastic_chest",
-            "blockMeta": 0
-          }
-        },
-        {
-          "blockPos": [
-            49,
-            17,
-            50
-          ],
-          "blockDef": {
-            "blockName": "minecraft:diamond_ore",
-            "blockMeta": 0
-          }
-        },
-        {
-          "blockPos": [
-            48,
-            17,
-            51
-          ],
-          "blockDef": {
-            "blockName": "minecraft:diamond_ore",
-            "blockMeta": 0
-          }
-        },
-        {
-          "blockPos": [
-            49,
-            17,
-            51
-          ],
-          "blockDef": {
-            "blockName": "minecraft:diamond_ore",
-            "blockMeta": 0
-          }
-        },
-        {
-          "blockPos": [
-            45,
-            17,
-            57
-          ],
-          "blockDef": {
-            "blockName": "tree",
-            "blockMeta": 0
-          }
-        },
-        {
-          "blockPos": [
-            52,
-            17,
-            52
-          ],
-          "blockDef": {
-            "blockName": "tree",
-            "blockMeta": 0
-          }
-        },
-        {
-          "blockPos": [
-            76,
-            17,
-            60
-          ],
-          "blockDef": {
-            "blockName": "polycraft:safe",
-            "blockMeta": 11
-          }
-        },
-        {
-          "blockPos": [
-            59,
-            17,
-            48
+            61
           ],
           "blockDef": {
             "blockName": "polycraft:block_of_platinum",
@@ -1995,42 +1914,9 @@
         },
         {
           "blockPos": [
-            60,
+            69,
             17,
-            48
-          ],
-          "blockDef": {
-            "blockName": "polycraft:block_of_platinum",
-            "blockMeta": 0
-          }
-        },
-        {
-          "blockPos": [
-            59,
-            17,
-            49
-          ],
-          "blockDef": {
-            "blockName": "polycraft:block_of_platinum",
-            "blockMeta": 0
-          }
-        },
-        {
-          "blockPos": [
-            60,
-            17,
-            49
-          ],
-          "blockDef": {
-            "blockName": "polycraft:block_of_platinum",
-            "blockMeta": 0
-          }
-        },
-        {
-          "blockPos": [
-            61,
-            17,
-            51
+            41
           ],
           "blockDef": {
             "blockName": "minecraft:crafting_table",
@@ -2043,7 +1929,7 @@
       "pos": [
         40,
         17,
-        32
+        24
       ],
       "name": "map",
       "color": -256,
@@ -2053,9 +1939,9 @@
       "completionTime": 0,
       "uuid": "53f20c95-f1e5-48f4-9310-b663f71ba5d8",
       "pos2": [
-        95,
+        87,
         18,
-        79
+        63
       ],
       "data": " "
     },
@@ -2782,7 +2668,7 @@
       "uuid": "b6ae0b79-e683-4c8a-b33c-39659562c617",
       "itemList": [
         {
-          "slot": 6,
+          "slot": 7,
           "itemDef": {
             "itemName": "minecraft:iron_pickaxe",
             "itemMeta": 0,
@@ -2852,7 +2738,7 @@
     "name": "",
     "numTeams": 2,
     "teamSize": 2,
-    "seed": 562899402,
+    "seed": 1480064083,
     "hideGui": false,
     "outputScreen": false,
     "distribution": "Uninformed"
@@ -3012,7 +2898,7 @@
         "intensity": 20
       }
     ],
-    "seedOverride": 562899402,
-    "generatedTimeStamp": "2021-07-15 13:18:46.403"
+    "seedOverride": 1480064083,
+    "generatedTimeStamp": "2021-07-15 13:18:46.565"
   }
 }
