@@ -271,7 +271,7 @@ The Polycraft World AI API consists of 28 total different API commands at Releas
 	* calls PLACE_BLOCK polycraft:macguffin (and processes extra rules)
 * **DELETE \[item name\]**
 	* Deletes the item in player's inventory
-* **TRADE \[entity id\] \[item 1\] \[qty\] \[item 2\] \[qty\] \[item 3\] \[qty\] \[item 4\] \[qty\] \[item 5\] \[qty\]
+* **TRADE \[entity id\] \[item 1\] \[qty\] \[item 2\] \[qty\] \[item 3\] \[qty\] \[item 4\] \[qty\] \[item 5\] \[qty\]**
 	* Trade with trader entities
 * **INTERACT \[entity id\]** 
 	* Interact with an entity. Ex. sense the recipes available for a trader agent
