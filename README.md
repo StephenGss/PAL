@@ -237,7 +237,7 @@ The Polycraft World AI API consists of 28 total different API commands at Releas
 * **SENSE_ALL NONAV**
 	* returns inventory, recipe and location information in .json | NONAV parameters omits information which is not needed for agents that do not navigate the world
 
-## GAME commands - INTERACT commands: (9 total)
+## GAME commands - INTERACT/ACTION commands: (9 total)
 
 * **SELECT_ITEM** polycraft:wooden_pogo_stick
 	* sets a specific item from your inventory in your hand as the active item (e.g. tool or block)
