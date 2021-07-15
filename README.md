@@ -1,12 +1,8 @@
-# Release 1.2
-The latest release of the Polycraft Tournament Manager includes minor updates across the board to better facilitate
-running large scale tournaments in a robust fashion. Please see the Key Updates section
-below for a quick overview of the updates and read the Setup and Usage sections to understand how to run it. 
+# Release 2.0
+The latest release of the Polycraft Tournament Manager includes major updates to our POGO task design. 
+Please see this change log for changes in the POGO task.
 
-Please note: We highly recommend using a Linux environment to install and run this tool.
-Our test bench uses a few hundred cores on Azure Batch running Ubuntu 18.04 LTS on AMD EPYC processors in a headless environment.
-
-Your mileage will vary if using Windows. 
+HUGA Task update coming soon.
 
 ## Key Updates
 ### Release 1.3
@@ -245,10 +241,10 @@ The Polycraft World AI API consists of 28 total different API commands at Releas
 
 * **SELECT_ITEM** polycraft:wooden_pogo_stick
 	* sets a specific item from your inventory in your hand as the active item (e.g. tool or block)
-* **USE_HAND**
-	* to open doors with bare hand (ignores item in hand to interact)
-* (inactive) USE_ITEM
-	* will be added after dry-run. NOT in release 1.5.0
+* **USE**
+	* to open doors
+	* unlock safes
+	* etc.
 * **BREAK_BLOCK**
 	* breaks block directly in front of player with selected item
 	* selected item and block type yield stepCost of action
@@ -263,9 +259,9 @@ The Polycraft World AI API consists of 28 total different API commands at Releas
 	* crafts a Tree Tap
 * **CRAFT** 1 minecraft:stick minecraft:stick minecraft:stick minecraft:planks minecraft:stick minecraft:planks 0 polycraft:sack_polyisoprene_pellets 0
 	* crafts a Wooden Pogo Stick
-* **EXTRACT_RUBBER**
-	* moves polycraft:sack_polyisoprene_pellets from polycraft:tree_tap to player inventory
-* PLACE_BLOCK polycraft:macguffin 
+* **COLLECT**
+	* collect available items from container blocks or inventories
+* **PLACE \[item name\]**
 	* will be added after dry-run. NOT in release 1.5.0
 * **PLACE_TREE_TAP**
 	* calls PLACE_BLOCK polycraft:tree_tap (and processes extra rules)
@@ -273,3 +269,9 @@ The Polycraft World AI API consists of 28 total different API commands at Releas
 	* calls PLACE_BLOCK minecraft:crafting_table  (and processes extra rules)
 * **PLACE_MACGUFFIN**
 	* calls PLACE_BLOCK polycraft:macguffin (and processes extra rules)
+* **DELETE \[item name\]**
+	* Deletes the item in player's inventory
+* **TRADE \[entity id\] \[item 1\] \[qty\] \[item 2\] \[qty\] \[item 3\] \[qty\] \[item 4\] \[qty\] \[item 5\] \[qty\]
+	* Trade with trader entities
+* **INTERACT \[entity id\]** 
+	* Interact with an entity. Ex. sense the recipes available for a trader agent
