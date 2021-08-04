@@ -3,8 +3,6 @@ The latest release of the Polycraft Tournament Manager includes major updates to
 The example tournament in pogo_100_PN has also been updated to the new POGO version. 
 We've also added an example tournament for the HUGA task in huga_100_PN.
 
-HUGA Task update coming soon.
-
 ## Key Updates
 ### Release 1.3
 * New Environment variable PAL_FPS to set game speed frames per second. This can increase your agent's actions per second and greatly decrease training time. By default, this is set to 20 and the maximum is 1000. However, depending on the machine, you may not get the expected frames per second. The frames per second will also depend on what commands you are using. Some commands take 1 frame to perform and others take 2.
