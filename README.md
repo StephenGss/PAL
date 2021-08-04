@@ -1,7 +1,7 @@
 # Release 2.0
-The latest release of the Polycraft Tournament Manager includes major updates to our POGO task design. 
+The latest release of the Polycraft Tournament Manager includes major updates to our POGO and HUGA task design. 
 The example tournament in pogo_100_PN has also been updated to the new POGO version
-Please see this change log for changes in the POGO task.
+We've also added an example tournament for the HUGA task in huga_100_PN.
 
 HUGA Task update coming soon.
 
