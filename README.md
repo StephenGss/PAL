@@ -258,8 +258,8 @@ The Polycraft World AI API consists of 28 total different API commands at Releas
 	* crafts a Wooden Axe 
 * **CRAFT** 1 minecraft:planks minecraft:stick minecraft:planks minecraft:planks 0 minecraft:planks 0 minecraft:planks 0
 	* crafts a Tree Tap
-* **CRAFT** 1 minecraft:stick minecraft:stick minecraft:stick minecraft:planks minecraft:stick minecraft:planks 0 polycraft:sack_polyisoprene_pellets 0
-	* crafts a Wooden Pogo Stick
+* **CRAFT** 1 minecraft:stick polycraft:block_of_titanium minecraft:stick minecraft:diamond_block polycraft:block_of_titanium minecraft:diamond_block 0 polycraft:sack_polyisoprene_pellets 0
+	* crafts a wooden Pogo Stick
 * **COLLECT**
 	* collect available items from container blocks or inventories
 * **PLACE \[item name\]**
