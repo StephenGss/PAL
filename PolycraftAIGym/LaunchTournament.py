@@ -13,7 +13,7 @@ from collections import defaultdict
 from copy import copy, deepcopy
 import getopt
 import psutil
-from spython.main import Client as sClient
+#from spython.main import Client as sClient
 
 
 class LaunchTournament:
