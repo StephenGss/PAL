@@ -38,21 +38,28 @@ while run:  # main loop
         userInput = f'GENTOUR -c ../test -0 ../Novelty/input/huga_v2/huga_lvl_0.json -o ../Novelty/output/huga_test/ -f test -n 1 -w 0,0,1 -s {str(seed)} -R'
     # userInput = f'GENTOUR -c ../test -0 ../Novelty/input/pogo_v2/pogo_lvl_0.json -o ../Novelty/output/pogo_test/ -f test -n 1 -w 0,0,1 -s {str(seed)} -R'
     elif userInput.startswith('#'):
-        zipPath = "C:\\Users\\Stephen\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\pogo-12M-tournaments-zipped\\POGO_100game_12M_full_evaluation_unknown_mode\\" \
-                  + userInput.split(" ")[1][0:16] + "\\" + userInput.split(" ")[1][17:22] + "\\" + userInput.split(" ")[
-                      1] + ".zip"
+        if(userInput.startswith('# HUGA')):
+            zipPath = "C:\\Users\\Stephen\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\huga-12M-tournaments-zipped\\HUGA_100game_full_eval_unknown_mode\\" \
+                      + userInput.split(" ")[1][0:16] + "\\" + userInput.split(" ")[1][17:22] + "\\" + \
+                      userInput.split(" ")[
+                          1] + ".zip"
+        else:
+            zipPath = "C:\\Users\\Stephen\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\pogo-12M-tournaments-zipped\\POGO_100game_12M_full_evaluation_unknown_mode\\" \
+                      + userInput.split(" ")[1][0:16] + "\\" + userInput.split(" ")[1][17:22] + "\\" + userInput.split(" ")[
+                          1] + ".zip"
         print(zipPath)
         file = zipfile.ZipFile(zipPath)
         file.extractall(path=dirpath)
 
         filename = None
-        for f_name in os.listdir(dirpath):
-            if f_name.startswith(
-                    userInput.split(" ")[1][0:23] + userInput.split(" ")[1][25:33] + "_" + userInput.split(" ")[
-                        2]) and f_name.endswith('.json'):
-                filename = f_name
+        for subdir, dirs, files in os.walk(dirpath):
+            for f_name in files:
+                if f_name.startswith(
+                        userInput.split(" ")[1][0:23] + userInput.split(" ")[1][25:33] + "_" + userInput.split(" ")[
+                            2]) and f_name.endswith('.json'):
+                    filename = subdir + "\\" + f_name
         print(filename)
-        userInput = "Launch domain " + dirpath + "\\" + filename
+        userInput = "Launch domain " + filename
 
     if userInput == 'exit':  # wait for user input commands
         run = False
