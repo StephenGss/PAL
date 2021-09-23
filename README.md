@@ -105,8 +105,8 @@ Critical Parameters requiring edits before runtime are:
 | Parameter  | CLI flag | Comments |
 |-----------|--------------------------|--------------|
 |MAX_STEP_COST      | N/A (see file)           | Maximum step cost before a game is ended - set to 1,000,000 |
-|PAL_COMMAND        | N/A (see file)          | Windows command to execute the polycraft client               |
-|PAL_COMMAND_UNIX   | N/A (see file)        | Linux command to run polycraft. |
+|PAL_COMMAND        | `-p <windows cmd>` | Windows command to execute the polycraft client               |
+|PAL_COMMAND_UNIX   | `-p <bash cmd>` | Linux command to run polycraft. |
 |MAX_TIME           | `-i <time>` | maximum time in seconds for a given game (default: 300)|
 |TOURNAMENT_ID      | `-t <name>` | name of the tournament |
 |AGENT_DIRECTORY    | `-d <../agent/>` | work directory where AGENT_COMMAND_UNIX gets executed |
@@ -115,6 +115,7 @@ Critical Parameters requiring edits before runtime are:
 |AGENT_ID           | `-a <agent_name>` | name of agent |
 |GAME_COUNT         | `-c <count>`        | number of games to be played. If count > number of games available in the games folder, all games are played.
 |GAMES_FOLDER       | `-g <games/>` | location of folder containing tournament JSONs. |
+|SQL_ERR_LOG_DIR       | `-e <games/>` | location of folder containing tournament JSONs. |
 
 __NOTE__: the PAL_COMMAND_UNIX must be adjusted away from default to run on a computer with a graphics card & display attached. Please 
 see the related comment in the config.py file, as the appropriate UNIX command (`./gradlew runclient`).
