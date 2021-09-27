@@ -3,6 +3,7 @@ SAIL-ON Polycraft World Change Log:
 Purpose: This document tracks changes and updates to Polycraft World that impact SAIL-ON Tasks, Evaluations, etc., including API changes.
 
 2021.09.15 updates:
+Global
 1)	(API Change) (Global) Position property format for entities was changed from a string to an integer array.
     a. Previously entity position reported as: "Pos":"BlockPos{x=5, y=4, z=20}"
     b. Now entity position reported as: "pos":[5,4,20]
@@ -11,13 +12,38 @@ Purpose: This document tracks changes and updates to Polycraft World that impact
 3)  (Bug fix) (Global) NOP command removed from commands that external actors ignore, which was causing NOP to not advance time for external actors.
 
 2021.08.31 updates:
-1)	(New Feature) (Global)  Color attribute for objects and actors added: Doors, keys, and patrols have a color attribute that is communicated in SENSE_ALL.
-2)	(New Feature) (HUGA) Added command for training: Teleports the player anywhere facing any direction. There are no checks on this, you can teleport to any position, and it will always succeed. Including inside blocks.
+Global
+1)	(New Feature)(Global)  Color attribute for objects and actors added: Doors, keys, and patrols have a color attribute that is communicated in SENSE_ALL.
+2)	(API Change)(POGO) API option to sense actor commands: SENSE_ACTOR_ACTIONS
+    a.	Flip Book mode: Ex. “SENSE_ACTOR_ACTIONS”
+        i.	Returns List of each actor’s “preWorldState”, “action” and “postWorldState”
+        ii.	“preWorldState”: contains a sense_all output from before the action was started
+        iii.	“action”: contains “name”(String), “args”(string), “result”(string), and “stepNumber”(int)
+        iv.	“postWorldState”: contains a sense_all output form after the action was completed
+    b.	Simultaneous mode: Ex. “SENSE_ACTOR_ACTIONS simultaneous”
+        i.	Returns the first world state before all actions, a list of all the actions, and the last world state
+        ii.	“preWorldState”: contains a sense_all output from before the actions were started
+        iii.	“actions”: contains list of all actions each in the format of:
+            1.	“name”(String), “args”(string), “result”(string), and “stepNumber”(int)
+        iv.	“postWorldState”: contains a sense_all output from after all actions were completed
+3)	(API Change)(POGO) API option to advance time without a stepCost: NOP
+    a.	The command “NOP” can be sent to advance time by one turn without taking an action for the TA2 agent. This could be useful if the Agent wants to wait for a specific future state without changing location. The NOP does not have a stepCost.
+HUGA
+4)	(New Feature)(HUGA) Added command for training: Teleports the player anywhere facing any direction. There are no checks on this, you can teleport to any position, and it will always succeed. Including inside blocks.
     a.	Ex. TELEPORT [x] [y] [z] [yaw] [pitch] 
         i.	Yaw: Ranges from 0 to 270 where 0 is south, 90 is West, 180 is North, and 270 is East. 
         ii.	Pitch: Ranges from -90 to 90 where -90 is looking straight up, 0 is looking forward, and 90 is looking straight down.
     b.	This command is disabled by default. To enable this command, you must set the environment variable “PAL_DEV” to “true”.
-3)	(Bug fix) (HUGA) Guide Dog blocking path fixed: The Guide Dog pathing was changed so that it will not block walkways.
-4)	(New feature)(HUGA) Red Patrols removed from Room 1: Red Patrols no longer spawn in Room 1, so they will not be present near the player re-spawn point.
-5)	(New feature)(HUGA) Red Patrols don’t pursue the TA2 Agent: Red Patrols no longer move purposefully towards the TA2 Agent in pre-novelty, they now move completely randomly with respect to the TA2 Agent.
-6)	(New feature)(HUGA) Size of held objects increased: The size of held objects, such as the Armor held by Blue Patrols or Keys held in the Locksmith novelty has been increased so that they are clearly visible.
+5)	(Bug fix)(HUGA) Guide Dog blocking path fixed: The Guide Dog pathing was changed so that it will not block walkways.
+6)	(New feature)(HUGA) Red Patrols removed from Room 1: Red Patrols no longer spawn in Room 1, so they will not be present near the player re-spawn point.
+7)	(New feature)(HUGA) Red Patrols don’t pursue the TA2 Agent: Red Patrols no longer move purposefully towards the TA2 Agent in pre-novelty, they now move completely randomly with respect to the TA2 Agent.
+8)	(New feature)(HUGA) Size of held objects increased: The size of held objects, such as the Armor held by Blue Patrols or Keys held in the Locksmith novelty has been increased so that they are clearly visible.
+POGO
+9)	(New feature)(POGO) Actors using Teleport: External ‘Actors’ will use Teleport for movement if the TA2 ‘Agent’ uses TP_TO, and MOVE if the agent uses MOVE:
+    a.	The Actors start each instance defaulting to the MOVE command when they are changing location. If at any point the TA2 Agent uses the TP_TO command, all Actors will subsequently use TP_TO when they are changing location.
+    b.	If the TA2 performs teleport then the Rival will use teleport for its movement commands and all teleports for the TA2 agent and Rival will be treated as 1 action, regardless of distance traveled. 
+10)	(Bug fix)(POGO) Unlock safe message: When successfully using the blue key to unlock the safe, the incorrect message was returned: “Fail” “using hand on air”. This has been changed to the appropriate successful message.
+11)	(New feature)(POGO) Pogoist action sequence: The Pogoist previously stopped after breaking 2 trees, building a tree tap, and placing a tree tap. The Pogoist now continues forward all the way to a Pogo Stick as follows:
+    a.	Pogoist gets 2 trees, then crafts and places Tree Tap, gets rubber, mines 2 diamond, mines 2 platinum, trades with TVs, makes Pogo Stick.
+12)	(Bug fix)(POGO) Blue key texture pack: Previously the blue key did not render correctly. The texture pack has been updated and the blue key should appear in the agent’s hand and inventory as a blue key.
+13)	(New feature)(POGO) Diamond and Platinum Ore amounts: Change Diamond and Platinum ore spawns in Room 1 to be rng between 2-4 instead of always 4.
