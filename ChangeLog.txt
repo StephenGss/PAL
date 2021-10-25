@@ -1,6 +1,16 @@
 SAIL-ON Polycraft World Change Log:
 
 Purpose: This document tracks changes and updates to Polycraft World that impact SAIL-ON Tasks, Evaluations, etc., including API changes.
+
+2021.10.14 updates:
+1)	(Bug fix) cannot go through allowed blocks using cardinal movement(ex. MOVE_NORTH, MOVE_EAST, etc), but you can with egocentric movement. This is fixed to allow walking through doors/macguffing using cardinal movement as well. 
+2)	(Bug fix) Agent can move onto the same locaiton as an actor. This is not expected. Actors should act as obstacles. This has been fixed for all movement commands.
+3)	(Bug fix) (POGO) Traded items are lost if the trade is not valid. Items should not be lost on invalid trade attempts. This has been fixed.
+4)	(Enhancement) Added argument for Interact to interact with the actor the agent is facing. ex. INTERACT FACING
+5)	(Enhancement) (POGO) Added argument for TRADE to trade with the actor the agent is facing. ex. TRADE FACING minecraft:log 10
+6)	(Bug fix) SELECT_ITEM NULL returned FAIL for command result even though the action of selecting null/hand was completed correctly. Now returns a success command result with message "selected hand". Sending the command with no arguments will now be interpreted as sending SELECT_ITEM NULL as well.
+
+
 2021.10.14 updates:
 1)	Bug when using PLACE command while facing an actor causes a null pointer error. Fixed to return failed action.
 
