@@ -1,7 +1,7 @@
 from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 from azure.cosmosdb.table.tableservice import TableService
 from azure.cosmosdb.table.models import Entity
-import os
+import os, time
 from os import path
 import re
 import pyodbc
@@ -12,18 +12,22 @@ from PalMessenger import PalMessenger
 from azure.core.exceptions import ServiceRequestError, ServiceRequestTimeoutError, ServiceResponseError
 import configparser
 import gzip
+from filelock import Timeout, FileLock
 
 
 class AzureConnectionService:
 
-    def __init__(self, debug_log, container_name='log-container'):
+    def __init__(self, debug_log, container_name='round2-logs'):
         self.configs = self._check_for_configs()
         self.debug_log = debug_log
         self.container_name = container_name
         self.blob_service_client = self._read_secret_key()
+        self.temp_logs_path = "upload_logs_scripts.sql"
+        self.lock = FileLock(f"{self.temp_logs_path}.lock")
         self.valid_connection = False
         self.sql_connection = self._get_sql_connection()
         self.cursor = None
+        self.max_retries = 10
         if self.is_connected():
             self.cursor = self.sql_connection.cursor()
 
@@ -206,21 +210,36 @@ class AzureConnectionService:
         for dict in all_vals.values():
             rows_to_add.extend([tuple(dict.values())])
 
+        # Check to see if any steps were taken to prevent PKEY errors
+        if len(rows_to_add) == 0:
+            self.debug_log.message(f"Not Sending Game Details - No Steps Taken!: {rows_to_add}")
+            return
+
         self.debug_log.message(f"Sending Game Details to SQL: {rows_to_add}")
 
-        try:
-            self.cursor = self.sql_connection.cursor()
-            self.cursor.executemany(f"""
-                INSERT INTO {CONFIG.AGENT_ID} (
-                    {', '.join([i for i in all_vals[1].keys()])}
-                    ) 
-                  VALUES ({', '.join(['?' for i in rows_to_add[0]])}) ; 
-                                """, rows_to_add)
+        count = 0
+        while count < self.max_retries:
+            try:
+                count += 1
+                self.cursor = self.sql_connection.cursor()
+                self.cursor.executemany(f"""
+                    INSERT INTO {CONFIG.AGENT_ID} (
+                        {', '.join([i for i in all_vals[1].keys()])}
+                        ) 
+                      VALUES ({', '.join(['?' for i in rows_to_add[0]])}) ; 
+                                    """, rows_to_add)
 
-            self.sql_connection.commit()
-            self.debug_log.message(f"Game sent! Game: {game_id}")
-        except Exception as e:
-            self.debug_log.message(f"Error! Scores not sent: {str(e)}")
+                self.sql_connection.commit()
+                self.debug_log.message(f"Game sent! Game: {game_id}")
+                break
+            except Exception as e:
+                time.sleep(1)
+                self.debug_log.message(f"Error! Scores not sent: {str(e)}")
+                self.debug_log.message(f"retrying... ({count})")
+
+        if count >= self.max_retries:
+            self.debug_log.message(
+                f"ERROR: Unable to Update {CONFIG.AGENT_ID}. Offending Game: {game_id}")
 
     def send_summary_to_azure(self, score_dict, game_id):
         """
@@ -250,70 +269,79 @@ class AzureConnectionService:
 
         dictionary_as_tuple_list = [tuple(vals.values())]
         self.debug_log.message(f"Sending Score to SQL: {dictionary_as_tuple_list}")
-        try:
-            self.cursor.executemany(f"""
-                            INSERT INTO TOURNAMENT_AGGREGATE ({', '.join([k for k in vals.keys()])}) 
-                              VALUES ({', '.join(['?' for i in dictionary_as_tuple_list[0]])}) ; 
-                                            """, dictionary_as_tuple_list)
+        count = 0
+        while count < self.max_retries:
+            try:
+                count += 1
+                self.cursor.executemany(f"""
+                                INSERT INTO TOURNAMENT_AGGREGATE ({', '.join([k for k in vals.keys()])}) 
+                                  VALUES ({', '.join(['?' for i in dictionary_as_tuple_list[0]])}) ; 
+                                                """, dictionary_as_tuple_list)
 
-            self.sql_connection.commit()
-            self.debug_log.message(f"Game summary sent! Game: {game_id}")
-        except Exception as e:
-            self.debug_log.message(f"Error! Scores not sent: {str(e)}")
+                self.sql_connection.commit()
+                self.debug_log.message(f"Game summary sent! Game: {game_id}")
+                break
+            except Exception as e:
+                time.sleep(1)
+                self.debug_log.message(f"Error! Scores not sent: {str(e)}")
+                self.debug_log.message(f"retrying... ({count})")
 
-    @DeprecationWarning
-    def send_score_to_azure(self, score_dict, game_id):
+        if count >= self.max_retries:
+            self.debug_log.message(f"ERROR: Unable to Update TOURNAMENT_AGGREGATE. Offending Game: {game_id}, Tournament: {CONFIG.TOURNAMENT_ID}")
+
+    def threaded_update_logs(self):
         """
-        Function is No longer used.
-        """
-        if self.configs is None:
-            self.debug_log.message("No Config File available for SQL Connection")
-            return None
+        Theaded Function to update TOURNAMENT_AGGREGATE with location of log files in a periodic manner
 
-        vals = OrderedDict()
-        # vals['Task_Name'] = CONFIG.GAMES[game_id]
-        vals['Task_Name'] = str(score_dict[game_id]['game_path'])
-        vals['Agent_Name'] = str(CONFIG.AGENT_ID)
-        vals['TournamentNm'] = str(CONFIG.TOURNAMENT_ID)
-        vals['Game'] = int(game_id)
-        vals['TournamentDate'] = PalMessenger.time_now_str()
-        vals['NoveltyFlag'] = int(score_dict[game_id]['novelty'])
-        vals['GroundTruth'] = int(score_dict[game_id]['groundTruth'])
-        vals['NoveltyDetected'] = int(score_dict[game_id]['noveltyDetect'])
-        vals['NoveltyDetectStep'] = int(score_dict[game_id]['noveltyDetectStep'])
-        vals['NoveltyDetectTime'] = str(score_dict[game_id]['noveltyDetectTime'])
-        # vals['Reward'] = float(score_dict[game_id]['adjustedReward'])
-        if distutils.util.strtobool(str(score_dict[game_id]['success'])):
-            vals['Reward'] = 256000.0 - float(score_dict[game_id]['totalCost'])
+        Every 1.5x CONFIG.MAX_TIME seconds, this function reads all SQL statements generated by
+        self._update_log_entry in the temp_logs_path file and executes them.
+        :return:
+        """
+        if not os.path.exists(self.temp_logs_path):
+            with open(self.temp_logs_path, 'a') as wf:
+                wf.write('')
         else:
-            vals['Reward'] = float(score_dict[game_id]['totalCost']) * -1
-        # vals['Reward'] = float(score_dict[game_id]['adjustedReward'])
-        vals['Total_Step_Cost'] = float(score_dict[game_id]['totalCost'])
-        vals['Total_Steps'] = float(score_dict[game_id]['step'])
-        vals['Total_Time'] = float(score_dict[game_id]['elapsed_time'])
-        vals['StartTime'] = str(score_dict[game_id]['startTime'])
-        vals['EndTime'] = str(score_dict[game_id]['endTime'])
-        vals['Complete'] = distutils.util.strtobool(str(score_dict[game_id]['success']))
-        vals['Reason'] = str(score_dict[game_id]['success_detail'])
-        vals['LogBlob'] = ""
-        vals['AgentBlob'] = ""
-        vals['DebugBlob'] = ""
+            self.debug_log.message("File already exists? Strange...")
 
-        dictionary_as_tuple_list = [tuple(vals.values())]
-        self.debug_log.message(f"Sending Score to SQL: {dictionary_as_tuple_list}")
-        try:
-            self.cursor.executemany(f"""
-                    INSERT INTO RESULTS_TEST (Task_Name,Agent_Name,Tournament_Name,Game_ID,Tournament_Date,Has_Novelty,
-                      Ground_Truth,Novelty_Detected,Novelty_Detected_Step, Novelty_Detected_Time, Reward_Score,Total_Step_Cost,
-                      Total_Steps,Total_Time,Time_Start,
-                      Time_End,Task_Complete,Game_End_Condition,Pal_Log_Blob_URL,Agent_Log_Blob_URL,Debug_Log_Blob_URL) 
-                      VALUES ({', '.join(['?' for i in dictionary_as_tuple_list[0]])}) ; 
-                                    """, dictionary_as_tuple_list)
+        should_continue = True
+        max_retries = 3
+        try_counter = 0
+        global_upload_count = 0
+        self.debug_log.message("Thread Initialized.")
+        while should_continue:
+            time.sleep(CONFIG.MAX_TIME*2.5)  # Run every 1.5 max-time game cycles (TODO: increase this?)
+            upload_count = 0
+            self.debug_log.message("Attempting Upload...")
+            with self.lock.acquire():
+                try:
+                    with open(self.temp_logs_path, 'r') as rf:  # This file is "touched" above
+                        a = rf.read()
+                        e = a.split(';')
+                        for item in e:
+                            if 'UPDATE' not in item:
+                                continue
+                            # self.debug_log.message(item)
+                            upload_count += 1
+                            with self.sql_connection.cursor() as cursor:
+                                cursor.execute(f"""{item}""")
+                            self.sql_connection.commit()
+                    os.remove(self.temp_logs_path)          # File deleted in this thread
+                except FileNotFoundError as e:
+                    self.debug_log.message("ALERT: File not found. Main Thread over. (Double-incrementing try_counter)")
+                    try_counter += 2
+                except Exception as e:
+                    with open(self.temp_logs_path, 'r') as rf, open(f"{self.temp_logs_path}.err", 'a') as wf:
+                        wf.write(rf.read())
+                    self.debug_log.message(f"ERROR: Cannot Upload! Temp saving file and moving on. PLease re-run manually: {self.temp_logs_path}.err\n {str(e)}")
 
-            self.sql_connection.commit()
-            self.debug_log.message(f"Scores sent! Game: {game_id}")
-        except Exception as e:
-            self.debug_log.message(f"Error! Scores not sent: {str(e)}")
+            global_upload_count += upload_count
+            self.debug_log.message(f"Uploaded {upload_count} Logs for {(upload_count/3)} games. Running total: {global_upload_count}")
+            if upload_count == 0:
+                try_counter += 1
+            if try_counter >= max_retries:
+                should_continue = False
+
+        self.debug_log.message(f"Update Thread completed. Total updates: {global_upload_count}")
 
     def _update_log_entry(self, game_id, logType, path):
         """
@@ -335,16 +363,40 @@ class AzureConnectionService:
             self.debug_log.message(f"Unknown Log Type. Schema Update for DB may be required: {logType}")
             return None
 
-        # Using the ? approach automatically escapes strings to be "SQL" safe. Would recommend! :)
-        self.cursor.execute(f"""
-            UPDATE TOURNAMENT_AGGREGATE
-            SET {var_to_adjust} = ?
-            WHERE   Tournament_Name = ? AND
-                    Agent_Name = ? AND
-                    Game_ID = {game_id}
-            """, (path, CONFIG.TOURNAMENT_ID, CONFIG.AGENT_ID))
+        # update the file containing who all should be uploaded
+        with self.lock.acquire():
+            with open(f"{self.temp_logs_path}", 'a') as file:
+                upload_stmt = f"""
+                    UPDATE TOURNAMENT_AGGREGATE
+                    SET {var_to_adjust} = '{path}'
+                    WHERE   Tournament_Name = '{CONFIG.TOURNAMENT_ID}' AND
+                            Agent_Name = '{CONFIG.AGENT_ID}' AND
+                            Game_ID = {game_id}
+                    ;"""
+                file.write(f"{upload_stmt}")
 
-        self.sql_connection.commit()
+        # Using the ? approach automatically escapes strings to be "SQL" safe. Would recommend! :)
+        # For now, try uploading no more than 5 times
+        # count = 0
+        # while count < self.max_retries:
+        #     try:
+        #         count += 1
+        #         self.cursor.execute(f"""
+        #             UPDATE TOURNAMENT_AGGREGATE
+        #             SET {var_to_adjust} = ?
+        #             WHERE   Tournament_Name = ? AND
+        #                     Agent_Name = ? AND
+        #                     Game_ID = {game_id}
+        #             """, (path, CONFIG.TOURNAMENT_ID, CONFIG.AGENT_ID))
+        #         self.sql_connection.commit()
+        #         break
+        #     except Exception as e:
+        #         time.sleep(1)
+        #         self.debug_log.message(f"MSSQL Simultaneous Upload Lock - retrying... ({count})\n" + str(e))
+        #
+        # # Print an error letting user know upload failed (print to debug log for now, even if it's already uploaded)
+        # if count >= self.max_retries:
+        #     self.debug_log.message(f"ERROR: Unable to Update TOURNAMENT_AGGREGATE. Offending Game: {game_id}, Tournament: {CONFIG.TOURNAMENT_ID}, Variable: {var_to_adjust}")
 
     def upload_pal_messenger_logs(self, palMessenger, game_id, log_type, container=None):
         """
@@ -407,7 +459,7 @@ class AzureConnectionService:
             blob_name = f"{CONFIG.TOURNAMENT_ID}_{CONFIG.AGENT_ID}_{game_id}_{filepath}"
             blob_client = self.blob_service_client.get_blob_client(container=container_to_use, blob=blob_name)
             try:
-                with gzip.open(filepath, 'rb') as data:
+                with open(filepath, 'rb') as data:
                     blob_client.upload_blob(data)
                     return blob_client.url
             except ServiceRequestError as e:

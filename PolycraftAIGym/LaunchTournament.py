@@ -3,7 +3,7 @@ import sys, os
 import TournamentManager, PalMessenger, AzureConnectionService
 from pathlib import Path
 import queue
-import time
+import time, datetime
 from enum import Enum
 import json
 import config as CONFIG
@@ -13,6 +13,8 @@ from collections import defaultdict
 from copy import copy, deepcopy
 import getopt
 import psutil
+from filelock import Timeout, FileLock
+
 
 
 class LaunchTournament:
@@ -32,8 +34,11 @@ class LaunchTournament:
         self.commands_sent = 0
         self.total_step_cost = 0
         self.start_time = time.time()
+        self.tournament_start_time = datetime.datetime.now()
         self.log_dir = log_dir + f"{PalMessenger.PalMessenger.time_now_str('_')}/"
         self.SYS_FLAG = os  # Change behavior based on SYS FLAG when executing gradlew
+        self.temp_logs_path = "log_file_paths.txt"
+        self.lock = FileLock(f"{self.temp_logs_path}.lock")  # Lock file for all log files
 
         # TODO: use os library to detect this vs. passing in as a command line argument.
         if 'MACOS' in self.SYS_FLAG.upper() or 'UNIX' in self.SYS_FLAG.upper():
@@ -61,6 +66,8 @@ class LaunchTournament:
         self.current_state = State.INIT_PAL
         self.tournament_in_progress = True
         self.agent_started = False
+        self.upload_thread = None
+        self.upload_thread_running = False
 
         ## Results
         self.score_dict = {}
@@ -179,6 +186,7 @@ class LaunchTournament:
         # NoTODO: Track end condition flag to call reset -- completed
 
         line_end_str = '\r\n'
+        line_end_str = '\n'
         if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
             line_end_str = '\n'
 
@@ -190,8 +198,8 @@ class LaunchTournament:
             self.score_dict[self.game_index]['success_detail'] = msg
             return True
 
-        if line.find('{') != -1 and line.find(line_end_str) != -1:
-            json_text = line[line.find('{'):line.find(line_end_str)]
+        if line.find('{') != -1 and line.find(line_end_str) != -1 and line.rfind('}') != -1:
+            json_text = line[line.find('{'):line.rfind('}')+1]
             # TODO: Potentially remove this?
             json_text = re.sub(r'\\\\\"', '\'', json_text)
             json_text = re.sub(r'\\+\'', '\'', json_text)
@@ -235,12 +243,28 @@ class LaunchTournament:
 
         flag_continue = True
         while flag_continue and not pipe.stdout.closed:
-            l = pipe.stdout.readline()
-            q.put(l)
-            sys.stdout.flush()
-            pipe.stdout.flush()
+            try:
+                l = pipe.stdout.readline()
+                q.put(l)
+                sys.stdout.flush()
+                pipe.stdout.flush()
+            except UnicodeDecodeError as e:
+                print(f"Err: UnicodeDecodeError: {e}")
+                try:
+                    l = pipe.stdout.read().decode("utf-8")
+                    q.put(l)
+                    sys.stdout.flush()
+                    pipe.stdout.flush()
+                except Exception as e2:
+                    print(f"ERROR - CANT HANDLE OUTPUT ENCODING! {e2}")
+                    sys.stdout.flush()
+                    pipe.stdout.flush()
+            except Exception as e3:
+                print(f"ERROR - UNKNOWN EXCEPTION! {e3}")
+                sys.stdout.flush()
+                pipe.stdout.flush()
 
-    def _check_queues(self):
+    def _check_queues(self, check_all=False):
         """
         Check the STDOUT queues in both the PAL and Agent threads, logging the responses appropriately
         :return: next_line containing the STDOUT of the PAL process only:
@@ -260,10 +284,19 @@ class LaunchTournament:
 
         # write output from procedure B (if there is any)
         try:
-            l = self.q2.get(False, timeout=0.025)
-            self.agent_log.message(str(l))
-            sys.stdout.flush()
-            sys.stderr.flush()
+            if check_all:
+                while not self.q2.empty():
+                    l = self.q2.get(False, timeout=0.025)
+                    if len(str(l)) > 1:
+                        self.agent_log.message(str(l))
+                    sys.stdout.flush()
+                    sys.stderr.flush()
+            else:
+                l = self.q2.get(False, timeout=0.025)
+                self.agent_log.message(str(l))
+                sys.stdout.flush()
+                sys.stderr.flush()
+
         except queue.Empty:
             pass
 
@@ -296,9 +329,9 @@ class LaunchTournament:
         self.debug_log.message("PAL Client Initiated")
 
         while self.tournament_in_progress:
-
+            # time.sleep(0.0001)
             # grab the console output of PAL
-            next_line = self._check_queues()
+            next_line = self._check_queues(check_all=True)
 
             # first check if we crashed or something... hopefully  this doesn't happen
             self.pal_client_process.poll()
@@ -306,9 +339,17 @@ class LaunchTournament:
             if self.agent_started:
                 self.agent.poll()
                 if self.agent.returncode is not None:
+                    self.debug_log.message(f"ERROR: Agent THREAD CRASHED WITH CODE: {self.agent.returncode}")
                     break
                 # If agent started & PAL crashes, kill the main thread.
                 if self.pal_client_process.returncode is not None:
+                    self.debug_log.message(f"ERROR: PAL THREAD CRASHED WITH CODE: {self.pal_client_process.returncode}")
+                    break
+
+                # If upload thread has stopped prematurely, then there is cause for concern.
+                if self.upload_thread_running and self.upload_thread is not None and not self.upload_thread.is_alive():
+                    self.debug_log.message(f"Alert: Upload Thread has ended. Tournament Complete or Agent thread has hung")
+                    self._tournament_completed()
                     break
             # If agent hasn't started yet but PAL crashes, re-start PAL.
             elif self.pal_client_process.returncode is not None:
@@ -365,6 +406,12 @@ class LaunchTournament:
                     self.score_dict[self.game_index]['startTime'] = PalMessenger.PalMessenger.time_now_str()
                     self.current_state = State.GAME_LOOP
 
+                    # Initialize Uploading Thread
+                    self.upload_thread = threading.Thread(name="update_logs_thread",
+                                                          target=self._launch_interval_update_results_table)
+                    self.upload_thread.daemon = True
+                    self.upload_thread.start()
+
             # Begin the Game Loop
             elif self.current_state == State.GAME_LOOP:
 
@@ -377,7 +424,9 @@ class LaunchTournament:
 
                     next_game_idx = self.game_index + 1
                     # Check if the tournament is over
-                    if next_game_idx >= len(self.games):
+                    if next_game_idx >= len(self.games) or (self.tournament_start_time + datetime.timedelta(minutes=CONFIG.MAX_TOURN_TIME)) <= datetime.datetime.now():
+                        if (self.tournament_start_time + datetime.timedelta(minutes=CONFIG.MAX_TOURN_TIME)) <= datetime.datetime.now():
+                            self.debug_log.message("Max tournament time exceeded: " + str(CONFIG.MAX_TOURN_TIME) + " minutes")
                         # If so, end the game now (don't wait for gameover True)
                         self.debug_log.message("Game has ended.")
                         self.speed_log.message(
@@ -446,10 +495,16 @@ class LaunchTournament:
         exitCode = self.pal_client_process.returncode
 
         # TODO: Safe to remove? Not sure how this is helpful.
-        if exitCode == 0 or exitCode is None:
+        if exitCode == 0:
+            print("Tournament Completed -ExitCode 0")
+            return
+        elif exitCode is None:
+            self._kill_process_children(5)  # FixMe: is this needed?
+            print("ERROR: tournament incomplete - critical thread failure during execution. Agent Hung?")
             return
         else:
-            # self._kill_process_children(5)  # FixMe: is this needed?
+            print(f"ERROR: ExitCode: {exitCode}")
+            self._kill_process_children(5)  # FixMe: is this needed?
             raise subprocess.CalledProcessError(exitCode, "")
 
     def _launch_tournament_manager(self):
@@ -465,8 +520,7 @@ class LaunchTournament:
         """
         Launch the AI agent Thread
         """
-        self.debug_log.message("Initializing Agent Thread: python hg_agent.py")
-
+        self.debug_log.message(f"Initializing Agent Thread: {CONFIG.AGENT_COMMAND_UNIX}")
 
         self.agent = subprocess.Popen(self.agent_process_cmd, shell=True, cwd=CONFIG.AGENT_DIRECTORY, stdout=subprocess.PIPE,
                                       # stdin=subprocess.PIPE,      #DN: 0606 Removed for performance
@@ -480,6 +534,18 @@ class LaunchTournament:
         self.pb_t.daemon = True
         self.pb_t.start()
         self.debug_log.message("Launched AI Agent")
+
+    def _launch_interval_update_results_table(self):
+        self.debug_log.message("Initializing Interval Upload Thread")
+        upload_file = Path(self.log_dir) / f"{CONFIG.TOURNAMENT_ID}.txt"
+        upload_log = PalMessenger.PalMessenger(True, True, upload_file, log_note="UPLOAD: ")
+        azure = AzureConnectionService.AzureConnectionService(upload_log)
+        if azure.is_connected():
+            self.upload_thread_running = True
+            azure.threaded_update_logs()
+        else:
+            self.debug_log.message("Azure Connection Error - cannot connect to SQL database")
+            # raise ConnectionError("Error - cannot update results table")
 
     def _game_over(self):
         """
@@ -527,12 +593,14 @@ class LaunchTournament:
             # azure.upload_pal_messenger_logs(palMessenger=speed_log, log_type='speed', game_id=game_index)
 
 
+
     def _tournament_completed(self):
         """
         Tournament Complete - initiate cleanup of threads
 
         :return:
         """
+        self._check_queues(check_all=True)
         self.debug_log.message("Tournament Completed: " + str(len(self.games)) + "games run")
         sys.stdout.flush()
         # os.kill(self.agent.pid, signal.SIGTERM)
@@ -542,10 +610,14 @@ class LaunchTournament:
             self.threads.join()
             # for i in self.threads:
             #     i.join()
-
         self._kill_process_children(5)
 
         self.tm_thread.join(5)
+
+        if self.upload_thread is not None:
+            self.upload_thread.join()
+
+
         self.tournament_in_progress = False
 
     def _kill_process_children(self, timeout):
@@ -593,6 +665,7 @@ class LaunchTournament:
         :param line: Current Line in STDOUT
         """
         line_end_str = '\r\n'
+        line_end_str = '\n'
         if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
             line_end_str = '\n'
         if line.find('REPORT_NOVELTY') != -1 and line.find(line_end_str) != -1:
@@ -612,13 +685,15 @@ class LaunchTournament:
         "gameOver":false}\n'
         """
         line_end_str = '\r\n'
+        line_end_str = '\n'
         if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
             line_end_str = '\n'
 
         # Case 1: Record a Response from PAL to an Agent Command
-        if line.find('[CLIENT]{') != -1 and line.find(line_end_str) != -1:
+        if line.find('[CLIENT]{') != -1 and line.find(line_end_str) != -1 and line.rfind('}') != -1:
             # Get timestamp:
-            json_text = line[line.find('{'):line.find(line_end_str)]
+            json_text = line[line.find('{'):line.rfind('}')+1]
+            # json_text = line[line.find('{'):line.find(line_end_str)]
 
             json_text = re.sub(r'\\\\\"', '\'', json_text)
             json_text = re.sub(r'\\+\'', '\'', json_text)
@@ -663,7 +738,6 @@ class LaunchTournament:
         # noTODO: Flag games where we communicate to agent that novelty exists - are flagged in self._record_score()
         """
         if self.game_index == 0:
-            self.tm_thread.queue.put("SPEED " + str(CONFIG.SPEED))
             self.tm_thread.queue.put("LAUNCH domain " + self.games[self.game_index])
             self.debug_log.message("LAUNCH domain command issued")
 
@@ -685,12 +759,14 @@ class LaunchTournament:
         """
 
         line_end_str = '\r\n'
+        line_end_str = '\n'
         if self.SYS_FLAG.upper() != 'WIN':  # Remove Carriage returns if on a UNIX platform. Causes JSON Decode errors
             line_end_str = '\n'
 
-        if line.find('{') != -1 and line.find(line_end_str) != -1:
-            json_text = line[line.find('{'):line.find(line_end_str)]  # Make this system agnostic - previously \\r\\n
-            # TODO: Potentially remove this?
+        if line.find('{') != -1 and line.find(line_end_str) != -1 and line.rfind('}') != -1:
+            json_text = line[line.find('{'):line.rfind('}')+1]
+            # json_text = line[line.find('{'):line.find(line_end_str)]  # Make this system agnostic - previously \\r\\n
+            # noTODO: Potentially remove this?
             json_text = re.sub(r'\\\\\"', '\'', json_text)
             json_text = re.sub(r'\\+\'', '\'', json_text)
             # Load response into dictionary
@@ -732,14 +808,14 @@ class State(Enum):
 if __name__ == "__main__":
     argv = sys.argv[1:]
     try:
-        opts, args = getopt.getopt(argv, "hc:t:g:a:d:x:i:",
-                                       ["game_count=","tournament=","game_folder=","agent name=", "agent directory=", "agent command=", "max time="])
+        opts, args = getopt.getopt(argv, "hc:t:g:a:d:x:i:m:",
+                                       ["game_count=","tournament=","game_folder=","agent name=", "agent directory=", "agent command=", "max time=", "max tournament time="])
     except getopt.GetoptError:
         print('LaunchTournament.py -c <game_count> -t <tournament_name> -g <game_folder> -a <agent_name> -d <agent_directory> -x <agent_command> -i <maximum time (sec)>')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print('LaunchTournament.py -c <game_count> -t <tournament_name> -g <game_folder> -a <agent_name> -d <agent_directory> -x <agent_command> -i <maximum time (sec)>')
+            print('LaunchTournament.py -c <game_count> -t <tournament_name> -g <game_folder> -a <agent_name> -d <agent_directory> -x <agent_command> -i <maximum time (sec)> -m <max tournament time (minutes)')
             sys.exit()
         elif opt in ("-c", "--count"):
             # print(f"Number of Games: {arg}")
@@ -763,9 +839,9 @@ if __name__ == "__main__":
         elif opt in ("-i", "--max-time"):
             print(f"Max Time (sec): {arg}")
             CONFIG.MAX_TIME = int(arg)
-        elif opt in ("-s", "--speed"):
-            print(f"Speed: {arg} Ticks per second")
-            CONFIG.SPEED = int(arg)
+        elif opt in ("-m", "--max-tournament-time"):
+            print(f"Max Time (minutes): {arg}")
+            CONFIG.MAX_TOURN_TIME = int(arg)
 
-    pal = LaunchTournament(os='UNIX')  # TODO: Remove the os command line argument.
+    pal = LaunchTournament(os='WIN')  # TODO: Remove the os command line argument.
     pal.execute()

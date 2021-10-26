@@ -33,7 +33,7 @@ minecraft {
     // stable_#            stables are built at the discretion of the MCP team.
     // Use non-default mappings at your own risk. they may not allways work.
     // simply re-run your setup task after changing the mappings to update your workspace.
-    mappings = "stable_20"
+    mappings = "stable_22"
     // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
 }
 
@@ -80,3 +80,7 @@ processResources
         exclude 'mcmod.info'
     }
 }
+
+// And add to the jvm args so that it is also loaded when running using gradle runClient:
+// JavaExec exec = project.getTasks().getByName("runClient")
+// exec.jvmArgs(["-Dfml.coreMods.load=edu.utd.minecraft.mod.polycraft.util.OverclockingPlugin"])

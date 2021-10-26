@@ -1,14 +1,11 @@
-# Release 1.2
-The latest release of the Polycraft Tournament Manager includes minor updates across the board to better facilitate
-running large scale tournaments in a robust fashion. Please see the Key Updates section
-below for a quick overview of the updates and read the Setup and Usage sections to understand how to run it. 
-
-Please note: We highly recommend using a Linux environment to install and run this tool.
-Our test bench uses a few hundred cores on Azure Batch running Ubuntu 18.04 LTS on AMD EPYC processors in a headless environment.
-
-Your mileage will vary if using Windows. 
+# Release 2.0
+The latest release of the Polycraft Tournament Manager includes major updates to our POGO and HUGA task design. 
+The example tournament in pogo_100_PN has also been updated to the new POGO version. 
+We've also added an example tournament for the HUGA task in huga_100_PN.
 
 ## Key Updates
+### Release 1.3
+* New Environment variable PAL_FPS to set game speed frames per second. This can increase your agent's actions per second and greatly decrease training time. By default, this is set to 20 and the maximum is 1000. However, depending on the machine, you may not get the expected frames per second. The frames per second will also depend on what commands you are using. Some commands take 1 frame to perform and others take 2.
 ### Release 1.2
 * New Environment variable SENSE_SCREEN_FORMAT to set default image compression format. This can directly affect performance on different systems when the agent calls SENSE_SCREEN. Default is PNG, but on many systems PNG compression can take many ms to process. When this process takes more than 50ms it can slow down game performance if called on every action.  It is recommended to test different options to increase performance. Options include: {"PNG", "BMP", "JPEG", "JPG", "WBMP", "GIF"}.
 * New HUGA lvl 0 novelties
@@ -29,7 +26,7 @@ Your mileage will vary if using Windows.
 # Installation:
 ## 1. Ubuntu
 1. If you haven't already, pull this branch of the repository to your work directory:
-    `git clone -b release_1.2 --single-branch https://github.com/StephenGss/pal.git`
+    `git clone -b release_1.3 --single-branch https://github.com/StephenGss/pal.git`
 1. For a fresh install:
     * navigate to polycraft/pal/setup/ and execute `./setup_linux_shortened.sh` (user will need sudo permissions to wget JAVA).
     * We have also provided our current setup scripts in that folder (they include a few additional packages enabling us to upload tournament results to SQL) for your reference.
@@ -239,14 +236,14 @@ The Polycraft World AI API consists of 28 total different API commands at Releas
 * **SENSE_ALL NONAV**
 	* returns inventory, recipe and location information in .json | NONAV parameters omits information which is not needed for agents that do not navigate the world
 
-## GAME commands - INTERACT commands: (9 total)
+## GAME commands - INTERACT/ACTION commands: (9 total)
 
 * **SELECT_ITEM** polycraft:wooden_pogo_stick
 	* sets a specific item from your inventory in your hand as the active item (e.g. tool or block)
-* **USE_HAND**
-	* to open doors with bare hand (ignores item in hand to interact)
-* (inactive) USE_ITEM
-	* will be added after dry-run. NOT in release 1.5.0
+* **USE**
+	* to open doors
+	* unlock safes
+	* etc.
 * **BREAK_BLOCK**
 	* breaks block directly in front of player with selected item
 	* selected item and block type yield stepCost of action
@@ -259,11 +256,11 @@ The Polycraft World AI API consists of 28 total different API commands at Releas
 	* crafts a Wooden Axe 
 * **CRAFT** 1 minecraft:planks minecraft:stick minecraft:planks minecraft:planks 0 minecraft:planks 0 minecraft:planks 0
 	* crafts a Tree Tap
-* **CRAFT** 1 minecraft:stick minecraft:stick minecraft:stick minecraft:planks minecraft:stick minecraft:planks 0 polycraft:sack_polyisoprene_pellets 0
-	* crafts a Wooden Pogo Stick
-* **EXTRACT_RUBBER**
-	* moves polycraft:sack_polyisoprene_pellets from polycraft:tree_tap to player inventory
-* PLACE_BLOCK polycraft:macguffin 
+* **CRAFT** 1 minecraft:stick polycraft:block_of_titanium minecraft:stick minecraft:diamond_block polycraft:block_of_titanium minecraft:diamond_block 0 polycraft:sack_polyisoprene_pellets 0
+	* crafts a wooden Pogo Stick
+* **COLLECT**
+	* collect available items from container blocks or inventories
+* **PLACE \[item name\]**
 	* will be added after dry-run. NOT in release 1.5.0
 * **PLACE_TREE_TAP**
 	* calls PLACE_BLOCK polycraft:tree_tap (and processes extra rules)
@@ -271,3 +268,9 @@ The Polycraft World AI API consists of 28 total different API commands at Releas
 	* calls PLACE_BLOCK minecraft:crafting_table  (and processes extra rules)
 * **PLACE_MACGUFFIN**
 	* calls PLACE_BLOCK polycraft:macguffin (and processes extra rules)
+* **DELETE \[item name\]**
+	* Deletes the item in player's inventory
+* **TRADE \[entity id\] \[item 1\] \[qty\] \[item 2\] \[qty\] \[item 3\] \[qty\] \[item 4\] \[qty\] \[item 5\] \[qty\]**
+	* Trade with trader entities
+* **INTERACT \[entity id\]** 
+	* Interact with an entity. Ex. sense the recipes available for a trader agent
