@@ -2,7 +2,10 @@ SAIL-ON Polycraft World Change Log:
 
 Purpose: This document tracks changes and updates to Polycraft World that impact SAIL-ON Tasks, Evaluations, etc., including API changes.
 
-2021.10.14 updates:
+2021.10.29 udpates:
+1)	(Bug fix) When using an item on the safe or other containers, the action response was always a FAIL even though the action worked.
+
+2021.10.25 updates:
 1)	(Bug fix) cannot go through allowed blocks using cardinal movement(ex. MOVE_NORTH, MOVE_EAST, etc), but you can with egocentric movement. This is fixed to allow walking through doors/macguffing using cardinal movement as well. 
 2)	(Bug fix) Agent can move onto the same locaiton as an actor. This is not expected. Actors should act as obstacles. This has been fixed for all movement commands.
 3)	(Bug fix) (POGO) Traded items are lost if the trade is not valid. Items should not be lost on invalid trade attempts. This has been fixed.
