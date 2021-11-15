@@ -18,6 +18,7 @@ else:
 	print('Using Port: ' + str(PORT))
 
 while run:	# main loop
+	# time.sleep(0.5)
 	userInput = input()
 	if userInput == 'exit':	# wait for user input commands
 		run = False
@@ -26,7 +27,7 @@ while run:	# main loop
 		while count > 0:
 			sock.send(random.choice(movement))
 			sock.close()	# socket must be closed between after command
-			time.sleep(0.5)
+			# time.sleep(0.5)
 			sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			sock.connect((HOST, PORT))
 			count = count - 1

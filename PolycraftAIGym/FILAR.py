@@ -1,9 +1,16 @@
 #!/usr/bin/env python
+# Fast Instance Loader and Action Replay
+# Author: Stephen Goss
+# Date: 08-09-2021
 
-import socket, random, time, json, os
+import socket, random, time, json, os, pandas
 import tempfile
 import shutil
 import zipfile
+import threading
+from PolycraftAIGym.AzureConnectionService import AzureConnectionService
+from PolycraftAIGym.PalMessenger import PalMessenger
+from PolycraftAIGym.ActionReplayAgent import ActionReplayAgent
 
 HOST = "127.0.0.1"
 PORT = 9005
@@ -24,42 +31,27 @@ else:
 dirpath = tempfile.mkdtemp()
 print(dirpath)
 
+ar = ActionReplayAgent(host='127.0.0.1', port=9000)
+ar.connect()
+agent_process = None
+
 while run:  # main loop
+    if agent_process is not None:
+        while len(ar.actionList)>0:
+            if agent_process.poll() is not None:
+                break
     rand = random.Random
     userInput = input()
     if userInput.startswith('/'):
-        # ex. "/1-1-2-dhr
-        if userInput.endswith('r'):
+        if userInput.startswith('/r'):
             seed = random.randrange(999999)
             print(str(seed))
         else:
             # TODO: check this seed. might lead to crashing 297220 and 501793
             # check for adjacent chests 793405
-            # 619545
-            seed = 703918
-        difficulty_weight = "1,0,0"
-        if "-dh" in userInput:
-            difficulty_weight = "0,0,1"
-        if "-dm" in userInput:
-            difficulty_weight = "0,1,0"
-
-        n_level = "0"
-        n_type = "1"
-        n_stype = "1"
-        if len(userInput) > 1 and userInput[1].isdigit():
-            n_level = userInput.split("-")[0][1:]
-            n_type = userInput.split("-")[1]
-            n_stype = userInput.split("-")[2]
-
-        # userInput = f'GENTOUR -c ../test -0 ../Novelty/input/huga_v2/huga_lvl_0_demo.json -o ../Novelty/output/huga_test/ -f test -n 1 -w 0,0,1 -s {str(seed)} -R'
-        # userInput = f'GENTOUR -c ../test -0 ../Novelty/input/pogo_v2/pogo_lvl_0.json -o ../Novelty/output/pogo_test/ -f test -n 1 -w 0,0,1 -s {str(seed)} -R'
-        # userInput = f'GENTOUR -c ../test -0 ../Novelty/input/pogo_v2/pogo_{str(n_level)}-{str(n_type)}-{str(n_stype)}' \
-        #             f'.json -o ../Novelty/output/pogo_test/ -f test -n 1 -w {difficulty_weight} -s {str(seed)} -R'
-        userInput = f'GENTOUR -c ../test -0 ../Novelty/input/huga_v2/huga_{str(n_level)}-{str(n_type)}-{str(n_stype)}' \
-                    f'.json -o ../Novelty/output/huga_test/ -f test -n 1 -w {difficulty_weight} -s {str(seed)} -R'
-        # old HUGA
-        # userInput = f'GENTOUR -c ../test -0 ../Novelty/input/huga/huga_novcon_lvl_{str(n_level)}-{str(n_type)}-{str(n_stype)}' \
-        #             f'.json -o ../Novelty/output/huga_test/ -f test -n 1 -w {difficulty_weight} -s {str(seed)} -R'
+            seed = 180414
+        userInput = f'GENTOUR -c ../test -0 ../Novelty/input/huga_v2/huga_lvl_0.json -o ../Novelty/output/huga_test/ -f test -n 1 -w 0,0,1 -s {str(seed)} -R'
+    # userInput = f'GENTOUR -c ../test -0 ../Novelty/input/pogo_v2/pogo_lvl_0.json -o ../Novelty/output/pogo_test/ -f test -n 1 -w 0,0,1 -s {str(seed)} -R'
     elif userInput.startswith('#'):
         if(userInput.startswith('# HUGA')):
             zipPath = "C:\\Users\\Stephen\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\huga-12M-tournaments-zipped\\HUGA_100game_full_eval_unknown_mode\\" \
@@ -82,31 +74,37 @@ while run:  # main loop
                             2]) and f_name.endswith('.json'):
                     filename = subdir + "\\" + f_name
         print(filename)
-        userInput = "Launch domain " + filename
 
-    if userInput == 'exit':  # wait for user input commands
-        run = False
-    elif userInput == 'wonder':  # testing automatic commands
-        count = 200
-        while count > 0:
-            sock.send(random.choice(movement))
-            sock.close()  # socket must be closed between after command
-            time.sleep(0.5)
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.connect((HOST, PORT))
-            count = count - 1
-    else:
+        # get Agent action list
+        query = f"""SELECT      STEP_NUMBER,
+                                COMMAND,
+                                COMMAND_ARGUMENT
+                            from BASELINE_HUGA_12M_E1
+                            WHERE TOURNAMENT_NAME = '{userInput.split(" ")[1] + '_' + userInput.split(" ")[3]}' 
+                            and GAME_ID = {int(userInput.split(" ")[2][1:6])}
+                    ORDER BY STEP_NUMBER
+                    """
+        pm = PalMessenger(True, False)
+        azure = AzureConnectionService(pm)
+        actionList = []
+        if azure.is_connected():
+            data = pandas.read_sql(query, azure.sql_connection)
+
+        # get actionlist from data
+        actionList = data['COMMAND'].tolist()
+
+        userInput = "Launch domain " + filename
         sock.send(str.encode(userInput + '\n'))
 
+        # start agent with action list
+        ar = ActionReplayAgent(host='127.0.0.1', port=9000)
+        ar.connect()
+        ar.actionList = data['COMMAND'].tolist()
+        ar.argList = data['COMMAND_ARGUMENT'].tolist()
+        agent_process = threading.Thread(target=ar.act())
+        agent_process.start()
+
     # Look for the response
-    amount_received = 0
-    amount_expected = 16
-    # if userInput.startswith('DATA') or userInput.startswith('LL'):	 # if we need to receive something, we have to listen for it. Maybe this should be a separate thread?
-    # 	data = ''
-    # 	data = sock.recv(10240).decode()
-    # 	data_dict = json.loads(data)
-    # 	print (data_dict)
-    # if not userInput.startswith('START'):
     if True:
         BUFF_SIZE = 4096  # 4 KiB
         data = b''
