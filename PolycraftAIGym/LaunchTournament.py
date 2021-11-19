@@ -223,11 +223,14 @@ class LaunchTournament:
             except KeyError as e:
                 self.debug_log.message(f"KEYERROR IN JSON: {line}")
                 self.debug_log.message(e)
+                return False
             except json.JSONDecodeError as e:
                 self.debug_log.message(f"JSONDecodeError IN LINE: {line}")
                 self.debug_log.message(e)
+                return False
             except Exception as e:
                 self.debug_log.message(f"Exception on processing line: {e}")
+                return False
 
         # Check If Game Timed out.
         self.score_dict[self.game_index].update({'elapsed_time': time.time() - self.start_time})
