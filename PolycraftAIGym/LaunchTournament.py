@@ -199,26 +199,35 @@ class LaunchTournament:
             return True
 
         if line.find('{') != -1 and line.find(line_end_str) != -1 and line.rfind('}') != -1:
-            json_text = line[line.find('{'):line.rfind('}')+1]
-            # TODO: Potentially remove this?
-            json_text = re.sub(r'\\\\\"', '\'', json_text)
-            json_text = re.sub(r'\\+\'', '\'', json_text)
-            data_dict = json.loads(json_text)
-            self.commands_sent += 1
-            self.total_step_cost += data_dict["command_result"]["stepCost"]
+            try:
+                json_text = line[line.find('{'):line.rfind('}')+1]
+                # TODO: Potentially remove this?
+                json_text = re.sub(r'\\\\\"', '\'', json_text)
+                json_text = re.sub(r'\\+\'', '\'', json_text)
+                data_dict = json.loads(json_text)
+                self.commands_sent += 1
+                self.total_step_cost += data_dict["command_result"]["stepCost"]
 
-            if data_dict["goal"]["goalAchieved"]:
-                msg = 'Goal Achieved'
-                self.debug_log.message(f"Game Over: {msg}")
-                self.score_dict[self.game_index]['success'] = 'True'
-                self.score_dict[self.game_index]['success_detail'] = msg
-                return True
-            if self.total_step_cost > CONFIG.MAX_STEP_COST:
-                msg = "total step cost exceeded limit"
-                self.debug_log.message(f"Game Over: {msg}")
-                self.score_dict[self.game_index]['success'] = 'False'
-                self.score_dict[self.game_index]['success_detail'] = msg
-                return True
+                if data_dict["goal"]["goalAchieved"]:
+                    msg = 'Goal Achieved'
+                    self.debug_log.message(f"Game Over: {msg}")
+                    self.score_dict[self.game_index]['success'] = 'True'
+                    self.score_dict[self.game_index]['success_detail'] = msg
+                    return True
+                if self.total_step_cost > CONFIG.MAX_STEP_COST:
+                    msg = "total step cost exceeded limit"
+                    self.debug_log.message(f"Game Over: {msg}")
+                    self.score_dict[self.game_index]['success'] = 'False'
+                    self.score_dict[self.game_index]['success_detail'] = msg
+                    return True
+            except KeyError as e:
+                self.debug_log.message(f"KEYERROR IN JSON: {line}")
+                self.debug_log.message(e)
+            except json.JSONDecodeError as e:
+                self.debug_log.message(f"JSONDecodeError IN LINE: {line}")
+                self.debug_log.message(e)
+            except Exception as e:
+                self.debug_log.message(f"Exception on processing line: {e}")
 
         # Check If Game Timed out.
         self.score_dict[self.game_index].update({'elapsed_time': time.time() - self.start_time})
