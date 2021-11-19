@@ -37,7 +37,8 @@ class PalMessenger:
         message = message + self.log_note + msg_stripped
         if self.print_log_info:
             print(message)
-        message = message + "\n"
+        if not message.endswith("\n"):
+            message = message + "\n"
         if self.write_log_info:
             with open(self.log_file, "a") as write_file:
                 write_file.write(message)
@@ -49,7 +50,7 @@ class PalMessenger:
         message = message + self.log_note + str(message_to_handle)
         if self.print_log_info:
             print(message)
-        if not message.endswith("\\n"):
+        if not message.endswith("\n"):
             message = message + "\n"
         if self.write_log_info:
             with open(self.log_file, "a") as write_file:
