@@ -274,3 +274,5 @@ The Polycraft World AI API consists of 28 total different API commands at Releas
 	* Trade with trader entities
 * **INTERACT \[entity id\]** 
 	* Interact with an entity. Ex. sense the recipes available for a trader agent
+* **NOP** 
+	* Advances time by one step without taking any actions. Incures no step cost, but allows actors(external agents) to advance. 
