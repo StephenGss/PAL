@@ -2,6 +2,14 @@ SAIL-ON Polycraft World Change Log:
 
 Purpose: This document tracks changes and updates to Polycraft World that impact SAIL-ON Tasks, Evaluations, etc., including API changes.
 
+2021.11.22 Updates:
+1)	(enhancement)			Reset IDs on RESET for game replayability
+2)	(enhancement)			Update GenTourn logging to be more compact
+3)	(enhancement)			Only allow START to be sent once. Multiple START commands will respone in SUCCESS, but not actually be processed
+4)	(enhancement/bug fix)	Fix issue where rooms were always generated in the positive direction. Now rooms will generate in all directions.
+5)	(enhancement/bug fix)	Prevent rooms having pathways between each other when they shouldn't
+6)	(minor change)			Adjust starting room location since rooms generating in negative direction could have caused negative player positions.
+
 2021.11.17 Updates:
 1)	(Damage Control)	A maven repo permanently shut down that Minecraft Forge relied on. Loaded most of the necessary libaries locally now.
 
