@@ -382,6 +382,9 @@ class LaunchTournament:
                 self.agent.poll()
                 if self.agent.returncode is not None:
                     self.debug_log.message(f"ERROR: Agent THREAD CRASHED WITH CODE: {self.agent.returncode}")
+                    # end game so we get logs on the dashboard
+                    if self.game_index > 0:
+                        self._game_over()
                     break
                 # If agent started & PAL crashes, kill the main thread.
                 if self.pal_client_process.returncode is not None:
