@@ -47,7 +47,7 @@ DEBUG_FLAG = False
 
 ### SIFT ###
 SIFT_APPLICATION_ID = 'agent_sift'
-SIFT_APPLICATION_VERSION = '14_NODELAYWFIX'
+SIFT_APPLICATION_VERSION = '24M_1'
 APPLICATION_ID_FIXED = 'agent_sift'
 APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + APPLICATION_ID_FIXED + '_' + SIFT_APPLICATION_VERSION
 
@@ -159,7 +159,7 @@ class AzureBatchLaunchTournaments:
             # batchmodels.ApplicationPackageReference(application_id=GT_PLAN_APP_ID, version=GT_PLAN_APPLICATION_VERSION),
             # batchmodels.ApplicationPackageReference(application_id=RAYTHEON_APP_ID, version=RAYTHEON_VERSION),
             # batchmodels.ApplicationPackageReference(application_id=CRA_APP_ID, version=CRA_VERSION),
-            batchmodels.ApplicationPackageReference(application_id=GTECH_APP_ID, version=GTECH_VERSION),
+            # batchmodels.ApplicationPackageReference(application_id=GTECH_APP_ID, version=GTECH_VERSION),
             # batchmodels.ApplicationPackageReference(application_id=TAD_APP_ID, version=TAD_APPLICATION_VERSION),
         ]
 
@@ -281,7 +281,7 @@ class AzureBatchLaunchTournaments:
                 # batchmodels.ApplicationPackageReference(application_id=GT_PLAN_APP_ID, version=GT_PLAN_APPLICATION_VERSION),
                 # batchmodels.ApplicationPackageReference(application_id=RAYTHEON_APP_ID, version=RAYTHEON_VERSION),
                 # batchmodels.ApplicationPackageReference(application_id=CRA_APP_ID, version=CRA_VERSION),
-                batchmodels.ApplicationPackageReference(application_id=GTECH_APP_ID, version=GTECH_VERSION),
+                # batchmodels.ApplicationPackageReference(application_id=GTECH_APP_ID, version=GTECH_VERSION),
                 # batchmodels.ApplicationPackageReference(application_id=TAD_APP_ID, version=TAD_APPLICATION_VERSION),
             ]
 
@@ -329,7 +329,7 @@ class AzureBatchLaunchTournaments:
 
             constraint = batchmodels.TaskConstraints(
                 ##Reduce this from 1440 to 30 minutes for big evaluation##
-                retention_time=datetime.timedelta(minutes=30),
+                retention_time=datetime.timedelta(minutes=1440),
 
                 # # ##Reduced this for Tufts SN100##
                 # retention_time=datetime.timedelta(seconds=1),
@@ -537,7 +537,7 @@ if __name__ == '__main__':
     global_config = configparser.ConfigParser()
     global_config.read(helpers._SAMPLES_CONFIG_FILE_NAME)
     #
-    global_config.set('DEFAULT', 'poolvmcount', '50')
+    global_config.set('DEFAULT', 'poolvmcount', '3')
 
     # launch_pools_per_novelty(
     #     "TUFTS_AGENT_TEST_V3",
@@ -570,6 +570,8 @@ if __name__ == '__main__':
     pogo_NN100_files = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\pogo-12M-tournaments-zipped\\POGO_100game_12M_new_novelties"
     pogo_SNKM100_files = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\pogo-12M-tournaments-zipped\\POGO_100game_12M_shared_novelties_known_mode"
     pogo_MT100_files = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\pogo-12M-tournaments-zipped\\POGO_100game_12M_missing_tournaments2"
+
+    pogo_v2_PN100 = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\000. PAL Tasks & Novelties\\03. Phase 2 Novelties\\Tournament Files (Debug)\\POGO_100game_pre_nov"
 
     #
     #
@@ -606,25 +608,25 @@ if __name__ == '__main__':
     #     tournament_directory=pogo_100_files,
     # )
 
-    launch_tournament_wrapper(
-        agent="GTECH_AGENT_12M_V2",
-        agentType=AgentType.GTECH,
-        test_type=TestType.STAGE5,
-        global_config=global_config,
-        pool="POGO_GTECH_FEKM_X0100_V3",
-        suffix="_020111",
-        tournament_directory=pogo_FE100_files,
-    )
+    # launch_tournament_wrapper(
+    #     agent="GTECH_AGENT_12M_V2",
+    #     agentType=AgentType.GTECH,
+    #     test_type=TestType.STAGE5,
+    #     global_config=global_config,
+    #     pool="POGO_GTECH_FEKM_X0100_V3",
+    #     suffix="_020111",
+    #     tournament_directory=pogo_FE100_files,
+    # )
     
-    #launch_tournament_wrapper(
-    #    agent="SIFT_NODELAYWFIX_V7",
-    #    agentType=AgentType.SIFT,
-    #    test_type=TestType.STAGE5,
-    #    global_config=global_config,
-    #    pool="POGO_SIFT_NODELAYWFIX_V1",
-    #    suffix="_2021020215",
-    #    tournament_directory=pogo_100_files,
-    #)
+    launch_tournament_wrapper(
+       agent="SIFT_24M",
+       agentType=AgentType.SIFT,
+       test_type=TestType.STAGE5,
+       global_config=global_config,
+       pool="POGO_SIFT_PN2",
+       suffix="_120200",
+       tournament_directory=pogo_v2_PN100,
+    )
 
     # launch_tournament_wrapper(
     #    "TUFTS_12M_E1",

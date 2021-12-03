@@ -16,5 +16,5 @@ PAL_COMMAND_UNIX = "./gradlew runclient"
 # PAL_COMMAND_UNIX = "xvfb-run -s '-screen 0 1280x1024x24' ./gradlew runclient"
 
 #Games now exist outside of this environment.
-GAME_COUNT = 25
+GAME_COUNT = 50
 GAMES_FOLDER = "../pogo_json"

@@ -60,4 +60,7 @@ export PAL_TM_PORT=$(($CIRCA_BASEPORT+9))
 #DEBUG=1; ./${OPENMIND_HOME}/prt/prt -vD openmind-polycraft-agent-start-script.prt
 exec 4>&2;
 exec 3>&1;
-/usr/bin/env perl ${OPENMIND_HOME}/code/prt/prt --resultsdir "$1"  openmind-in-polycraft-tournament.prt 1>&3 2>&4
+# Phase 1 run command
+#/usr/bin/env perl ${OPENMIND_HOME}/code/prt/prt --resultsdir "$1"  openmind-in-polycraft-tournament.prt 1>&3 2>&4
+# Phase 2 command (24M)
+/usr/bin/env perl ${OPENMIND_HOME}/code/prt/prt --resultsdir "$1"  openmind-in-polycraft-v2-domains-tournament.prt 1>&3 2>&4

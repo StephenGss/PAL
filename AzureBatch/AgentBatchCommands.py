@@ -216,6 +216,9 @@ class AgentBatchCommands:
         ]
 
         build_agent = [
+            'cd $HOME/polycraft/pal/agents/code',
+            'apt install dos2unix',
+            'find . -type f -print0 | xargs -0 dos2unix',
             'cd $HOME/polycraft/pal/agents/code/docker',
             'DOCKER_TAG="latest"; export DOCKER_TAG',
             './build.sh',
@@ -225,7 +228,7 @@ class AgentBatchCommands:
         ]
 
 
-        LOG_FILE_DIR = f"/mnt/PolycraftFileShare/sift_12M/{tname}{suffix}/"
+        LOG_FILE_DIR = f"/mnt/PolycraftFileShare/sift_24M/{tname}{suffix}/"
         # LOG_FILE_DIR = "$HOME/polycraft/pal/agents/agent_logs_sift/"
 
         polycraft_launch_cmd = f"./sift_tournament_agent_launcher.sh {LOG_FILE_DIR}"
