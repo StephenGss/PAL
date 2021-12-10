@@ -57,11 +57,14 @@ class PalMessenger:
                 write_file.write(message)
 
     @staticmethod
-    def time_now_str(sep=":"):
+    def time_now_str(sep=":", format=None):
         """
         Adjust the Default to match the ANSI standard for Time Stamps - makes it easy to convert to DateTime in SQL
         :param sep: separator for minutes
+        :param format: Format for output string. If none, a default is used.
         :return: current GMT, formatted for ease of use in Database
         """
-        format = "%Y-%m-%d_%H" + sep + "%M" + sep + "%S"
+        if not format:
+            format = "%Y-%m-%d_%H" + sep + "%M" + sep + "%S"
+
         return time.strftime(format, time.gmtime())

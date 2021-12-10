@@ -14,7 +14,7 @@ from filelock import Timeout, FileLock
 
 class AzureConnectionService:
 
-    def __init__(self, debug_log, container_name='round2-logs', temp_logs_err_path=None):
+    def __init__(self, debug_log, container_name='round2-logs', temp_logs_err_path=None, use_global_configs=False):
         self.configs = self._check_for_configs()
         self.debug_log = debug_log
         self.container_name = container_name
@@ -26,7 +26,7 @@ class AzureConnectionService:
             self.temp_logs_err_path = temp_logs_err_path
         self.lock = FileLock(f"{self.temp_logs_path}.lock")
         self.valid_connection = False
-        self.sql_connection = self._get_sql_connection()
+        self.sql_connection = self._get_sql_connection(use_global_configs=use_global_configs)
         self.cursor = None
         self.max_retries = 10
         if self.is_connected():
@@ -72,9 +72,10 @@ class AzureConnectionService:
             return True
         return False
 
-    def _get_sql_connection(self):
+    def _get_sql_connection(self, use_global_configs=False):
         """
         Connects to the SQL Database if a valid configs file is provided
+        :param use_global_configs: True if you use the value of SQL_CONN_KEY in self.configs. False to use the below.
         :return: pyodbc.SQL_CONNECTION object if a connection is valid. None if an error occurs.
         """
         if self.configs is None:
@@ -93,6 +94,8 @@ class AzureConnectionService:
         ConnectionTimeout = 30
         #cxn = f'Driver={Driver};Server={Server};Database={Database};Uid={Uid};Pwd={Pwd};Encrypt={Encrypt};TrustServerCertificate={TrustServerCertificate};Connection Timeout={ConnectionTimeout};'
         cxn = f'DRIVER={Driver};SERVER={Server};PORT=1433;DATABASE={Database};UID={Uid};PWD={Pwd};TDS_Version8.0;Encrypt={Encrypt};TrustServerCertificate={TrustServerCertificate};Connection Timeout={ConnectionTimeout};'
+        if use_global_configs:
+            cxn = self.configs['azure']['SQL_CONN_KEY']
         try:
             db = pyodbc.connect(cxn, autocommit=True)
             self.valid_connection = AzureConnectionService._validate_db_connection(db)
@@ -246,6 +249,54 @@ class AzureConnectionService:
         if count >= self.max_retries:
             self.debug_log.message(
                 f"ERROR: Unable to Update {CONFIG.AGENT_ID}. Offending Game: {game_id}")
+
+    def send_regression_test_to_azure(self, score_dict: dict, game_id: int):
+        """
+        Send the results of a regression test to the REGRESSION_TEST_AGGREGATE table
+        Currently, one regression test can be run per game. To change this, please change this command.
+        :param score_dict: Data to be sent
+        :param game_id: gameID in tournament
+        """
+        if self.configs is None:
+            self.debug_log.message("No Config File available for SQL Connection")
+            return None
+
+        vals = OrderedDict()
+        try:
+            vals['Agent_Name'] = str(CONFIG.AGENT_ID)
+            ## TODO: Change this to allow for dynamic tournament names in the same manager
+            vals['Tournament_Name'] = str(CONFIG.TOURNAMENT_ID)
+            vals['Game_ID'] = int(game_id)
+            vals['Task_Name'] = str(score_dict[game_id]['game_path'])
+            vals['Test_Date'] = str(score_dict[game_id]['timestamp'])  # Format: f"YYYYMMDD HH:MM:SS" with a space!
+            vals['Regression_Test_ID'] = str(score_dict[game_id]['RegID'])
+            vals['Pass'] = int(score_dict[game_id]['passFail'])
+            vals['Test_Response'] = str(score_dict[game_id]['responses'])
+        except KeyError as e:
+            self.debug_log.message(f"ERROR! Regression Test Table missing keys: {e}")
+            return None
+        dictionary_as_tuple_list = [tuple(vals.values())]
+        self.debug_log.message(f"Sending Score to SQL: {dictionary_as_tuple_list}")
+        count = 0
+        while count < self.max_retries:
+            try:
+                count += 1
+                self.cursor.executemany(f"""
+                                        INSERT INTO REGRESSION_TEST_AGGREGATE ({', '.join([k for k in vals.keys()])}) 
+                                          VALUES ({', '.join(['?' for i in dictionary_as_tuple_list[0]])}) ; 
+                                                        """, dictionary_as_tuple_list)
+
+                self.sql_connection.commit()
+                self.debug_log.message(f"Game summary sent! Game: {game_id}")
+                return True
+            except Exception as e:
+                time.sleep(1)
+                self.debug_log.message(f"Error! Scores not sent: {str(e)}")
+                self.debug_log.message(f"retrying... ({count})")
+
+        if count >= self.max_retries:
+            self.debug_log.message(
+                f"ERROR: Unable to Update TOURNAMENT_AGGREGATE. Offending Game: {game_id}, Tournament: {CONFIG.TOURNAMENT_ID}")
 
     def send_summary_to_azure(self, score_dict, game_id):
         """

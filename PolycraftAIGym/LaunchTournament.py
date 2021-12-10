@@ -604,6 +604,7 @@ class LaunchTournament:
         self.debug_log.message(f"Final Score: {str(self.score_dict)}")
         sys.stdout.flush()
         self.score_dict[self.game_index]['endTime'] = PalMessenger.PalMessenger.time_now_str()
+        self.score_dict[self.game_index]['timestamp'] = PalMessenger.PalMessenger.time_now_str(format='%Y%m%d %H:%M:%S')
 
         # self.threads = self._update_azure(self.game_index)
         # azure = AzureConnectionService.AzureConnectionService(self.debug_log)
