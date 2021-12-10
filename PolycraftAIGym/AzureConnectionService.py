@@ -14,7 +14,18 @@ from filelock import Timeout, FileLock
 
 class AzureConnectionService:
 
-    def __init__(self, debug_log, container_name='round2-logs', temp_logs_err_path=None, use_global_configs=False):
+    def __init__(self, debug_log: PalMessenger, container_name='round2-logs', temp_logs_err_path=None, use_global_configs=False):
+        """
+        Class that manages data transfer to Azure SQL Server and Azure Containers from PAL. Run on the Azure network
+        to ensure that the log uploads are at low/no cost.
+
+        NOTE: Requires a #PalMessenger log object to write & print logs/errors
+        :param debug_log: a PalMessenger object
+        :param container_name: name of container in AzureSQL to upload log files into
+        :param temp_logs_err_path: local directory to upload log scripts in case there are failures in uploading
+        :param use_global_configs: uses SQL connection string in secret_real.ini (self.configs) instead of
+                                    the one built up in _get_sql_connection
+        """
         self.configs = self._check_for_configs()
         self.debug_log = debug_log
         self.container_name = container_name

@@ -20,14 +20,19 @@ class MyTestCase(unittest.TestCase):
         )
         self.assertEqual(True, acn.is_connected())
 
-    def test_sql_upload(self, uploadID=15):
+    def test_sql_upload(self, uploadID=16):
+        """
+        Test confirms that we can upload to the REGRESSION_TEST_AGGREGATE table with the correctly formatted params
+        :param uploadID: Arbitrary ID to run the test with to insure that the test will not fail on attempting to
+        re-upload the same primary key.
+        """
         os.environ['CONDA_PREFIX'] = "/dummy"
         acn = PolycraftAIGym.AzureConnectionService.AzureConnectionService(
             PolycraftAIGym.PalMessenger.PalMessenger(True, False),
             use_global_configs=True
         )
         score_dict = {0: {
-            'game_path': "/test/123",
+            'game_path': "/test/1234",
             'timestamp': PolycraftAIGym.PalMessenger.PalMessenger.time_now_str(format='%Y%m%d %H:%M:%S'),
             'RegID': f"{uploadID}",
             'passFail': 0,
