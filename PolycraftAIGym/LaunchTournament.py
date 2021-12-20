@@ -14,7 +14,7 @@ from copy import copy, deepcopy
 import getopt
 import psutil
 from filelock import Timeout, FileLock
-
+from sys import platform as _platform
 
 
 class LaunchTournament:
@@ -30,7 +30,19 @@ class LaunchTournament:
 
     All messages in stdout for the AI Agent, PAL client, and Debugging are written to log files (see logging below)
     """
-    def __init__(self, os='Unix', log_dir='Logs/', args=(), kwargs=None):
+    def __init__(self, os='UNIX', log_dir='Logs/', args=(), kwargs=None):
+        if _platform == "linux" or _platform == "linux2":
+            # linux
+            os='UNIX'
+        elif _platform == "darwin":
+            # MAC OS X
+            os='MACOS'
+        elif _platform == "win32":
+            # Windows
+            os='WIN'
+        elif _platform == "win64":
+            # Windows 64-bit
+            os='WIN'
         self.commands_sent = 0
         self.total_step_cost = 0
         self.start_time = time.time()
@@ -855,5 +867,5 @@ if __name__ == "__main__":
             print(f"Max Time (minutes): {arg}")
             CONFIG.MAX_TOURN_TIME = int(arg)
 
-    pal = LaunchTournament(os='WIN')  # TODO: Remove the os command line argument.
+    pal = LaunchTournament()
     pal.execute()
