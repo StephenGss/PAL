@@ -329,7 +329,7 @@ class AzureBatchLaunchTournaments:
 
             constraint = batchmodels.TaskConstraints(
                 ##Reduce this from 1440 to 30 minutes for big evaluation##
-                retention_time=datetime.timedelta(minutes=1440),
+                retention_time=datetime.timedelta(minutes=5),
 
                 # # ##Reduced this for Tufts SN100##
                 # retention_time=datetime.timedelta(seconds=1),
@@ -572,6 +572,7 @@ if __name__ == '__main__':
     pogo_MT100_files = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\pogo-12M-tournaments-zipped\\POGO_100game_12M_missing_tournaments2"
 
     pogo_v2_PN100 = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\000. PAL Tasks & Novelties\\03. Phase 2 Novelties\\Tournament Files (Debug)\\POGO_100game_pre_nov"
+    pogo_v2_FE100 = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\000. PAL Tasks & Novelties\\03. Phase 2 Novelties\\Tournament Files (Debug)\\POGO_100game_full_eval"
 
     #
     #
@@ -619,13 +620,13 @@ if __name__ == '__main__':
     # )
     
     launch_tournament_wrapper(
-       agent="SIFT_24M",
+       agent="SIFT_24M_E1",
        agentType=AgentType.SIFT,
        test_type=TestType.STAGE5,
        global_config=global_config,
        pool="POGO_SIFT_PN2",
-       suffix="_120200",
-       tournament_directory=pogo_v2_PN100,
+       suffix="_122000",
+       tournament_directory=pogo_v2_FE100,
     )
 
     # launch_tournament_wrapper(

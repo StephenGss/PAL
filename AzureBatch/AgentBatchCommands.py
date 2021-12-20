@@ -241,7 +241,7 @@ class AgentBatchCommands:
             # 'sudo pkill Xvfb',
             'echo "[DN_MSG]hopefully moved into the right folder?\n"',
             'export _JAVA_OPTIONS="-Xmx3G"',
-            f'python LaunchTournament.py -c 1000 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "../agents/code/test/" -x "{polycraft_launch_cmd}"',
+            f'python LaunchTournament.py -c 50 -t "{tname}{suffix}" -g "../{tname}" -a "{self.agent_name}" -d "../agents/code/test/" -x "{polycraft_launch_cmd}"',
         ]
 
         return start + setup_vm + pull_github + move_agent + copy_files + build_agent + launch_polycraft
