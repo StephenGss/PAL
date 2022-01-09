@@ -624,7 +624,7 @@ if __name__ == '__main__':
        agentType=AgentType.SIFT,
        test_type=TestType.STAGE5,
        global_config=global_config,
-       pool="POGO_SIFT_PN2",
+       pool="POGO_SIFT_FE1",
        suffix="_122000",
        tournament_directory=pogo_v2_FE100,
     )
