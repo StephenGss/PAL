@@ -54,12 +54,12 @@ while run:  # main loop
         # userInput = f'GENTOUR -c ../test -0 ../Novelty/input/huga_v2/huga_lvl_0_demo.json -o ../Novelty/output/huga_test/ -f test -n 1 -w 0,0,1 -s {str(seed)} -R'
         # userInput = f'GENTOUR -c ../test -0 ../Novelty/input/pogo_v2/pogo_lvl_0.json -o ../Novelty/output/pogo_test/ -f test -n 1 -w 0,0,1 -s {str(seed)} -R'
         # POGO v2 **************
-        # userInput = f'GENTOUR -c ../test -0 ../Novelty/input/pogo_v2/pogo_{str(n_level)}-{str(n_type)}-{str(n_stype)}' \
-        #             f'.json -o ../Novelty/output/pogo_test/ -f test -n 1 -w {difficulty_weight} -s {str(seed)} -R'
+        userInput = f'GENTOUR -c ../test -0 ../Novelty/input/pogo_v2/pogo_{str(n_level)}-{str(n_type)}-{str(n_stype)}' \
+                    f'.json -o ../Novelty/output/pogo_test/ -f test -n 1 -w {difficulty_weight} -s {str(seed)} -R'
         # **********************
         # HUGA
-        userInput = f'GENTOUR -c ../test -0 ../Novelty/input/huga_v2/huga_{str(n_level)}-{str(n_type)}-{str(n_stype)}' \
-                    f'.json -o ../Novelty/output/huga_test/ -f test -n 1 -w {difficulty_weight} -s {str(seed)} -R'
+        # userInput = f'GENTOUR -c ../test -0 ../Novelty/input/huga_v2/huga_{str(n_level)}-{str(n_type)}-{str(n_stype)}' \
+        #             f'.json -o ../Novelty/output/huga_test/ -f test -n 1 -w {difficulty_weight} -s {str(seed)} -R'
         # old HUGA
         # userInput = f'GENTOUR -c ../test -0 ../Novelty/input/huga/huga_novcon_lvl_{str(n_level)}-{str(n_type)}-{str(n_stype)}' \
         #             f'.json -o ../Novelty/output/huga_test/ -f test -n 1 -w {difficulty_weight} -s {str(seed)} -R'
