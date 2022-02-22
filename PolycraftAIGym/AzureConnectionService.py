@@ -274,7 +274,8 @@ class AzureConnectionService:
         vals['Debug_Log_Blob_URL'] = ""
 
         dictionary_as_tuple_list = [tuple(vals.values())]
-        self.debug_log.message(f"Sending Score to SQL: {dictionary_as_tuple_list}")
+        self.debug_log.message(f"Sending Score to SQL: {dictionary_as_tuple_list[-5:]}")
+        self.debug_log.message(f"Sending Score to SQL: {dictionary_as_tuple_list.count()} records")
         count = 0
         while count < self.max_retries:
             try:
