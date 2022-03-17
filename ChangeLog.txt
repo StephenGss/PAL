@@ -2,6 +2,10 @@ SAIL-ON Polycraft World Change Log:
 
 Purpose: This document tracks changes and updates to Polycraft World that impact SAIL-ON Tasks, Evaluations, etc., including API changes.
 
+2022.03.16 Updates:
+1)			Remove old code reference in RESET command. This causes a rare crash that reports a "ConcurrentModificationException" as well as a line including something like "[edu.utd.minecraft.mod.polycraft.experiment.old.ExperimentManager:sendExperimentUpdates:322]: Sending Update..."
+2)			Add try catch around some code in observation. This would cause a rare crash during actor's actions right after the player places a block. The cause is unknown, but the code that crashes the game is not important during this step. Worst case, there are some non-standard properties of items that will be missing from an item in extremely rare cases. But we don't even use these properties right now, so it should never be an issue.
+
 2022.02.08 Updates:
 1)	(HUGA) 	Fix Trap issue where traps will randomly capture agent when next to trap
 
