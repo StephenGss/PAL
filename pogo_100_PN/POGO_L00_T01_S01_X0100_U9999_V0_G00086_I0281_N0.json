@@ -2,9 +2,9 @@
   "features": [
     {
       "pos": [
-        59,
+        68,
         17,
-        36
+        83
       ],
       "name": "Start 0",
       "color": -16711681,
@@ -30,9 +30,9 @@
     },
     {
       "pos": [
-        66,
+        69,
         17,
-        38
+        92
       ],
       "name": "Pogoist",
       "color": -65281,
@@ -40,7 +40,7 @@
       "canProceed": false,
       "isDone": false,
       "completionTime": 0,
-      "uuid": "17bf41d0-f1e0-458f-89e0-93aab5238c0f",
+      "uuid": "be4cd26d-3a15-40d7-8b86-107a941f784d",
       "entityColor": "PURPLE",
       "addArmor": true,
       "forceWonder": false,
@@ -54,9 +54,9 @@
     },
     {
       "pos": [
-        54,
+        72,
         17,
-        40
+        78
       ],
       "name": "Trader 2",
       "color": -1,
@@ -64,7 +64,7 @@
       "canProceed": false,
       "isDone": false,
       "completionTime": 0,
-      "uuid": "4a09fa49-1cec-4af7-8bd4-7bb93ede07b1",
+      "uuid": "8edf268f-0cb0-4e55-bdb8-927f56b9b953",
       "entityColor": "BLACK",
       "tradeList": [
         {
@@ -123,9 +123,9 @@
     },
     {
       "pos": [
-        52,
+        70,
         17,
-        38
+        76
       ],
       "name": "Trader 1",
       "color": -1,
@@ -133,7 +133,7 @@
       "canProceed": false,
       "isDone": false,
       "completionTime": 0,
-      "uuid": "a448dcaa-5c32-4254-9a8f-2581d3a3d224",
+      "uuid": "95c29c27-a29e-49a2-ae85-549da6974d11",
       "entityColor": "BLACK",
       "tradeList": [
         {
@@ -192,9 +192,9 @@
     },
     {
       "pos": [
-        72,
+        96,
         16,
-        48
+        64
       ],
       "name": "Room_2",
       "color": -16711936,
@@ -202,11 +202,11 @@
       "canProceed": false,
       "isDone": false,
       "completionTime": 0,
-      "uuid": "07fd1421-de0b-40ab-8cef-24dfa61a373b",
+      "uuid": "79ba44a5-e075-4169-9229-78d2e9dbf37f",
       "pos2": [
-        79,
+        103,
         23,
-        55
+        71
       ],
       "blockFloorMeta": 0,
       "blockFloorName": "minecraft:dirt",
@@ -231,9 +231,9 @@
       "chunks": [
         {
           "pos": [
-            9,
+            12,
             2,
-            6
+            8
           ],
           "wallConfiguration": [
             {
@@ -242,7 +242,7 @@
                 "type": "ROOM_ADJACENT",
                 "wallConfiguration": [
                   {
-                    "slot": 5,
+                    "slot": 3,
                     "config": {
                       "type": "OPEN",
                       "reversed": false,
@@ -317,9 +317,9 @@
     },
     {
       "pos": [
-        56,
+        96,
         16,
-        64
+        80
       ],
       "name": "Room_1",
       "color": -16711936,
@@ -327,11 +327,11 @@
       "canProceed": false,
       "isDone": false,
       "completionTime": 0,
-      "uuid": "2ce65d78-795a-401b-95fe-12964ef64990",
+      "uuid": "8f94a9c1-2415-404e-b762-673f02a30006",
       "pos2": [
-        63,
+        103,
         23,
-        71
+        87
       ],
       "blockFloorMeta": 0,
       "blockFloorName": "minecraft:dirt",
@@ -356,16 +356,27 @@
       "chunks": [
         {
           "pos": [
-            7,
+            12,
             2,
-            8
+            10
           ],
           "wallConfiguration": [
             {
               "face": "west",
               "config": {
-                "type": "EXTERNAL",
-                "wallConfiguration": [],
+                "type": "ROOM_ADJACENT",
+                "wallConfiguration": [
+                  {
+                    "slot": 5,
+                    "config": {
+                      "type": "OPEN",
+                      "reversed": false,
+                      "buttonLocation": "NONE",
+                      "pressurePlaceLocation": "NONE",
+                      "keyMetas": []
+                    }
+                  }
+                ],
                 "defaultPath": {
                   "type": "BLUEPRINT",
                   "reversed": false,
@@ -406,19 +417,8 @@
             {
               "face": "north",
               "config": {
-                "type": "ROOM_ADJACENT",
-                "wallConfiguration": [
-                  {
-                    "slot": 5,
-                    "config": {
-                      "type": "OPEN",
-                      "reversed": false,
-                      "buttonLocation": "NONE",
-                      "pressurePlaceLocation": "NONE",
-                      "keyMetas": []
-                    }
-                  }
-                ],
+                "type": "EXTERNAL",
+                "wallConfiguration": [],
                 "defaultPath": {
                   "type": "BLUEPRINT",
                   "reversed": false,
@@ -442,9 +442,9 @@
     },
     {
       "pos": [
-        40,
+        64,
         16,
-        32
+        64
       ],
       "name": "Room_0",
       "color": -16711936,
@@ -452,11 +452,11 @@
       "canProceed": false,
       "isDone": false,
       "completionTime": 0,
-      "uuid": "4ab5a67d-fbca-4faf-b9b4-33632fa88170",
+      "uuid": "85f5a0f4-4392-4d4c-a64f-492b08ceb06f",
       "pos2": [
-        71,
+        95,
         23,
-        63
+        95
       ],
       "blockFloorMeta": 0,
       "blockFloorName": "minecraft:grass",
@@ -481,9 +481,9 @@
       "chunks": [
         {
           "pos": [
-            5,
+            8,
             2,
-            4
+            8
           ],
           "wallConfiguration": [
             {
@@ -547,75 +547,9 @@
         },
         {
           "pos": [
-            5,
+            9,
             2,
-            5
-          ],
-          "wallConfiguration": [
-            {
-              "face": "west",
-              "config": {
-                "type": "EXTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE",
-                  "keyMetas": []
-                }
-              }
-            },
-            {
-              "face": "east",
-              "config": {
-                "type": "INTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE",
-                  "keyMetas": []
-                }
-              }
-            },
-            {
-              "face": "south",
-              "config": {
-                "type": "INTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE",
-                  "keyMetas": []
-                }
-              }
-            },
-            {
-              "face": "north",
-              "config": {
-                "type": "INTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE",
-                  "keyMetas": []
-                }
-              }
-            }
-          ],
-          "roomID": 0
-        },
-        {
-          "pos": [
-            6,
-            2,
-            4
+            8
           ],
           "wallConfiguration": [
             {
@@ -679,9 +613,9 @@
         },
         {
           "pos": [
-            5,
+            8,
             2,
-            6
+            9
           ],
           "wallConfiguration": [
             {
@@ -745,75 +679,9 @@
         },
         {
           "pos": [
-            6,
+            10,
             2,
-            5
-          ],
-          "wallConfiguration": [
-            {
-              "face": "west",
-              "config": {
-                "type": "INTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE",
-                  "keyMetas": []
-                }
-              }
-            },
-            {
-              "face": "east",
-              "config": {
-                "type": "INTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE",
-                  "keyMetas": []
-                }
-              }
-            },
-            {
-              "face": "south",
-              "config": {
-                "type": "INTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE",
-                  "keyMetas": []
-                }
-              }
-            },
-            {
-              "face": "north",
-              "config": {
-                "type": "INTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE",
-                  "keyMetas": []
-                }
-              }
-            }
-          ],
-          "roomID": 0
-        },
-        {
-          "pos": [
-            7,
-            2,
-            4
+            8
           ],
           "wallConfiguration": [
             {
@@ -877,141 +745,9 @@
         },
         {
           "pos": [
-            5,
+            9,
             2,
-            7
-          ],
-          "wallConfiguration": [
-            {
-              "face": "west",
-              "config": {
-                "type": "EXTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE",
-                  "keyMetas": []
-                }
-              }
-            },
-            {
-              "face": "east",
-              "config": {
-                "type": "INTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE",
-                  "keyMetas": []
-                }
-              }
-            },
-            {
-              "face": "south",
-              "config": {
-                "type": "EXTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE",
-                  "keyMetas": []
-                }
-              }
-            },
-            {
-              "face": "north",
-              "config": {
-                "type": "INTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE",
-                  "keyMetas": []
-                }
-              }
-            }
-          ],
-          "roomID": 0
-        },
-        {
-          "pos": [
-            6,
-            2,
-            6
-          ],
-          "wallConfiguration": [
-            {
-              "face": "west",
-              "config": {
-                "type": "INTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE",
-                  "keyMetas": []
-                }
-              }
-            },
-            {
-              "face": "east",
-              "config": {
-                "type": "INTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE",
-                  "keyMetas": []
-                }
-              }
-            },
-            {
-              "face": "south",
-              "config": {
-                "type": "INTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE",
-                  "keyMetas": []
-                }
-              }
-            },
-            {
-              "face": "north",
-              "config": {
-                "type": "INTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE",
-                  "keyMetas": []
-                }
-              }
-            }
-          ],
-          "roomID": 0
-        },
-        {
-          "pos": [
-            7,
-            2,
-            5
+            9
           ],
           "wallConfiguration": [
             {
@@ -1077,145 +813,13 @@
           "pos": [
             8,
             2,
-            4
+            10
           ],
           "wallConfiguration": [
             {
               "face": "west",
               "config": {
-                "type": "INTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE",
-                  "keyMetas": []
-                }
-              }
-            },
-            {
-              "face": "east",
-              "config": {
                 "type": "EXTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE",
-                  "keyMetas": []
-                }
-              }
-            },
-            {
-              "face": "south",
-              "config": {
-                "type": "INTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE",
-                  "keyMetas": []
-                }
-              }
-            },
-            {
-              "face": "north",
-              "config": {
-                "type": "EXTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE",
-                  "keyMetas": []
-                }
-              }
-            }
-          ],
-          "roomID": 0
-        },
-        {
-          "pos": [
-            6,
-            2,
-            7
-          ],
-          "wallConfiguration": [
-            {
-              "face": "west",
-              "config": {
-                "type": "INTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE",
-                  "keyMetas": []
-                }
-              }
-            },
-            {
-              "face": "east",
-              "config": {
-                "type": "INTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE",
-                  "keyMetas": []
-                }
-              }
-            },
-            {
-              "face": "south",
-              "config": {
-                "type": "EXTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE",
-                  "keyMetas": []
-                }
-              }
-            },
-            {
-              "face": "north",
-              "config": {
-                "type": "INTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE",
-                  "keyMetas": []
-                }
-              }
-            }
-          ],
-          "roomID": 0
-        },
-        {
-          "pos": [
-            7,
-            2,
-            6
-          ],
-          "wallConfiguration": [
-            {
-              "face": "west",
-              "config": {
-                "type": "INTERNAL",
                 "wallConfiguration": [],
                 "defaultPath": {
                   "type": "BLUEPRINT",
@@ -1273,9 +877,9 @@
         },
         {
           "pos": [
-            8,
+            11,
             2,
-            5
+            8
           ],
           "wallConfiguration": [
             {
@@ -1294,91 +898,11 @@
             },
             {
               "face": "east",
-              "config": {
-                "type": "EXTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE",
-                  "keyMetas": []
-                }
-              }
-            },
-            {
-              "face": "south",
-              "config": {
-                "type": "INTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE",
-                  "keyMetas": []
-                }
-              }
-            },
-            {
-              "face": "north",
-              "config": {
-                "type": "INTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE",
-                  "keyMetas": []
-                }
-              }
-            }
-          ],
-          "roomID": 0
-        },
-        {
-          "pos": [
-            7,
-            2,
-            7
-          ],
-          "wallConfiguration": [
-            {
-              "face": "west",
-              "config": {
-                "type": "INTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE",
-                  "keyMetas": []
-                }
-              }
-            },
-            {
-              "face": "east",
-              "config": {
-                "type": "INTERNAL",
-                "wallConfiguration": [],
-                "defaultPath": {
-                  "type": "BLUEPRINT",
-                  "reversed": false,
-                  "buttonLocation": "NONE",
-                  "pressurePlaceLocation": "NONE",
-                  "keyMetas": []
-                }
-              }
-            },
-            {
-              "face": "south",
               "config": {
                 "type": "ROOM_ADJACENT",
                 "wallConfiguration": [
                   {
-                    "slot": 5,
+                    "slot": 3,
                     "config": {
                       "type": "DOOR",
                       "reversed": false,
@@ -1398,6 +922,152 @@
               }
             },
             {
+              "face": "south",
+              "config": {
+                "type": "INTERNAL",
+                "wallConfiguration": [],
+                "defaultPath": {
+                  "type": "BLUEPRINT",
+                  "reversed": false,
+                  "buttonLocation": "NONE",
+                  "pressurePlaceLocation": "NONE",
+                  "keyMetas": []
+                }
+              }
+            },
+            {
+              "face": "north",
+              "config": {
+                "type": "EXTERNAL",
+                "wallConfiguration": [],
+                "defaultPath": {
+                  "type": "BLUEPRINT",
+                  "reversed": false,
+                  "buttonLocation": "NONE",
+                  "pressurePlaceLocation": "NONE",
+                  "keyMetas": []
+                }
+              }
+            }
+          ],
+          "roomID": 0
+        },
+        {
+          "pos": [
+            10,
+            2,
+            9
+          ],
+          "wallConfiguration": [
+            {
+              "face": "west",
+              "config": {
+                "type": "INTERNAL",
+                "wallConfiguration": [],
+                "defaultPath": {
+                  "type": "BLUEPRINT",
+                  "reversed": false,
+                  "buttonLocation": "NONE",
+                  "pressurePlaceLocation": "NONE",
+                  "keyMetas": []
+                }
+              }
+            },
+            {
+              "face": "east",
+              "config": {
+                "type": "INTERNAL",
+                "wallConfiguration": [],
+                "defaultPath": {
+                  "type": "BLUEPRINT",
+                  "reversed": false,
+                  "buttonLocation": "NONE",
+                  "pressurePlaceLocation": "NONE",
+                  "keyMetas": []
+                }
+              }
+            },
+            {
+              "face": "south",
+              "config": {
+                "type": "INTERNAL",
+                "wallConfiguration": [],
+                "defaultPath": {
+                  "type": "BLUEPRINT",
+                  "reversed": false,
+                  "buttonLocation": "NONE",
+                  "pressurePlaceLocation": "NONE",
+                  "keyMetas": []
+                }
+              }
+            },
+            {
+              "face": "north",
+              "config": {
+                "type": "INTERNAL",
+                "wallConfiguration": [],
+                "defaultPath": {
+                  "type": "BLUEPRINT",
+                  "reversed": false,
+                  "buttonLocation": "NONE",
+                  "pressurePlaceLocation": "NONE",
+                  "keyMetas": []
+                }
+              }
+            }
+          ],
+          "roomID": 0
+        },
+        {
+          "pos": [
+            9,
+            2,
+            10
+          ],
+          "wallConfiguration": [
+            {
+              "face": "west",
+              "config": {
+                "type": "INTERNAL",
+                "wallConfiguration": [],
+                "defaultPath": {
+                  "type": "BLUEPRINT",
+                  "reversed": false,
+                  "buttonLocation": "NONE",
+                  "pressurePlaceLocation": "NONE",
+                  "keyMetas": []
+                }
+              }
+            },
+            {
+              "face": "east",
+              "config": {
+                "type": "INTERNAL",
+                "wallConfiguration": [],
+                "defaultPath": {
+                  "type": "BLUEPRINT",
+                  "reversed": false,
+                  "buttonLocation": "NONE",
+                  "pressurePlaceLocation": "NONE",
+                  "keyMetas": []
+                }
+              }
+            },
+            {
+              "face": "south",
+              "config": {
+                "type": "INTERNAL",
+                "wallConfiguration": [],
+                "defaultPath": {
+                  "type": "BLUEPRINT",
+                  "reversed": false,
+                  "buttonLocation": "NONE",
+                  "pressurePlaceLocation": "NONE",
+                  "keyMetas": []
+                }
+              }
+            },
+            {
               "face": "north",
               "config": {
                 "type": "INTERNAL",
@@ -1418,7 +1088,271 @@
           "pos": [
             8,
             2,
-            6
+            11
+          ],
+          "wallConfiguration": [
+            {
+              "face": "west",
+              "config": {
+                "type": "EXTERNAL",
+                "wallConfiguration": [],
+                "defaultPath": {
+                  "type": "BLUEPRINT",
+                  "reversed": false,
+                  "buttonLocation": "NONE",
+                  "pressurePlaceLocation": "NONE",
+                  "keyMetas": []
+                }
+              }
+            },
+            {
+              "face": "east",
+              "config": {
+                "type": "INTERNAL",
+                "wallConfiguration": [],
+                "defaultPath": {
+                  "type": "BLUEPRINT",
+                  "reversed": false,
+                  "buttonLocation": "NONE",
+                  "pressurePlaceLocation": "NONE",
+                  "keyMetas": []
+                }
+              }
+            },
+            {
+              "face": "south",
+              "config": {
+                "type": "EXTERNAL",
+                "wallConfiguration": [],
+                "defaultPath": {
+                  "type": "BLUEPRINT",
+                  "reversed": false,
+                  "buttonLocation": "NONE",
+                  "pressurePlaceLocation": "NONE",
+                  "keyMetas": []
+                }
+              }
+            },
+            {
+              "face": "north",
+              "config": {
+                "type": "INTERNAL",
+                "wallConfiguration": [],
+                "defaultPath": {
+                  "type": "BLUEPRINT",
+                  "reversed": false,
+                  "buttonLocation": "NONE",
+                  "pressurePlaceLocation": "NONE",
+                  "keyMetas": []
+                }
+              }
+            }
+          ],
+          "roomID": 0
+        },
+        {
+          "pos": [
+            11,
+            2,
+            9
+          ],
+          "wallConfiguration": [
+            {
+              "face": "west",
+              "config": {
+                "type": "INTERNAL",
+                "wallConfiguration": [],
+                "defaultPath": {
+                  "type": "BLUEPRINT",
+                  "reversed": false,
+                  "buttonLocation": "NONE",
+                  "pressurePlaceLocation": "NONE",
+                  "keyMetas": []
+                }
+              }
+            },
+            {
+              "face": "east",
+              "config": {
+                "type": "EXTERNAL",
+                "wallConfiguration": [],
+                "defaultPath": {
+                  "type": "BLUEPRINT",
+                  "reversed": false,
+                  "buttonLocation": "NONE",
+                  "pressurePlaceLocation": "NONE",
+                  "keyMetas": []
+                }
+              }
+            },
+            {
+              "face": "south",
+              "config": {
+                "type": "INTERNAL",
+                "wallConfiguration": [],
+                "defaultPath": {
+                  "type": "BLUEPRINT",
+                  "reversed": false,
+                  "buttonLocation": "NONE",
+                  "pressurePlaceLocation": "NONE",
+                  "keyMetas": []
+                }
+              }
+            },
+            {
+              "face": "north",
+              "config": {
+                "type": "INTERNAL",
+                "wallConfiguration": [],
+                "defaultPath": {
+                  "type": "BLUEPRINT",
+                  "reversed": false,
+                  "buttonLocation": "NONE",
+                  "pressurePlaceLocation": "NONE",
+                  "keyMetas": []
+                }
+              }
+            }
+          ],
+          "roomID": 0
+        },
+        {
+          "pos": [
+            10,
+            2,
+            10
+          ],
+          "wallConfiguration": [
+            {
+              "face": "west",
+              "config": {
+                "type": "INTERNAL",
+                "wallConfiguration": [],
+                "defaultPath": {
+                  "type": "BLUEPRINT",
+                  "reversed": false,
+                  "buttonLocation": "NONE",
+                  "pressurePlaceLocation": "NONE",
+                  "keyMetas": []
+                }
+              }
+            },
+            {
+              "face": "east",
+              "config": {
+                "type": "INTERNAL",
+                "wallConfiguration": [],
+                "defaultPath": {
+                  "type": "BLUEPRINT",
+                  "reversed": false,
+                  "buttonLocation": "NONE",
+                  "pressurePlaceLocation": "NONE",
+                  "keyMetas": []
+                }
+              }
+            },
+            {
+              "face": "south",
+              "config": {
+                "type": "INTERNAL",
+                "wallConfiguration": [],
+                "defaultPath": {
+                  "type": "BLUEPRINT",
+                  "reversed": false,
+                  "buttonLocation": "NONE",
+                  "pressurePlaceLocation": "NONE",
+                  "keyMetas": []
+                }
+              }
+            },
+            {
+              "face": "north",
+              "config": {
+                "type": "INTERNAL",
+                "wallConfiguration": [],
+                "defaultPath": {
+                  "type": "BLUEPRINT",
+                  "reversed": false,
+                  "buttonLocation": "NONE",
+                  "pressurePlaceLocation": "NONE",
+                  "keyMetas": []
+                }
+              }
+            }
+          ],
+          "roomID": 0
+        },
+        {
+          "pos": [
+            9,
+            2,
+            11
+          ],
+          "wallConfiguration": [
+            {
+              "face": "west",
+              "config": {
+                "type": "INTERNAL",
+                "wallConfiguration": [],
+                "defaultPath": {
+                  "type": "BLUEPRINT",
+                  "reversed": false,
+                  "buttonLocation": "NONE",
+                  "pressurePlaceLocation": "NONE",
+                  "keyMetas": []
+                }
+              }
+            },
+            {
+              "face": "east",
+              "config": {
+                "type": "INTERNAL",
+                "wallConfiguration": [],
+                "defaultPath": {
+                  "type": "BLUEPRINT",
+                  "reversed": false,
+                  "buttonLocation": "NONE",
+                  "pressurePlaceLocation": "NONE",
+                  "keyMetas": []
+                }
+              }
+            },
+            {
+              "face": "south",
+              "config": {
+                "type": "EXTERNAL",
+                "wallConfiguration": [],
+                "defaultPath": {
+                  "type": "BLUEPRINT",
+                  "reversed": false,
+                  "buttonLocation": "NONE",
+                  "pressurePlaceLocation": "NONE",
+                  "keyMetas": []
+                }
+              }
+            },
+            {
+              "face": "north",
+              "config": {
+                "type": "INTERNAL",
+                "wallConfiguration": [],
+                "defaultPath": {
+                  "type": "BLUEPRINT",
+                  "reversed": false,
+                  "buttonLocation": "NONE",
+                  "pressurePlaceLocation": "NONE",
+                  "keyMetas": []
+                }
+              }
+            }
+          ],
+          "roomID": 0
+        },
+        {
+          "pos": [
+            11,
+            2,
+            10
           ],
           "wallConfiguration": [
             {
@@ -1493,9 +1427,75 @@
         },
         {
           "pos": [
-            8,
+            10,
             2,
-            7
+            11
+          ],
+          "wallConfiguration": [
+            {
+              "face": "west",
+              "config": {
+                "type": "INTERNAL",
+                "wallConfiguration": [],
+                "defaultPath": {
+                  "type": "BLUEPRINT",
+                  "reversed": false,
+                  "buttonLocation": "NONE",
+                  "pressurePlaceLocation": "NONE",
+                  "keyMetas": []
+                }
+              }
+            },
+            {
+              "face": "east",
+              "config": {
+                "type": "INTERNAL",
+                "wallConfiguration": [],
+                "defaultPath": {
+                  "type": "BLUEPRINT",
+                  "reversed": false,
+                  "buttonLocation": "NONE",
+                  "pressurePlaceLocation": "NONE",
+                  "keyMetas": []
+                }
+              }
+            },
+            {
+              "face": "south",
+              "config": {
+                "type": "EXTERNAL",
+                "wallConfiguration": [],
+                "defaultPath": {
+                  "type": "BLUEPRINT",
+                  "reversed": false,
+                  "buttonLocation": "NONE",
+                  "pressurePlaceLocation": "NONE",
+                  "keyMetas": []
+                }
+              }
+            },
+            {
+              "face": "north",
+              "config": {
+                "type": "INTERNAL",
+                "wallConfiguration": [],
+                "defaultPath": {
+                  "type": "BLUEPRINT",
+                  "reversed": false,
+                  "buttonLocation": "NONE",
+                  "pressurePlaceLocation": "NONE",
+                  "keyMetas": []
+                }
+              }
+            }
+          ],
+          "roomID": 0
+        },
+        {
+          "pos": [
+            11,
+            2,
+            11
           ],
           "wallConfiguration": [
             {
@@ -1578,7 +1578,7 @@
       "canProceed": false,
       "isDone": false,
       "completionTime": 0,
-      "uuid": "80324d25-fd7b-4f7a-be3a-23e9a6487062",
+      "uuid": "b495edce-15d7-4198-a67f-5fa9b214f124",
       "stepCount": 0
     },
     {
@@ -1604,53 +1604,9 @@
       "blockList": [
         {
           "blockPos": [
-            56,
+            78,
             17,
-            57
-          ],
-          "blockDef": {
-            "blockName": "polycraft:block_of_platinum",
-            "blockMeta": 0
-          }
-        },
-        {
-          "blockPos": [
-            57,
-            17,
-            57
-          ],
-          "blockDef": {
-            "blockName": "polycraft:block_of_platinum",
-            "blockMeta": 0
-          }
-        },
-        {
-          "blockPos": [
-            56,
-            17,
-            58
-          ],
-          "blockDef": {
-            "blockName": "polycraft:block_of_platinum",
-            "blockMeta": 0
-          }
-        },
-        {
-          "blockPos": [
-            47,
-            17,
-            37
-          ],
-          "blockDef": {
-            "blockName": "tree",
-            "blockMeta": 0
-          }
-        },
-        {
-          "blockPos": [
-            43,
-            17,
-            41
+            67
           ],
           "blockDef": {
             "blockName": "minecraft:diamond_ore",
@@ -1659,42 +1615,9 @@
         },
         {
           "blockPos": [
-            44,
+            93,
             17,
-            41
-          ],
-          "blockDef": {
-            "blockName": "minecraft:diamond_ore",
-            "blockMeta": 0
-          }
-        },
-        {
-          "blockPos": [
-            43,
-            17,
-            42
-          ],
-          "blockDef": {
-            "blockName": "minecraft:diamond_ore",
-            "blockMeta": 0
-          }
-        },
-        {
-          "blockPos": [
-            44,
-            17,
-            42
-          ],
-          "blockDef": {
-            "blockName": "minecraft:diamond_ore",
-            "blockMeta": 0
-          }
-        },
-        {
-          "blockPos": [
-            69,
-            17,
-            59
+            91
           ],
           "blockDef": {
             "blockName": "tree",
@@ -1703,9 +1626,9 @@
         },
         {
           "blockPos": [
-            46,
+            76,
             17,
-            52
+            78
           ],
           "blockDef": {
             "blockName": "tree",
@@ -1714,9 +1637,9 @@
         },
         {
           "blockPos": [
-            52,
+            85,
             17,
-            46
+            71
           ],
           "blockDef": {
             "blockName": "tree",
@@ -1725,9 +1648,9 @@
         },
         {
           "blockPos": [
-            45,
+            91,
             17,
-            59
+            69
           ],
           "blockDef": {
             "blockName": "minecraft:crafting_table",
@@ -1736,12 +1659,89 @@
         },
         {
           "blockPos": [
-            55,
+            87,
             17,
-            54
+            78
           ],
           "blockDef": {
             "blockName": "tree",
+            "blockMeta": 0
+          }
+        },
+        {
+          "blockPos": [
+            71,
+            17,
+            69
+          ],
+          "blockDef": {
+            "blockName": "tree",
+            "blockMeta": 0
+          }
+        },
+        {
+          "blockPos": [
+            90,
+            17,
+            82
+          ],
+          "blockDef": {
+            "blockName": "polycraft:block_of_platinum",
+            "blockMeta": 0
+          }
+        },
+        {
+          "blockPos": [
+            89,
+            17,
+            83
+          ],
+          "blockDef": {
+            "blockName": "polycraft:block_of_platinum",
+            "blockMeta": 0
+          }
+        },
+        {
+          "blockPos": [
+            89,
+            17,
+            82
+          ],
+          "blockDef": {
+            "blockName": "polycraft:block_of_platinum",
+            "blockMeta": 0
+          }
+        },
+        {
+          "blockPos": [
+            77,
+            17,
+            66
+          ],
+          "blockDef": {
+            "blockName": "minecraft:diamond_ore",
+            "blockMeta": 0
+          }
+        },
+        {
+          "blockPos": [
+            78,
+            17,
+            66
+          ],
+          "blockDef": {
+            "blockName": "minecraft:diamond_ore",
+            "blockMeta": 0
+          }
+        },
+        {
+          "blockPos": [
+            77,
+            17,
+            67
+          ],
+          "blockDef": {
+            "blockName": "minecraft:diamond_ore",
             "blockMeta": 0
           }
         }
@@ -1749,9 +1749,9 @@
       "chestList": [
         {
           "blockPos": [
-            74,
+            98,
             17,
-            53
+            69
           ],
           "chestDef": {
             "meta": 11,
@@ -1760,9 +1760,9 @@
         },
         {
           "blockPos": [
-            67,
+            79,
             17,
-            45
+            90
           ],
           "chestDef": {
             "meta": 0,
@@ -1773,9 +1773,9 @@
     },
     {
       "pos": [
-        40,
+        64,
         17,
-        32
+        64
       ],
       "name": "map",
       "color": -256,
@@ -1785,9 +1785,9 @@
       "completionTime": 0,
       "uuid": "53f20c95-f1e5-48f4-9310-b663f71ba5d8",
       "pos2": [
-        79,
+        103,
         18,
-        71
+        95
       ],
       "data": " "
     },
@@ -2639,6 +2639,9 @@
               "locked",
               "safe",
               "secondary"
+            ],
+            "tagListConnect": [
+              "primary"
             ]
           }
         ]
@@ -2723,6 +2726,6 @@
       }
     ],
     "seedOverride": -1808613779,
-    "generatedTimeStamp": "2021-11-16 22:55:49.911"
+    "generatedTimeStamp": "2022-04-12 13:06:05.345"
   }
 }
