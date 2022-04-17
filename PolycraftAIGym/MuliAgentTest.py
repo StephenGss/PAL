@@ -5,7 +5,7 @@ import threading
 def dummy_agent(id):
     HOST = "127.0.0.1"
     PORT = 9001
-    movement = ['MOVE w\n', 'MOVE a\n', 'MOVE d\n', 'MOVE x\n']
+    movement = ['MOVE w', 'MOVE a', 'MOVE d', 'MOVE x']
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     if 'PAL_PORT' in os.environ:
@@ -14,22 +14,15 @@ def dummy_agent(id):
     else:
         sock.connect((HOST, PORT))
         print(str(id) + 'Using Port: ' + str(PORT))
-    totalCount = 200
+    totalCount = 50
     count = totalCount
     startTime = datetime.datetime.now()
+    rand = random.Random()
+    send_command(sock, "RESET -d ../Novelty/output/shell/test_G00000_I0152_N0.json")
+    time.sleep(3)
     while count > 0:
-        rand = random.Random()
-        sock.send(str.encode(movement[rand.randint(a=0, b=3)]))
         time.sleep(0.0050)
-        if True:
-            BUFF_SIZE = 4096  # 4 KiB
-            data = b''
-            while True:
-                part = sock.recv(BUFF_SIZE)
-                data += part
-                if len(part) < BUFF_SIZE or part[-1] == 10:
-                    # either 0 or end of data
-                    break
+        send_command(sock, movement[rand.randint(a=0, b=3)])
         count = count - 1
     endTime = datetime.datetime.now()
     timeDiff = endTime - startTime
@@ -40,12 +33,25 @@ def dummy_agent(id):
 
     print(str(id) + "Socket closed")
 
+def send_command(sock, command):
+    BUFF_SIZE = 4096  # 4 KiB
+    print(str(command))
+    sock.send(str.encode(command + "\n"))
+    data = b''
+    while True:
+        part = sock.recv(BUFF_SIZE)
+        data += part
+        if len(part) < BUFF_SIZE or part[-1] == 10:
+            # either 0 or end of data
+            break
+    print(data)
+    return data
 
 def main():
-    for i in range(0, 5):
+    for i in range(0, 2):
         x = threading.Thread(target=dummy_agent, args=(i,))
         x.start()
-        time.sleep(0.5)
+        time.sleep(1.0)
 
 
 if __name__ == "__main__":
