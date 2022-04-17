@@ -228,7 +228,7 @@ class AgentBatchCommands:
         ]
 
 
-        LOG_FILE_DIR = f"/mnt/PolycraftFileShare/sift_24M/{tname}{suffix}/"
+        LOG_FILE_DIR = f"/mnt/PolycraftFileShare/sift_30M/{tname}{suffix}/"
         # LOG_FILE_DIR = "$HOME/polycraft/pal/agents/agent_logs_sift/"
 
         polycraft_launch_cmd = f"./sift_tournament_agent_launcher.sh {LOG_FILE_DIR}"
