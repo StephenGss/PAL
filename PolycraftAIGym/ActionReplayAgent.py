@@ -24,6 +24,9 @@ class ActionReplayAgent(object):
             time.sleep(delay)
             userInput = self.actionList.pop(0) + ' ' + self.argList.pop(0)
 
+            if str(userInput).lower().startswith("place_block"):
+                userInput = "place" + userInput[11:]
+
             self.sock.send(str.encode(userInput + '\n'))
 
             # Look for the response
