@@ -167,7 +167,7 @@ class LaunchTournament:
 
         # To see logs written to STDOUT of the Main Thread, change *_print to True.
         should_agent_print = False      # should Agent STDOUT print to main thread STDOUT (default: False)
-        should_agent_write_log = True   # should Agent STDOUT write to an Agent Log? (Default: True)
+        should_agent_write_log = False   # should Agent STDOUT write to an Agent Log? (Default: True)
         should_PAL_print = False        # should PAL STDOUT print to main thread STDOUT (default: False)
         should_PAL_write_log = True     # should PAL STDOUT write to a PAL log? (default: True)
         should_debug_print = True       # send useful progress updates to main thread STDOUT (default: True)
