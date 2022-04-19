@@ -620,13 +620,13 @@ if __name__ == '__main__':
     # )
     
     launch_tournament_wrapper(
-       agent="SIFT_24M_E1",
+       agent="SIFT_30M",
        agentType=AgentType.SIFT,
        test_type=TestType.STAGE5,
        global_config=global_config,
        pool="POGO_SIFT_FE1",
-       suffix="_122000",
-       tournament_directory=pogo_v2_FE100,
+       suffix="_041700",
+       tournament_directory=pogo_v2_PN100,
     )
 
     # launch_tournament_wrapper(
