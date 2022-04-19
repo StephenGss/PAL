@@ -5,6 +5,12 @@ Purpose: This document tracks changes and updates to Polycraft World that impact
 1)	(enhancement)	INITMA command to initialize a multi-agent tournament
 2)	(enhancement)	RESET nextgame will reset the game for an agent and go to the next game. No other arguments needed
 3)	(enhancement)	configurable shell agent port using PAL_AGENTS_PORT
+3)	(enhancement)	Agent arena position will take up the first available “slot” instead of incrementing the position every time an agent connects. This makes testing easier.
+3)	(note)			Hard limit of 1000 agents in code. (this can be easily increased, I just don’t think we’ll go above 1000)
+3)	(note)			Don’t need to send start command twice anymore. The second start command is now handled by INITMA
+3)	(enhancement)	Added "goalSubType" to the “goal” object in command responses
+						Ex. "goalSubType":"polycraft:wooden_pogo_stick"
+
 
 2022.02.08 Updates:
 1)	(HUGA) 	Fix Trap issue where traps will randomly capture agent when next to trap
