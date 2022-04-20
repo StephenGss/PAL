@@ -18,8 +18,15 @@ def dummy_agent(id):
     count = totalCount
     startTime = datetime.datetime.now()
     rand = random.Random()
-    send_command(sock, "RESET -d ../Novelty/output/shell/test_G00000_I0152_N0.json")
-    time.sleep(3)
+    # send_command(sock, "RESET -d ../Novelty/output/shell/test_G00000_I0152_N0.json")
+    send_command(sock, "RESET nextgame")
+    time.sleep(5)
+    send_command(sock, "RESET nextgame")
+    time.sleep(5)
+    send_command(sock, "RESET nextgame")
+    time.sleep(5)
+    send_command(sock, "RESET nextgame")
+    time.sleep(5)
     while count > 0:
         time.sleep(0.0050)
         send_command(sock, movement[rand.randint(a=0, b=3)])
