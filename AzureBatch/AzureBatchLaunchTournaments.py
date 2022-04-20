@@ -573,6 +573,7 @@ if __name__ == '__main__':
 
     pogo_v2_PN100 = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\000. PAL Tasks & Novelties\\03. Phase 2 Novelties\\Tournament Files (Debug)\\POGO_100game_pre_nov"
     pogo_v2_FE100 = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\000. PAL Tasks & Novelties\\03. Phase 2 Novelties\\Tournament Files (Debug)\\POGO_100game_full_eval"
+    pogo_v2_SN100 = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\000. PAL Tasks & Novelties\\03. Phase 2 Novelties\\Tournament Files (Debug)\\POGO_100game_shared"
 
     #
     #
@@ -624,9 +625,9 @@ if __name__ == '__main__':
        agentType=AgentType.SIFT,
        test_type=TestType.STAGE5,
        global_config=global_config,
-       pool="POGO_SIFT_FE1",
-       suffix="_041700",
-       tournament_directory=pogo_v2_PN100,
+       pool="POGO_SIFT_SN1",
+       suffix="_041900",
+       tournament_directory=pogo_v2_SN100,
     )
 
     # launch_tournament_wrapper(
