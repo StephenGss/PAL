@@ -1,0 +1,66 @@
+{
+	"seed":0,
+	"templatePath":"../tournaments/input/pogo_template.json",
+	"novelties":[
+		{
+			"type": "RoomGenTransform",
+			"roomGenTransformType":"UPDATE_ROOMS",
+			"roomGenOrder":[0],
+			"roomGenOrderR":[1],
+			"roomTypes":[
+				{
+					"xMin":4,
+					"xMax":4,
+					"yMin":1,
+					"yMax":1,
+					"zMin":4,
+					"zMax":4,
+					"blockFloorName":"minecraft:grass",
+					"blockCeilName":"minecraft:air",
+					"blockWallName":"minecraft:bedrock",
+					"blockRefName":"minecraft:grass",
+					"canPlayerSpawn":True,
+					"tagList":["primary", "tree", "door"]
+				}
+			]
+		},
+		{
+			"blockName": "minecraft:crafting_table",
+			"type": "WorldGenTransform",
+			"transformType":"BLOCK_LOCATION",
+			"countOffset":0,
+			"tagList":["primary"]
+		},
+		{
+			"blockName": "tree",
+			"type": "WorldGenTransform",
+			"transformType":"BLOCK_LOCATION",
+			"countOffset":0,
+			"tagList":["primary"]
+		},
+		{
+			"blockName": "polycraft:block_of_platinum",
+			"type": "WorldGenTransform",
+			"transformType":"BLOCK_CLUSTER",
+			"countOffset":1,
+			"tagList":["primary"]
+		},
+		{
+			"blockName": "minecraft:diamond_ore",
+			"type": "WorldGenTransform",
+			"transformType":"BLOCK_CLUSTER",
+			"countOffset":1,
+			"tagList":["primary"]
+		},
+		{
+			"type": "AddActorTransform",
+			"transformType":"TRADER",
+			"tagList":["primary"]
+		},
+		{
+			"type": "AddItemTransform",
+			"itemName": "minecraft:iron_pickaxe",
+			"itemMeta": 0
+		}
+	]
+}
