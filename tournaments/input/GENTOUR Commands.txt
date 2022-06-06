@@ -1,2 +1,11 @@
 Generate tournamnet with axes
 GENTOUR -c ../tournaments/input/pogo_axes.json -0 ../tournaments/input/pogo_axes.json -o ../tournaments/output/SHELL_AXE_TOOLS/ -f SHELL_AXE_TOOLS -r 9999 -n 100 -s 36140
+
+tournaments/input/pogo_axes.json
+
+You can change what axes are available during the tournament and their override values by modifying this json file.
+"tools" is a JSON array of all tools to be spawned throughout a tournament
+"toolsPerGame" is an integer value representing how many tools to give the agent in any single game
+"overrideConfig" is a JSON array of tool efficiency overrides.
+	"toolName" is the name of the tool. ex. "minecraft:wooden_axe"
+	"efficiency" is a Float value representing how effecient the tool is. Minimum value 0.001. When breaking a block with the correct tool, the break_block cost gets divided by this number, so a higher efficiency will result in a better score.
