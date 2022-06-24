@@ -332,7 +332,7 @@ class LaunchTournament:
         Tracks the Current State of the tournament, launching Threads and Passing Commands to the Tournament Manager.
         :return:
         """
-
+        exitCode = 0
         # override launch command for Europa
         if 'SINGULARITYENV_PAL_TM_PORT' in os.environ:
             agent_port = os.environ['SINGULARITYENV_PAL_PORT']
@@ -383,11 +383,13 @@ class LaunchTournament:
                 if self.agent.returncode is not None:
                     self.debug_log.message(f"ERROR: Agent THREAD CRASHED WITH CODE: {self.agent.returncode}")
                     # end game so we get logs on the dashboard
+                    exitCode = self.agent.returncode
                     self._game_over()
                     break
                 # If agent started & PAL crashes, kill the main thread.
                 if self.pal_client_process.returncode is not None:
                     self.debug_log.message(f"ERROR: PAL THREAD CRASHED WITH CODE: {self.pal_client_process.returncode}")
+                    exitCode = self.pal_client_process.returncode
                     break
 
                 # If upload thread has stopped prematurely, then there is cause for concern.
@@ -539,16 +541,17 @@ class LaunchTournament:
 
 
         #output = self.pal_client_process.communicate()[0]
-        exitCode = self.pal_client_process.returncode
+        if exitCode is None or exitCode == 0:
+            exitCode = self.pal_client_process.returncode
 
         # TODO: Safe to remove? Not sure how this is helpful.
         if exitCode == 0:
             print("Tournament Completed -ExitCode 0")
-            return
+            return exitCode
         elif exitCode is None:
             self._tournament_completed() # FixMe: is this needed?
             print("ERROR: tournament incomplete - critical thread failure during execution. Agent Hung?")
-            return
+            return exitCode
         else:
             print(f"ERROR: ExitCode: {exitCode}")
             self._tournament_completed() # FixMe: is this needed?
@@ -951,4 +954,4 @@ if __name__ == "__main__":
     else:
         pos = 'UNIX'
     pal = LaunchTournament(os=pos)  # TODO: Remove the os command line argument.
-    pal.execute()
+    exitCode = pal.execute()
