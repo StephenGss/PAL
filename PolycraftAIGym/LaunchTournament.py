@@ -383,13 +383,13 @@ class LaunchTournament:
                 if self.agent.returncode is not None:
                     self.debug_log.message(f"ERROR: Agent THREAD CRASHED WITH CODE: {self.agent.returncode}")
                     # end game so we get logs on the dashboard
-                    exitCode = self.agent.returncode
+                    exitCode = 1
                     self._game_over()
                     break
                 # If agent started & PAL crashes, kill the main thread.
                 if self.pal_client_process.returncode is not None:
                     self.debug_log.message(f"ERROR: PAL THREAD CRASHED WITH CODE: {self.pal_client_process.returncode}")
-                    exitCode = self.pal_client_process.returncode
+                    exitCode = 1
                     break
 
                 # If upload thread has stopped prematurely, then there is cause for concern.
