@@ -36,7 +36,7 @@ while run:  # main loop
             # TODO: check this seed. might lead to crashing 297220 and 501793
             # check for adjacent chests 793405
             # 619545, 258235, 207195
-            seed = 997270
+            seed = 235215
         difficulty_weight = "1,0,0"
         if "-dh" in userInput:
             difficulty_weight = "0,0,1"
@@ -63,6 +63,9 @@ while run:  # main loop
         # old HUGA
         # userInput = f'GENTOUR -c ../test -0 ../Novelty/input/huga/huga_novcon_lvl_{str(n_level)}-{str(n_type)}-{str(n_stype)}' \
         #             f'.json -o ../Novelty/output/huga_test/ -f test -n 1 -w {difficulty_weight} -s {str(seed)} -R'
+        # ShELL
+        # userInput = f'GENTOUR -c ../test -0 ../Novelty/input/shell/fw_v1.0.json -o ../Novelty/output/shell_test/ -f test -n 1 -s {str(seed)} -R'
+        # initma 5 10 ../Novelty/output/shell_fw_v1.0_40axes/
     elif userInput.startswith('#'):
         if(userInput.startswith('# HUGA')):
             zipPath = "C:\\Users\\Stephen\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\huga-12M-tournaments-zipped\\HUGA_100game_full_eval_unknown_mode\\" \

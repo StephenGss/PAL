@@ -98,6 +98,9 @@ while run:  # main loop
                 # either 0 or end of data
                 break
         print(data)
+        print("Result: " + str(json.loads(data)['command_result']['result']))
+        print("stepCost: " + str(json.loads(data)['command_result']['stepCost']))
+        print("gameOver: " + str(json.loads(data)['gameOver']))
         last_result = data
 # data_dict = json.loads(data)
 # print(data_dict)

@@ -37,6 +37,8 @@ PAL_COMMAND_DOCKER = "docker run --name pal-test-9000 -d -w /PAL -p 9000:9000 pa
 PAL_COMMAND_SING = "singularity run --pwd /PAL pal_latest-2021-04-16-78889fd4123b.simg sudo xvfb-run -a ./gradlew --no-daemon --stacktrace runclient"
 # PAL_COMMAND_DOCKER = "docker run --name pal-test-9000 -d -w /PAL -p 9000:9000 pal:latest sudo xvfb-run -a ./gradlew --no-daemon --stacktrace runclient"
 
+MAX_AGT_CMD_WAIT = 30   # max time between agent commands. If we exceed this, the agent is likely frozen
+
 ## CONFIGURABLE ##################################### CLI Commands ####################################
 MAX_TIME = 300                                      # change using -i <time>
 MAX_TOURN_TIME = 2880                               # change using -m <minutes> 48 hours default
