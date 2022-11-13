@@ -101,6 +101,12 @@ while run:  # main loop
         print("Result: " + str(json.loads(data)['command_result']['result']))
         print("stepCost: " + str(json.loads(data)['command_result']['stepCost']))
         print("gameOver: " + str(json.loads(data)['gameOver']))
+        if 'actorActions' in json.loads(data):
+            for actor in json.loads(data)['actorActions']:
+                print(str(actor['entityID']))
+                if 'actions' in actor:
+                    for action in actor['actions']:
+                        print(str(action))
         last_result = data
 # data_dict = json.loads(data)
 # print(data_dict)

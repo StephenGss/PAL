@@ -1,9 +1,10 @@
 #!/usr/bin/env python
-import socket, os, datetime, time, random
+import socket, os, datetime, time, random, sys
 import threading
 
 def dummy_agent(id):
     HOST = "127.0.0.1"
+    # HOST = "10.1.1.53"
     PORT = 9001
     movement = ['MOVE w', 'MOVE a', 'MOVE d', 'MOVE x']
 
@@ -19,18 +20,19 @@ def dummy_agent(id):
     startTime = datetime.datetime.now()
     rand = random.Random()
     # send_command(sock, "RESET -d ../Novelty/output/shell/test_G00000_I0152_N0.json")
-    send_command(sock, "RESET nextgame")
-    time.sleep(5)
-    send_command(sock, "RESET nextgame")
-    time.sleep(5)
-    send_command(sock, "RESET nextgame")
-    time.sleep(5)
-    send_command(sock, "RESET nextgame")
-    time.sleep(5)
-    while count > 0:
-        time.sleep(0.0050)
-        send_command(sock, movement[rand.randint(a=0, b=3)])
-        count = count - 1
+    for i in range(1000):
+        count = totalCount
+        send_command(sock, "RESET nextgame", id)
+        send_command(sock, "RESET nextgame", id)
+        #time.sleep(5)
+        while count > 0:
+            # time.sleep(0.0050)
+            # send_command(sock, movement[rand.randint(a=0, b=3)], id)
+            # send_command(sock, "RESET nextgame", id)
+            send_command(sock, "sense_entities", id)
+            send_command(sock, "sense_locations", id)
+            # send_command(sock, "sense_inventory", id)
+            count = count - 1
     endTime = datetime.datetime.now()
     timeDiff = endTime - startTime
     ms = (timeDiff.microseconds / 1000) + timeDiff.seconds * 1000
@@ -40,7 +42,7 @@ def dummy_agent(id):
 
     print(str(id) + "Socket closed")
 
-def send_command(sock, command):
+def send_command(sock, command, id):
     BUFF_SIZE = 4096  # 4 KiB
     print(str(command))
     sock.send(str.encode(command + "\n"))
@@ -51,14 +53,14 @@ def send_command(sock, command):
         if len(part) < BUFF_SIZE or part[-1] == 10:
             # either 0 or end of data
             break
-    print(data)
+    print(str(id) + ":" + str(data))
     return data
 
 def main():
-    for i in range(0, 2):
+    for i in range(0, 10):
         x = threading.Thread(target=dummy_agent, args=(i,))
         x.start()
-        time.sleep(1.0)
+        # time.sleep(1.0)
 
 
 if __name__ == "__main__":

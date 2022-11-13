@@ -5,6 +5,7 @@ import tempfile
 import shutil
 import zipfile
 
+# HOST = "10.1.1.53"
 HOST = "127.0.0.1"
 PORT = 9005
 
@@ -13,7 +14,7 @@ movement = ['movenorth', 'movesouth', 'moveeast', 'movewest']
 run = True
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.settimeout(10)
+sock.settimeout(100)
 if 'PAL_PORT' in os.environ:
     sock.connect((HOST, int(os.environ['PAL_PORT'])))
     print('Using Port: ' + os.environ['PAL_PORT'])
@@ -55,16 +56,16 @@ while run:  # main loop
         # userInput = f'GENTOUR -c ../test -0 ../Novelty/input/pogo_v2/pogo_lvl_0.json -o ../Novelty/output/pogo_test/ -f test -n 1 -w 0,0,1 -s {str(seed)} -R'
         # POGO v2 **************
         userInput = f'GENTOUR -c ../test -0 ../Novelty/input/pogo_v2/pogo_{str(n_level)}-{str(n_type)}-{str(n_stype)}' \
-                    f'.json -o ../Novelty/output/pogo_test/ -f test -n 1 -w {difficulty_weight} -s {str(seed)} -R'
+                    f'.json -o ../Novelty/output/pogo_test/ -f test -n 1 -w {difficulty_weight} -s {str(seed)} -R -P'
         # **********************
         # HUGA
         # userInput = f'GENTOUR -c ../test -0 ../Novelty/input/huga_v2/huga_{str(n_level)}-{str(n_type)}-{str(n_stype)}' \
-        #             f'.json -o ../Novelty/output/huga_test/ -f test -n 1 -w {difficulty_weight} -s {str(seed)} -R'
+        #             f'.json -o ../Novelty/output/huga_test/ -f test -n 1 -w {difficulty_weight} -s {str(seed)} -R -P'
         # old HUGA
         # userInput = f'GENTOUR -c ../test -0 ../Novelty/input/huga/huga_novcon_lvl_{str(n_level)}-{str(n_type)}-{str(n_stype)}' \
-        #             f'.json -o ../Novelty/output/huga_test/ -f test -n 1 -w {difficulty_weight} -s {str(seed)} -R'
+        #             f'.json -o ../Novelty/output/huga_test/ -f test -n 1 -w {difficulty_weight} -s {str(seed)} -R -P'
         # ShELL
-        # userInput = f'GENTOUR -c ../test -0 ../Novelty/input/shell/fw_v1.0.json -o ../Novelty/output/shell_test/ -f test -n 1 -s {str(seed)} -R'
+        # userInput = f'GENTOUR -c ../test -0 ../Novelty/input/shell/fw_v1.0.json -o ../Novelty/output/shell_test/ -f test -n 1 -s {str(seed)} -R -P'
         # initma 5 10 ../Novelty/output/shell_fw_v1.0_40axes/
     elif userInput.startswith('#'):
         if(userInput.startswith('# HUGA')):
