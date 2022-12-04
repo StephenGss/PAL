@@ -2,6 +2,10 @@
 # Fast Instance Loader and Action Replay
 # Author: Stephen Goss
 # Date: 08-09-2021
+#
+# Exmaple command - '# tournament_name game rundate agent'
+# '# POGO_L00_T01_S01_X0100_E_U0012_V2 G00001 113000 CRA_36M
+#
 
 import socket, random, time, json, os, pandas
 import tempfile
@@ -30,6 +34,8 @@ else:
 
 dirpath = tempfile.mkdtemp()
 print(dirpath)
+print('Exmaple command - \'# tournament_name game rundate agent\'')
+print('# POGO_L00_T01_S01_X0100_E_U0012_V2 G00001 010502 CRA_36M')
 
 ar = ActionReplayAgent(host='127.0.0.1', port=9000)
 ar.connect()
@@ -84,7 +90,7 @@ while run:  # main loop
         query = f"""SELECT      STEP_NUMBER,
                                 COMMAND,
                                 COMMAND_ARGUMENT
-                            from CRA_24M
+                            from {userInput.split(" ")[4]}
                             WHERE TOURNAMENT_NAME = '{userInput.split(" ")[1] + '_' + userInput.split(" ")[3]}' 
                             and GAME_ID = {int(userInput.split(" ")[2][1:6])}
                     ORDER BY STEP_NUMBER
