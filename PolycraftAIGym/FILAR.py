@@ -65,7 +65,7 @@ while run:  # main loop
                       userInput.split(" ")[
                           1] + ".zip"
         else:
-            zipPath = "C:\\Users\\Stephen\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\97. FILAR\\pogo-24M-tournaments-zipped\\POGO_100game_full_evaluation_unknown_mode\\" \
+            zipPath = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\000. PAL Tasks & Novelties\\02. Phase 2 Novelties\\Tournament Files (Debug)\\POGO_100game_full_eval\\" \
                       + userInput.split(" ")[1][0:16] + "\\" + userInput.split(" ")[1][17:22] + "\\" + userInput.split(" ")[
                           1] + ".zip"
         print(zipPath)
