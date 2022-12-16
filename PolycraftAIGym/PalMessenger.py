@@ -32,9 +32,11 @@ class PalMessenger:
         if self.give_time:
             message = message + PalMessenger.time_now_str() + ": "
 
-        p = re.compile('(.*\[CLIENT\]{"blockInFront":{).*(},"goal".*)')
-        msg_stripped = p.sub("\g<1>REDACTED\g<2>", str(message_to_handle))
-        message = message + self.log_note + msg_stripped
+        # p = re.compile('(.*\[CLIENT\]{"blockInFront":{).*(},"goal".*)')
+        # msg_stripped = p.sub("\g<1>REDACTED\g<2>", str(message_to_handle))
+        # message = message + self.log_note + msg_stripped
+        message = message + self.log_note + message_to_handle
+
         if self.print_log_info:
             print(message)
         if not message.endswith("\n"):
