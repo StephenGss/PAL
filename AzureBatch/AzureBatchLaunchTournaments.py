@@ -47,7 +47,7 @@ DEBUG_FLAG = False
 
 ### SIFT ###
 SIFT_APPLICATION_ID = 'agent_sift'
-SIFT_APPLICATION_VERSION = '30M'
+SIFT_APPLICATION_VERSION = '36M_2482'
 APPLICATION_ID_FIXED = 'agent_sift'
 APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + APPLICATION_ID_FIXED + '_' + SIFT_APPLICATION_VERSION
 
@@ -329,10 +329,10 @@ class AzureBatchLaunchTournaments:
 
             constraint = batchmodels.TaskConstraints(
                 ##Reduce this from 1440 to 30 minutes for big evaluation##
-                retention_time=datetime.timedelta(minutes=5),
+                # retention_time=datetime.timedelta(minutes=5),
 
                 # # ##Reduced this for Tufts SN100##
-                # retention_time=datetime.timedelta(seconds=1),
+                retention_time=datetime.timedelta(seconds=1),
             )
 
             task = batchmodels.TaskAddParameter(
@@ -510,6 +510,27 @@ def get_tournaments(test_type,tournament_directory):
     output = list(set(output))
     return output
 
+def get_matching_tournaments(test_type,tournament_directory, tournaments):
+    """
+    Helper script to iterate through a tournament directory and get all tournament zips of a particular test type
+    (i.e. ,TestType.Stage6 will return any zip file within an X1000/ folder.
+    :param test_type: Testing Stage - see Enum
+    :param tournament_directory: Folder within which to search for zips recursively.
+    :return: A list of zips (each zip file is a tournament that will become a task to complete in the parent pool)
+    """
+
+    output = []
+    for subdir, folders, files in os.walk(f'{tournament_directory}'):
+        for file in files:
+            if file.endswith('.zip') and test_type.value in file:
+                if file.split('.')[0] in tournaments:
+                    print(f'{subdir}/{file}')
+                    zip = f'{subdir}/{file}'
+                    output.append(f'{subdir}/')
+
+    output = list(set(output))
+    return output
+
 def launch_pools_per_novelty(agent, agentType, test_type, global_config, pool, suffix, tournament_directory, ):
     r=f'{os.getcwd()}/{tournament_directory}'
     pools = {f'{a}': f'{r}/{a}/' for a in os.listdir(r) if not '.' in a}
@@ -537,7 +558,7 @@ if __name__ == '__main__':
     global_config = configparser.ConfigParser()
     global_config.read(helpers._SAMPLES_CONFIG_FILE_NAME)
     #
-    global_config.set('DEFAULT', 'poolvmcount', '3')
+    global_config.set('DEFAULT', 'poolvmcount', '50')
 
     # launch_pools_per_novelty(
     #     "TUFTS_AGENT_TEST_V3",
@@ -571,9 +592,16 @@ if __name__ == '__main__':
     pogo_SNKM100_files = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\pogo-12M-tournaments-zipped\\POGO_100game_12M_shared_novelties_known_mode"
     pogo_MT100_files = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\00. 06-12 Months\\98. 12M Tournament Files\\pogo-12M-tournaments-zipped\\POGO_100game_12M_missing_tournaments2"
 
-    pogo_v2_PN100 = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\000. PAL Tasks & Novelties\\03. Phase 2 Novelties\\Tournament Files (Debug)\\POGO_100game_pre_nov"
-    pogo_v2_FE100 = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\000. PAL Tasks & Novelties\\03. Phase 2 Novelties\\Tournament Files (Debug)\\POGO_100game_full_eval"
-    pogo_v2_SN100 = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\000. PAL Tasks & Novelties\\03. Phase 2 Novelties\\Tournament Files (Debug)\\POGO_100game_shared"
+    pogo_v2_PN100 = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\000. PAL Tasks & Novelties\\02. Phase 2 Novelties\\Tournament Files (Debug)\\POGO_100game_pre_nov"
+    pogo_v2_FE100 = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\000. PAL Tasks & Novelties\\02. Phase 2 Novelties\\Tournament Files (Debug)\\POGO_100game_full_eval"
+    pogo_v2_SN100 = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\000. PAL Tasks & Novelties\\02. Phase 2 Novelties\\Tournament Files (Debug)\\POGO_100game_shared"
+
+    pogo_v2_FE100PH2 = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\000. PAL Tasks & Novelties\\02. Phase 2 Novelties\\Tournament Files (Debug)\\POGO_100game_full_eval_ph2"
+    pogo_v2_SN100PH3 = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\000. PAL Tasks & Novelties\\02. Phase 2 Novelties\\Tournament Files (Debug)\\POGO_100game_shared"
+    pogo_v2_FE100PH3 = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\000. PAL Tasks & Novelties\\02. Phase 2 Novelties\\Tournament Files (Debug)\\POGO_100game_phase3_fe"
+    pogo_v2_FE100FULL = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\000. PAL Tasks & Novelties\\02. Phase 2 Novelties\\Tournament Files (Debug)\\POGO_100game_full_eval"
+
+    pogo_v2_RERUN = f"C:\\Users\\{os.getlogin()}\\Desktop\\siftrerun"
 
     #
     #
@@ -621,13 +649,13 @@ if __name__ == '__main__':
     # )
     
     launch_tournament_wrapper(
-       agent="SIFT_30M",
+       agent="SIFT_36M",
        agentType=AgentType.SIFT,
        test_type=TestType.STAGE5,
        global_config=global_config,
-       pool="POGO_SIFT_SN1",
-       suffix="_041900",
-       tournament_directory=pogo_v2_SN100,
+       pool="POGO_SIFT_FE",
+       suffix="_120100",
+       tournament_directory=pogo_v2_FE100FULL,
     )
 
     # launch_tournament_wrapper(
