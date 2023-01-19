@@ -26,13 +26,13 @@ We've also added an example tournament for the HUGA task in huga_100_PN.
 # Installation:
 ## 1. Ubuntu
 1. If you haven't already, pull this branch of the repository to your work directory:
-    `git clone -b release_1.3 --single-branch https://github.com/StephenGss/pal.git`
+    `git clone -b release_2.0 --single-branch https://github.com/StephenGss/pal.git`
 1. For a fresh install:
-    * navigate to polycraft/pal/setup/ and execute `./setup_linux_shortened.sh` (user will need sudo permissions to wget JAVA).
+    * navigate to polycraft/pal/setup/ and execute `./setup_linux_headless.sh` (may need sudo permissions).
     * We have also provided our current setup scripts in that folder (they include a few additional packages enabling us to upload tournament results to SQL) for your reference.
 2. For a pre-existing environment, review the apt-get commands in _setup_linux_shortened.sh_ and execute as-needed.
 3. pip install all requirements. We recommend using a package manager like conda
-   * `conda create -name pal_manager python=3.8 # or use your favorite venv`
+   * `conda create --name pal_manager python=3.8 # or use your favorite venv`
    * `cd polycraft/pal/ && python -m pip install -r requirements.txt`
 4. unzip and move to a known location the zipped tournament JSONs. We recommend testing the setup with a VIRGIN No Novelty variant
 
@@ -274,3 +274,5 @@ The Polycraft World AI API consists of 28 total different API commands at Releas
 	* Trade with trader entities
 * **INTERACT \[entity id\]** 
 	* Interact with an entity. Ex. sense the recipes available for a trader agent
+* **NOP** 
+	* Advances time by one step without taking any actions. Incures no step cost, but allows actors(external agents) to advance. 

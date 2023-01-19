@@ -14,7 +14,7 @@ from copy import copy, deepcopy
 import getopt
 import psutil
 from filelock import Timeout, FileLock
-
+from sys import platform as _platform
 
 
 class LaunchTournament:
@@ -30,7 +30,19 @@ class LaunchTournament:
 
     All messages in stdout for the AI Agent, PAL client, and Debugging are written to log files (see logging below)
     """
-    def __init__(self, os='Unix', log_dir='Logs/', args=(), kwargs=None):
+    def __init__(self, os='UNIX', log_dir='Logs/', args=(), kwargs=None):
+        if _platform == "linux" or _platform == "linux2":
+            # linux
+            os='UNIX'
+        elif _platform == "darwin":
+            # MAC OS X
+            os='MACOS'
+        elif _platform == "win32":
+            # Windows
+            os='WIN'
+        elif _platform == "win64":
+            # Windows 64-bit
+            os='WIN'
         self.commands_sent = 0
         self.total_step_cost = 0
         self.start_time = time.time()
@@ -199,26 +211,38 @@ class LaunchTournament:
             return True
 
         if line.find('{') != -1 and line.find(line_end_str) != -1 and line.rfind('}') != -1:
-            json_text = line[line.find('{'):line.rfind('}')+1]
-            # TODO: Potentially remove this?
-            json_text = re.sub(r'\\\\\"', '\'', json_text)
-            json_text = re.sub(r'\\+\'', '\'', json_text)
-            data_dict = json.loads(json_text)
-            self.commands_sent += 1
-            self.total_step_cost += data_dict["command_result"]["stepCost"]
+            try:
+                json_text = line[line.find('{'):line.rfind('}')+1]
+                # TODO: Potentially remove this?
+                json_text = re.sub(r'\\\\\"', '\'', json_text)
+                json_text = re.sub(r'\\+\'', '\'', json_text)
+                data_dict = json.loads(json_text)
+                self.commands_sent += 1
+                self.total_step_cost += data_dict["command_result"]["stepCost"]
 
-            if data_dict["goal"]["goalAchieved"]:
-                msg = 'Goal Achieved'
-                self.debug_log.message(f"Game Over: {msg}")
-                self.score_dict[self.game_index]['success'] = 'True'
-                self.score_dict[self.game_index]['success_detail'] = msg
-                return True
-            if self.total_step_cost > CONFIG.MAX_STEP_COST:
-                msg = "total step cost exceeded limit"
-                self.debug_log.message(f"Game Over: {msg}")
-                self.score_dict[self.game_index]['success'] = 'False'
-                self.score_dict[self.game_index]['success_detail'] = msg
-                return True
+                if data_dict["goal"]["goalAchieved"]:
+                    msg = 'Goal Achieved'
+                    self.debug_log.message(f"Game Over: {msg}")
+                    self.score_dict[self.game_index]['success'] = 'True'
+                    self.score_dict[self.game_index]['success_detail'] = msg
+                    return True
+                if self.total_step_cost > CONFIG.MAX_STEP_COST:
+                    msg = "total step cost exceeded limit"
+                    self.debug_log.message(f"Game Over: {msg}")
+                    self.score_dict[self.game_index]['success'] = 'False'
+                    self.score_dict[self.game_index]['success_detail'] = msg
+                    return True
+            except KeyError as e:
+                self.debug_log.message(f"KEYERROR IN JSON: {line}")
+                self.debug_log.message(e)
+                return False
+            except json.JSONDecodeError as e:
+                self.debug_log.message(f"JSONDecodeError IN LINE: {line}")
+                self.debug_log.message(e)
+                return False
+            except Exception as e:
+                self.debug_log.message(f"Exception on processing line: {e}")
+                return False
 
         # Check If Game Timed out.
         self.score_dict[self.game_index].update({'elapsed_time': time.time() - self.start_time})
@@ -843,5 +867,5 @@ if __name__ == "__main__":
             print(f"Max Time (minutes): {arg}")
             CONFIG.MAX_TOURN_TIME = int(arg)
 
-    pal = LaunchTournament(os='WIN')  # TODO: Remove the os command line argument.
+    pal = LaunchTournament()
     pal.execute()

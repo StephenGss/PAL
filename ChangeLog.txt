@@ -2,7 +2,137 @@ SAIL-ON Polycraft World Change Log:
 
 Purpose: This document tracks changes and updates to Polycraft World that impact SAIL-ON Tasks, Evaluations, etc., including API changes.
 
-2021.10.14 updates:
+2022.12.06 Updates:
+1	(bug fix)	Items broken by break_block command will always be in the same spot now. Should make sim behavior after breaking a block more stable.
+
+2022.11.30 Updates:
+1)	(bug fix)	Hints should only work in given Novelty distribution 
+
+2022.11.16 Updates:
+1)	(bug fix)	Fix rare nullpointer error in Observation actor actions
+
+2022.11.15 Updates:
+1)	(bug fix)	Fix concurrent mod error on Observation actor actions
+
+2022.11.14 Updates:
+1)	(bug fix)	Nov 10-1-1 bug fixes
+
+2022.10.31 Updates:
+1)	(enhancement)	Add Characterize command
+
+2022.10.28 Updates:
+1)	(bug fix)	Use same distance for Pogoist trade as Trader trade
+
+2022.10.19 Updates:
+1)	(bug fix)	Fix nullpointer in 9-1-1 novelty when all diamond blocks are gone.
+2)	(bug fix) 	Fix uncommon concurrent modification error when entities save states
+
+2022.10.11 Updates:
+1)	(bug fix)	Fix nullpointer issue when placing blocks
+
+2022.09.29 Updates:
+1)	(bug fix)	Adding list option for SENSE_ACTOR_ACTIONS
+2)	(bug fix)	Various bug fixes regarding SENSE_ACTOR_ACTIONS and missing actions
+3)	(bug fix)	Fix bug where "SENSE_ACTOR_ACTIONS" crashes the game
+
+2022.09.26 Updates:
+1)	(bug fix)	Fix sense_actor_actions timeout bug
+
+2022.09.15 Updates:
+1)	(enhancement)	Add nonav option to sense_actor_actions
+
+2022.09.07 Updates:
+1)	(bug fix)	Fix break_block not working.
+
+2022.08.31 Updates:
+1)	(enhancement)	Changes for phase 3 shared novelties
+
+2022.05.26 Updates:
+1)	(enhancement)	Add POGO Phase 1 novelties to POGO Phase 2 task
+
+2022.04.20 Updates:
+1)	(bug fix)	HUGA chests are missing keys in novelty 6-1-1 
+2)	(bug fix)	Add timeout when checking to make sure player got all items for an experiment. Without the timeout, the game could get stuck.
+
+2022.04.12 Updates:
+1)	(config)	Pogo_100_PN games regenerated to remove faulty configurations
+
+2022.04.11 Updates:
+1)	(bug fix)	Game crashes if you run start using the agent thread.
+2)	(bug fix)	Show correct message if items become available in the safe after already collecting from it.
+3)	(bug unfix)	Pogoist may move after a teleport action. The fix changes the task too much. Will wait to fix after phase 2 eval is done.
+
+2022.04.06 Updates:
+1)	(bug fix)	If the first tree a pogoist breaks is right next to another tree, the pogoist can break both trees in the same action and skip a lot of steps it would normally take.
+2)	(bug fix)	Pogoist crashes the game when trying to place tree tap.
+3)	(bug fix)	START command sent by through agent thread causes a nullpointer.
+
+2022.04.05 Updates:
+1)	(bug fix)	Pogoist moves out of arena in novelty 5-5-1-M. Should move to crafting table.
+2)	(bug fix)	Prevent an extra move action after an actor performs a teleport action. 
+3)	(bug fix)	On every agent command, check to make sure entities are loaded on client side.
+
+2022.03.17 Updates:
+1)			Experiment instance will not be verified until we confirm all items are seen on the client side. Sometimes there would be a few ticks where items were not visible immidiately to the agent.
+2)			Make trader and pogoist invulnerable to prevent disappearing
+
+2022.03.16 Updates:
+1)			Remove old code reference in RESET command. This causes a rare crash that reports a "ConcurrentModificationException" as well as a line including something like "[edu.utd.minecraft.mod.polycraft.experiment.old.ExperimentManager:sendExperimentUpdates:322]: Sending Update..."
+2)			Add try catch around some code in observation. This would cause a rare crash during actor's actions right after the player places a block. The cause is unknown, but the code that crashes the game is not important during this step. Worst case, there are some non-standard properties of items that will be missing from an item in extremely rare cases. But we don't even use these properties right now, so it should never be an issue.
+
+2022.02.08 Updates:
+1)	(HUGA) 	Fix Trap issue where traps will randomly capture agent when next to trap
+
+2022.01.15 Updates:
+1)	(HUGA)	Fix trap placement bug introduced from last changes
+
+2022.01.13 Updates:
+1)	(HUGA)			Guide dog navigation improvments.
+2)	(API Change)	TURN and LOOK commands now center agent at 0.499 instead of 0.5. This can change the agent's location because of rounding errors.
+3)	(HUGA)			Prevent Agents from placing traps on destination and perimeter blocks.	
+
+2021.11.23 Updates:
+1)	(Task Specification docs)	Uploaded POGO Task Specifications.docx and HUGA Task Specifications.docx to repo.
+2)	(typo)				Corrected typos in Task Specifications for NOP command incorrectly stating "NO_OP" and that it did not advance time.
+3)	(bug fix)			Fix guide dog interact [id]. Interact facing still worked, but distance calculation was inverted when using id for interact
+
+2021.11.22 Updates:
+1)	(enhancement)			Reset IDs on RESET for game replayability
+2)	(enhancement)			Update GenTourn logging to be more compact
+3)	(enhancement)			Only allow START to be sent once. Multiple START commands will respone in SUCCESS, but not actually be processed
+4)	(enhancement/bug fix)	Fix issue where rooms were always generated in the positive direction. Now rooms will generate in all directions.
+5)	(enhancement/bug fix)	Prevent rooms having pathways between each other when they shouldn't
+6)	(minor change)			Adjust starting room location since rooms generating in negative direction could have caused negative player positions.
+7)	(bug fix)				Fix Sapling shared novelty replacing iron pickaxe
+8	(bug fix)				Trading with pogoist in shared novelty resulted in timed out command response
+9)	(bug fix)				Trees cannot be placed in perimeter of a room. This is the correct logic, but command response was incorrect.
+
+2021.11.17 Updates:
+1)	(Damage Control)	A maven repo permanently shut down that Minecraft Forge relied on. Loaded most of the necessary libaries locally now.
+
+2021.11.16 Update:
+1)	(game config)	Some pre-novelty games were generated with one of the traders spawning inside a wall. This can result in an impossible game.
+					This only affected POGO pre-novelty games
+2)	(game config)	The easy axe novelty configs had an issue that would sometimes overwrite the pickaxe as a wooden axe. This results in an impossible game. 
+					This only affected POGO_L01_T01_S01 easy difficulty
+3)	(bug fix)		TP_TO had an issue where it didn't check for an actor in the position the player would land when teleporting to a block at a set distance.
+4)	(bug fix)		Cleaned up some startup log outputs and warnings.
+5)	(bug fix)		Minecraft client side rounding error caused incorrect message on use command when interacting with the safe block
+
+2021.11.09 Updates
+1)	(bug fix) PLACE_TREE_TAP causes nullpointer if an actor disappears during game. Not sure what is cuasing the underlying issue, but the nullpointer is fixed.
+
+2021.11.05 Updates:
+1)	(bug fix) Change in Pogoist logic broke some backwards compatibility. Now is backwards compatible.
+
+2021.11.03 updates:
+1)	(bug fix) The DELETE command sends back the wrong message when you don't send the correct syntax. 
+2)	(bug fix) PLACE minecraft:sapling doesn't decriment the sapling item in player's inventory
+
+2021.10.29 udpates:
+1)	(Bug fix) When using an item on the safe or other containers, the action response was always a FAIL even though the action worked.
+
+2021.10.25 updates:
 1)	(Bug fix) cannot go through allowed blocks using cardinal movement(ex. MOVE_NORTH, MOVE_EAST, etc), but you can with egocentric movement. This is fixed to allow walking through doors/macguffing using cardinal movement as well. 
 2)	(Bug fix) Agent can move onto the same locaiton as an actor. This is not expected. Actors should act as obstacles. This has been fixed for all movement commands.
 3)	(Bug fix) (POGO) Traded items are lost if the trade is not valid. Items should not be lost on invalid trade attempts. This has been fixed.
