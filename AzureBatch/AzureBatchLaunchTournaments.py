@@ -47,7 +47,7 @@ DEBUG_FLAG = False
 
 ### SIFT ###
 SIFT_APPLICATION_ID = 'agent_sift'
-SIFT_APPLICATION_VERSION = '36M_2482'
+SIFT_APPLICATION_VERSION = '42M_2653'
 APPLICATION_ID_FIXED = 'agent_sift'
 APPLICATION_DIR = '$AZ_BATCH_APP_PACKAGE_' + APPLICATION_ID_FIXED + '_' + SIFT_APPLICATION_VERSION
 
@@ -175,15 +175,24 @@ class AzureBatchLaunchTournaments:
             #     elevation_level=batchmodels.ElevationLevel.non_admin)
         ]
 
+        # ubuntu reference
+        # image_reference = batchmodels.ImageReference(
+        #     publisher="Canonical",
+        #     offer="UbuntuServer",
+        #     sku="18.04-LTS",
+        #     version="latest"
+        # )
+        image_reference = batchmodels.ImageReference(
+                publisher="Canonical",
+                offer="Centos",
+                sku="7_9-gen2",
+                version="latest"
+            )
+
         pool = batchmodels.PoolAddParameter(
             id=pool_id,
             virtual_machine_configuration=batchmodels.VirtualMachineConfiguration(
-                image_reference=batchmodels.ImageReference(
-                    publisher="Canonical",
-                    offer="UbuntuServer",
-                    sku="18.04-LTS",
-                    version="latest"
-                ),
+                image_reference=image_reference,
                 node_agent_sku_id="batch.node.ubuntu 18.04"),
             vm_size=vm_size,
             user_accounts=users,
@@ -600,8 +609,9 @@ if __name__ == '__main__':
     pogo_v2_SN100PH3 = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\000. PAL Tasks & Novelties\\02. Phase 2 Novelties\\Tournament Files (Debug)\\POGO_100game_shared"
     pogo_v2_FE100PH3 = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\000. PAL Tasks & Novelties\\02. Phase 2 Novelties\\Tournament Files (Debug)\\POGO_100game_phase3_fe"
     pogo_v2_FE100FULL = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\000. PAL Tasks & Novelties\\02. Phase 2 Novelties\\Tournament Files (Debug)\\POGO_100game_full_eval"
+    pogo_v2_SIFTRUSH = f"C:\\Users\\{os.getlogin()}\\Polycraft World\\Polycraft World (Internal) - Documents\\05. SAIL-ON Program\\000. PAL Tasks & Novelties\\02. Phase 2 Novelties\\Tournament Files (Debug)\\SIFT_RUSH"
 
-    pogo_v2_RERUN = f"C:\\Users\\{os.getlogin()}\\Desktop\\siftrerun"
+    pogo_v2_RERUN = f"C:\\Users\\steph\\Desktop\\siftrerun"
 
     #
     #
@@ -649,13 +659,13 @@ if __name__ == '__main__':
     # )
     
     launch_tournament_wrapper(
-       agent="SIFT_36M",
+       agent="SIFT_42M",
        agentType=AgentType.SIFT,
        test_type=TestType.STAGE5,
        global_config=global_config,
-       pool="POGO_SIFT_FE",
-       suffix="_120100",
-       tournament_directory=pogo_v2_FE100FULL,
+       pool="POGO_SIFT_FE100PH3",
+       suffix="_032300",
+       tournament_directory=pogo_v2_RERUN,
     )
 
     # launch_tournament_wrapper(
