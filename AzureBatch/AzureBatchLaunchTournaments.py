@@ -176,18 +176,18 @@ class AzureBatchLaunchTournaments:
         ]
 
         # ubuntu reference
-        # image_reference = batchmodels.ImageReference(
-        #     publisher="Canonical",
-        #     offer="UbuntuServer",
-        #     sku="18.04-LTS",
-        #     version="latest"
-        # )
         image_reference = batchmodels.ImageReference(
-                publisher="Canonical",
-                offer="Centos",
-                sku="7_9-gen2",
-                version="latest"
-            )
+            publisher="Canonical",
+            offer="UbuntuServer",
+            sku="18.04-LTS",
+            version="latest"
+        )
+        # image_reference = batchmodels.ImageReference(
+        #         publisher="Canonical",
+        #         offer="Centos",
+        #         sku="7_9-gen2",
+        #         version="latest"
+        #     )
 
         pool = batchmodels.PoolAddParameter(
             id=pool_id,
@@ -664,8 +664,8 @@ if __name__ == '__main__':
        test_type=TestType.STAGE5,
        global_config=global_config,
        pool="POGO_SIFT_FE100PH3",
-       suffix="_032300",
-       tournament_directory=pogo_v2_RERUN,
+       suffix="_041300",
+       tournament_directory=pogo_v2_FE100PH3,
     )
 
     # launch_tournament_wrapper(
