@@ -11,7 +11,6 @@ import configparser
 import gzip
 from filelock import Timeout, FileLock
 
-
 class AzureConnectionService:
 
     def __init__(self, debug_log, container_name='round2-logs', temp_logs_err_path=None):
@@ -79,10 +78,10 @@ class AzureConnectionService:
         """
         if self.configs is None:
             return None
-        #Driver = "{ODBC Driver 17 for SQL Server}"
+        Driver = "{ODBC Driver 18 for SQL Server}"
         #Driver = "{FreeTDS}"
-        Driver = os.environ['CONDA_PREFIX'] + "/lib/libtdsodbc.so"
-        #Server = "tcp:polycraft.database.windows.net,1433"
+        # Driver = os.environ['CONDA_PREFIX'] + "/lib/libtdsodbc.so"
+        # Server = "tcp:polycraft.database.windows.net,1433"
         Server = "polycraft.database.windows.net"
         Port = 1433
         Database = "tournament_database"
