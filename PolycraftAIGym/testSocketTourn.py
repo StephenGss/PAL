@@ -14,7 +14,7 @@ movement = ['movenorth', 'movesouth', 'moveeast', 'movewest']
 run = True
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.settimeout(100)
+sock.settimeout(10000)
 if 'PAL_PORT' in os.environ:
     sock.connect((HOST, int(os.environ['PAL_PORT'])))
     print('Using Port: ' + os.environ['PAL_PORT'])
@@ -58,6 +58,10 @@ while run:  # main loop
         userInput = f'GENTOUR -c ../test -0 ../Novelty/input/pogo_v2/pogo_{str(n_level)}-{str(n_type)}-{str(n_stype)}' \
                     f'.json -o ../Novelty/output/pogo_test/ -f test -n 1 -w {difficulty_weight} -s {str(seed)} -R -P'
         # **********************
+        # old POGO
+        # userInput = f'GENTOUR -c ../test -0 ../Novelty/input/pogo/pogo_novcon_lvl_{str(n_level)}-{str(n_type)}-{str(n_stype)}' \
+        #             f'.json -o ../Novelty/output/pogo_test/ -f test -n 1 -w {difficulty_weight} -s {str(seed)} -R -P'
+
         # HUGA
         # userInput = f'GENTOUR -c ../test -0 ../Novelty/input/huga_v2/huga_{str(n_level)}-{str(n_type)}-{str(n_stype)}' \
         #             f'.json -o ../Novelty/output/huga_test/ -f test -n 1 -w {difficulty_weight} -s {str(seed)} -R -P'
